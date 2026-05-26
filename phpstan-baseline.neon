@@ -1,0 +1,181 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tyre_code\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$vehicle_code\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 9
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 5
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{non\-falsy\-string\|null, string\|null, string, string, mixed\}, Closure\(Spatie\\Activitylog\\Models\\Activity\)\: array\{non\-falsy\-string\|null, string\|null, string, string, mixed\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{string, mixed, mixed, mixed, float\|null, float\|null\}, Closure\(App\\Models\\TyreDisposal\)\: array\{string, mixed, mixed, mixed, float\|null, float\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{string, mixed, mixed, mixed, float\|null, mixed\}, Closure\(App\\Models\\TyreMaintenance\)\: array\{string, mixed, mixed, mixed, float\|null, mixed\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{string, mixed, mixed, mixed, mixed, mixed, mixed\}, Closure\(App\\Models\\TyreMovement\)\: array\{string, mixed, mixed, mixed, mixed, mixed, mixed\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{string, mixed, mixed, mixed, mixed, mixed\}, Closure\(App\\Models\\TrailerTransfer\)\: array\{string, mixed, mixed, mixed, mixed, mixed\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/Reports.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/TyreMaintenances/Schemas/TyreMaintenanceForm.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Resources/TyreMaintenances/Schemas/TyreMaintenanceForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/TyreMovements/Schemas/TyreMovementForm.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/TyreMovements/Schemas/TyreMovementForm.php
+
+		-
+			message: '#^Cannot access property \$asset_type on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/Vehicles/Pages/ViewVehicle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trailer\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/CombinedVehicleTrailerMap.php
+
+		-
+			message: '#^Trait App\\Models\\Concerns\\HasEnumCasts is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Models/Concerns/HasEnumCasts.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/SystemSetting.php
+
+		-
+			message: '#^Cannot call method isPending\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/TyreMovement.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$powerVehicle\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Vehicle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trailer\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Vehicle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/TyreMaintenanceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TyreReportService.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/TyreReportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Tyre\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Services/TyreReportService.php

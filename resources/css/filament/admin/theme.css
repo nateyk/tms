@@ -1,0 +1,68 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/components/**/*';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Full-width, breathable layout — rely on .fi-body for page background (gray-50 / gray-950) */
+.fi-main-ctn {
+    @apply w-full max-w-none px-4 py-6 sm:px-6 lg:px-8 xl:px-10;
+}
+
+.fi-page {
+    @apply w-full max-w-none gap-y-8;
+}
+
+.fi-page-header {
+    @apply mb-2;
+}
+
+.fi-header-heading {
+    @apply text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl dark:text-white;
+}
+
+/* Sidebar — border only; keep Filament’s responsive bg (incl. lg:bg-transparent on desktop) */
+.fi-sidebar {
+    @apply border-e border-gray-200/80 dark:border-gray-800;
+}
+
+.fi-sidebar-nav {
+    @apply gap-y-1 px-3 py-4;
+}
+
+.fi-sidebar-item-active a {
+    @apply rounded-lg bg-amber-50 font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-100;
+}
+
+/* Stats widgets — subtle hover; Filament owns card surfaces and dark rings */
+.fi-wi-stats-overview-stat {
+    @apply transition-shadow hover:shadow-md;
+}
+
+/* Topbar */
+.fi-topbar {
+    @apply border-b border-gray-200/80 backdrop-blur-md dark:border-gray-800;
+}
+
+.fi-topbar-item-label {
+    @apply hidden sm:inline;
+}
+
+/* Tables — use horizontal space */
+.fi-ta-ctn {
+    @apply rounded-xl border border-gray-200/80 shadow-sm dark:border-gray-800;
+}
+
+/* TMS custom page shell */
+.tms-page {
+    @apply w-full max-w-none space-y-8;
+}
+
+.tms-page-intro {
+    @apply text-sm text-gray-600 dark:text-gray-400;
+}

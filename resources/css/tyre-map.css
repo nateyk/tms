@@ -1,0 +1,105 @@
+.tms-tyre-map-shell {
+    --tms-map-accent: #d97706;
+    --tms-map-surface: #ffffff;
+    --tms-map-muted: #64748b;
+    --tms-map-border: rgba(148, 163, 184, 0.35);
+    --tms-map-glow: rgba(217, 119, 6, 0.15);
+}
+
+.dark .tms-tyre-map-shell {
+    --tms-map-surface: #0f172a;
+    --tms-map-muted: #94a3b8;
+    --tms-map-border: rgba(71, 85, 105, 0.6);
+    --tms-map-glow: rgba(251, 191, 36, 0.12);
+}
+
+.tms-tyre-map-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px solid var(--tms-map-border);
+    background: linear-gradient(165deg, var(--tms-map-surface) 0%, color-mix(in srgb, var(--tms-map-surface) 92%, #e2e8f0) 100%);
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.dark .tms-tyre-map-card {
+    background: linear-gradient(165deg, #0f172a 0%, #020617 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.tms-tyre-map-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--tms-map-glow), transparent 70%);
+}
+
+.tms-tyre-map-canvas-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0.75rem 1rem;
+}
+
+.tms-tyre-map-canvas-host {
+    width: 100%;
+    max-width: 880px;
+    min-height: 420px;
+    aspect-ratio: 880 / 600;
+}
+
+.tms-tyre-map-canvas-host canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 0.75rem;
+}
+
+.tms-tyre-map-legend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    border: 1px solid var(--tms-map-border);
+    background: color-mix(in srgb, var(--tms-map-surface) 85%, transparent);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--tms-map-muted);
+    backdrop-filter: blur(8px);
+}
+
+.tms-tyre-map-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--tms-map-border);
+    background: color-mix(in srgb, var(--tms-map-surface) 90%, transparent);
+    padding: 0.5rem 0.75rem;
+    min-width: 5.5rem;
+}
+
+.tms-tyre-map-stat strong {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.dark .tms-tyre-map-stat strong {
+    color: #f8fafc;
+}
+
+.tms-tyre-map-detail {
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--tms-map-accent) 35%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tms-map-accent) 8%, var(--tms-map-surface)) 0%, var(--tms-map-surface) 60%);
+    box-shadow: 0 4px 20px var(--tms-map-glow);
+}
