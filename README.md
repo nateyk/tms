@@ -37,10 +37,14 @@ GitHub: [https://github.com/nateyk/tms](https://github.com/nateyk/tms)
 ```bash
 git clone https://github.com/nateyk/tms.git
 cd tms
+composer install
+npm install
 cp .env.example .env
 php artisan key:generate
 # Configure DB_CONNECTION (sqlite or mysql)
 php artisan migrate:fresh --seed
+php artisan storage:link
+npm run build
 php artisan serve
 ```
 
@@ -161,11 +165,23 @@ Interactive **2D axle tyre diagram** (Konva.js) on each vehicle view — steer +
 - Power units: combined power + attached trailer maps
 - Color legend matches tyre status (active, empty, maintenance, etc.)
 
-After pulling map changes, run `npm run build` and refresh layouts:
+After pulling map changes, rebuild assets and refresh layouts:
 
 ```bash
-php artisan db:seed --class=TmsSampleDataSeeder
-# or: php artisan migrate:fresh --seed
+npm run build
+php artisan tms:refresh-tyre-layouts
+```
+
+### Fill gaps (install tyres quickly)
+
+From **Fleet → Vehicles**, use the **Fill gaps** button or the “Open positions” list. Each gap opens a pre-filled
+movement form.
+
+Optional CLI helper to auto-fill gaps using store tyres:
+
+```bash
+php artisan tms:fill-vehicle-gaps TRK-001
+php artisan tms:fill-vehicle-gaps --all
 ```
 
 ## Tyre registration & QR
@@ -175,6 +191,20 @@ php artisan db:seed --class=TmsSampleDataSeeder
 3. **QR Profile** link / scan page shows QR image  
 
 Run once: `php artisan storage:link`
+
+## Common commands
+
+```bash
+# Reset dev database
+php artisan migrate:fresh --seed
+
+# Run tests / analysis
+composer test
+composer analyse
+
+# Rebuild assets
+npm run build
+```
 
 ## Maintenance workflow
 
