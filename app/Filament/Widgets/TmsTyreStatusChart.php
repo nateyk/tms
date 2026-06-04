@@ -12,12 +12,9 @@ class TmsTyreStatusChart extends ChartWidget
 
     protected ?string $heading = 'Tyres by Status';
 
-    protected ?string $maxHeight = '320px';
+    protected ?string $maxHeight = '240px';
 
-    protected int|string|array $columnSpan = [
-        'default' => 'full',
-        'md' => 1,
-    ];
+    protected int|string|array $columnSpan = 1;
 
     protected function getType(): string
     {
@@ -43,12 +40,12 @@ class TmsTyreStatusChart extends ChartWidget
             $labels[] = $status->label();
             $data[] = $count;
             $colors[] = match ($status) {
-                TyreStatus::Active => '#16a34a',
+                TyreStatus::Active => '#0f9f8f',
                 TyreStatus::Available => '#2563eb',
-                TyreStatus::Maintenance => '#ea580c',
+                TyreStatus::Maintenance => '#f59e0b',
                 TyreStatus::Damaged => '#dc2626',
-                TyreStatus::Disposed => '#1f2937',
-                TyreStatus::PendingApproval => '#ca8a04',
+                TyreStatus::Disposed => '#334155',
+                TyreStatus::PendingApproval => '#a16207',
             };
         }
 
@@ -61,6 +58,18 @@ class TmsTyreStatusChart extends ChartWidget
                 ],
             ],
             'labels' => $labels,
+        ];
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'cutout' => '62%',
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                ],
+            ],
         ];
     }
 }

@@ -23,16 +23,15 @@ class TyreMapWorkflowService
 
     public function locationTypeForVehicle(Vehicle $vehicle): TyreLocationType
     {
-        return match ($vehicle->asset_type) {
-            AssetType::Trailer => TyreLocationType::Trailer,
-            AssetType::PowerVehicle, AssetType::RigidTruck => TyreLocationType::PowerVehicle,
+        $assetType = $this->assetTypeValue($vehicle);
+
+        return match ($assetType) {
+            AssetType::Trailer->value => TyreLocationType::Trailer,
+            AssetType::PowerVehicle->value, AssetType::RigidTruck->value => TyreLocationType::PowerVehicle,
             default => TyreLocationType::PowerVehicle,
         };
     }
 
-    /**
-     * @return Collection<int, array{code: string, label: string, axle: int|null, side: string|null, dual: string|null}>
-     */
     public function emptyPositions(Vehicle $vehicle): Collection
     {
         $vehicle->loadMissing('vehicleType');
@@ -52,11 +51,12 @@ class TyreMapWorkflowService
             ->filter(fn (array $position) => ! $occupied->has($position['code']))
             ->values()
             ->map(fn (array $position) => [
-                'code' => $position['code'],
-                'label' => $position['label'] ?? $position['code'],
-                'axle' => $position['axle'] ?? null,
-                'side' => $position['side'] ?? null,
-                'dual' => $position['dual'] ?? null,
+                'code' => (string) $position['code'],
+                'display_code' => (string) ($position['display_code'] ?? $position['code']),
+                'label' => (string) ($position['label'] ?? $position['code']),
+                'axle' => isset($position['axle']) ? (int) $position['axle'] : null,
+                'side' => isset($position['side']) ? (string) $position['side'] : null,
+                'dual' => isset($position['dual']) ? (string) $position['dual'] : null,
             ]);
     }
 
@@ -70,10 +70,16 @@ class TyreMapWorkflowService
             return [];
         }
 
-        $prefix = $vehicle->asset_type === AssetType::Trailer ? 'T' : ($vehicle->asset_type === AssetType::RigidTruck ? 'R' : 'P');
+        $assetType = $this->assetTypeValue($vehicle);
+        $prefix = match ($assetType) {
+            AssetType::Trailer->value => 'T',
+            AssetType::RigidTruck->value => 'R',
+            default => 'P',
+        };
+        $layoutJson = is_array($vehicleType->layout_json) ? $vehicleType->layout_json : null;
 
         return $this->layoutBuilder->resolvePositions(
-            $vehicleType->layout_json,
+            $layoutJson,
             (int) $vehicleType->tyre_count,
             (int) $vehicleType->axle_count,
             $prefix,
@@ -93,8 +99,9 @@ class TyreMapWorkflowService
         $options = [];
         foreach ($this->resolveLayoutPositions($vehicle) as $position) {
             $code = $position['code'];
+            $displayCode = $position['display_code'] ?? $code;
             $label = $position['label'] ?? $code;
-            $options[$code] = "{$code} — {$label}";
+            $options[$code] = "{$displayCode} — {$label} ({$code})";
         }
 
         return $options;
@@ -161,12 +168,21 @@ class TyreMapWorkflowService
             $tyre = Tyre::query()->find($tyreId);
             if ($tyre) {
                 $data['tyre_id'] = $tyreId;
-                $data['from_location_type'] = $tyre->current_location_type?->value;
+                $data['from_location_type'] = $tyre->current_location_type instanceof TyreLocationType
+                    ? $tyre->current_location_type->value
+                    : (string) $tyre->current_location_type;
                 $data['from_location_id'] = $tyre->current_location_id;
                 $data['from_position_code'] = $tyre->current_position_code;
             }
         }
 
         return $data;
+    }
+
+    private function assetTypeValue(Vehicle $vehicle): string
+    {
+        return $vehicle->asset_type instanceof AssetType
+            ? $vehicle->asset_type->value
+            : (string) $vehicle->asset_type;
     }
 }

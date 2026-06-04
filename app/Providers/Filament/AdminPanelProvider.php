@@ -35,12 +35,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Menkem TMS')
             ->brandLogoHeight('2rem')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
                 'gray' => Color::Zinc,
             ])
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('17rem')
+            ->sidebarWidth('16.25rem')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.hooks.head'))
             ->navigationGroups([

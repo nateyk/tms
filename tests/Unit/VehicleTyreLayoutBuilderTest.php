@@ -16,9 +16,11 @@ class VehicleTyreLayoutBuilderTest extends TestCase
 
         $this->assertCount(10, $positions);
         $this->assertSame('P1', $positions[0]['code']);
+        $this->assertSame('A', $positions[0]['display_code']);
         $this->assertSame(1, $positions[0]['axle']);
         $this->assertSame('single', $positions[0]['dual']);
         $this->assertSame('P10', $positions[9]['code']);
+        $this->assertSame('J', $positions[9]['display_code']);
         $this->assertSame(3, $positions[9]['axle']);
     }
 
@@ -30,8 +32,32 @@ class VehicleTyreLayoutBuilderTest extends TestCase
 
         $this->assertCount(12, $positions);
         $this->assertSame('T1', $positions[0]['code']);
+        $this->assertSame('A', $positions[0]['display_code']);
         $this->assertSame('left', $positions[0]['side']);
         $this->assertSame('outer', $positions[0]['dual']);
+        $this->assertSame('L', $positions[11]['display_code']);
+    }
+
+    #[Test]
+    public function it_preserves_internal_position_codes_while_exposing_paper_labels(): void
+    {
+        $builder = new VehicleTyreLayoutBuilder;
+        $positions = $builder->buildLayout(24, 6, 'P')['positions'];
+
+        $this->assertSame('P1', $positions[0]['code']);
+        $this->assertSame('A', $positions[0]['display_code']);
+        $this->assertSame('P11', $positions[10]['code']);
+        $this->assertSame('W', $positions[10]['display_code']);
+        $this->assertSame('center', $positions[10]['side']);
+        $this->assertSame('Spare wheel between 1st and 2nd group', $positions[10]['label']);
+        $this->assertSame('P16', $positions[15]['code']);
+        $this->assertSame('X', $positions[15]['display_code']);
+        $this->assertSame('center', $positions[15]['side']);
+        $this->assertSame('Spare wheel between tag and rear group', $positions[15]['label']);
+        $this->assertSame('P24', $positions[23]['code']);
+        $this->assertSame('V', $positions[23]['display_code']);
+        $this->assertLessThan($positions[4]['y'], $positions[0]['y']);
+        $this->assertLessThan($positions[20]['y'], $positions[15]['y']);
     }
 
     #[Test]

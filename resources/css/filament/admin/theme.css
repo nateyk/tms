@@ -9,60 +9,143 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Full-width, breathable layout — rely on .fi-body for page background (gray-50 / gray-950) */
+.fi-body {
+    @apply bg-[#f7f8fb] text-gray-950 dark:bg-gray-950 dark:text-white;
+}
+
 .fi-main-ctn {
-    @apply w-full max-w-none px-4 py-6 sm:px-6 lg:px-8 xl:px-10;
+    @apply mx-auto w-full max-w-[76rem] px-4 py-4 sm:px-5 lg:px-6;
 }
 
 .fi-page {
-    @apply w-full max-w-none gap-y-8;
+    @apply w-full gap-y-4;
 }
 
 .fi-page-header {
-    @apply mb-2;
+    @apply mb-0 px-0 py-1;
 }
 
 .fi-header-heading {
-    @apply text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl dark:text-white;
+    @apply text-xl font-semibold tracking-tight text-gray-950 sm:text-2xl dark:text-white;
 }
 
-/* Sidebar — border only; keep Filament’s responsive bg (incl. lg:bg-transparent on desktop) */
+.fi-breadcrumbs {
+    @apply text-gray-500 dark:text-gray-400;
+}
+
+.fi-topbar {
+    @apply border-b border-gray-200/80 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/85;
+}
+
 .fi-sidebar {
-    @apply border-e border-gray-200/80 dark:border-gray-800;
+    @apply border-e border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950;
+}
+
+.fi-sidebar-header {
+    @apply h-16 border-b border-gray-100 px-3 dark:border-gray-900;
 }
 
 .fi-sidebar-nav {
-    @apply gap-y-1 px-3 py-4;
+    @apply gap-y-0.5 px-2.5 py-3;
+}
+
+.fi-sidebar-group-label {
+    @apply px-2 text-[0.62rem] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
+}
+
+.fi-sidebar-item a {
+    @apply rounded-md px-2.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white;
 }
 
 .fi-sidebar-item-active a {
-    @apply rounded-lg bg-amber-50 font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-100;
-}
-
-/* Stats widgets — subtle hover; Filament owns card surfaces and dark rings */
-.fi-wi-stats-overview-stat {
-    @apply transition-shadow hover:shadow-md;
-}
-
-/* Topbar */
-.fi-topbar {
-    @apply border-b border-gray-200/80 backdrop-blur-md dark:border-gray-800;
+    @apply bg-blue-50 font-semibold text-blue-800 ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-100 dark:ring-blue-900/60;
 }
 
 .fi-topbar-item-label {
     @apply hidden sm:inline;
 }
 
-/* Tables — use horizontal space */
-.fi-ta-ctn {
-    @apply rounded-xl border border-gray-200/80 shadow-sm dark:border-gray-800;
+.fi-topbar .fi-input-wrp {
+    @apply h-9 rounded-md border-gray-200 bg-white shadow-none dark:border-gray-800 dark:bg-gray-900;
 }
 
-/* TMS custom page shell */
+.fi-section,
+.fi-wi-widget > section,
+.fi-ta-ctn {
+    @apply rounded-md border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900;
+}
+
+.fi-section-header {
+    @apply border-b border-gray-100 dark:border-gray-800;
+}
+
+.fi-wi-stats-overview {
+    @apply gap-3;
+}
+
+.fi-wi-stats-overview-stat {
+    @apply relative min-h-28 overflow-hidden rounded-md border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-0.5 bg-blue-600;
+}
+
+.fi-wi-stats-overview-stat-value {
+    @apply text-xl font-semibold tracking-tight;
+}
+
+.fi-wi-stats-overview-stat-label {
+    @apply text-xs font-semibold text-gray-600 dark:text-gray-300;
+}
+
+.fi-wi-stats-overview-stat-description {
+    @apply text-xs leading-5 text-gray-500 dark:text-gray-400;
+}
+
+.fi-wi-chart {
+    @apply overflow-hidden rounded-md border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-gray-800 dark:bg-gray-900;
+}
+
+.fi-wi-chart header {
+    @apply px-4 py-3;
+}
+
+.fi-wi-chart h3 {
+    @apply text-sm font-semibold;
+}
+
+.fi-wi-chart p {
+    @apply text-xs leading-5 text-gray-500 dark:text-gray-400;
+}
+
+.fi-wi-chart > section {
+    @apply shadow-none;
+}
+
+.fi-ta-header,
+.fi-ta-content {
+    @apply bg-white dark:bg-gray-900;
+}
+
+.fi-ta-row {
+    @apply transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-950/20;
+}
+
+.fi-btn {
+    @apply rounded-md;
+}
+
+.fi-input-wrp,
+.fi-fo-field-wrp .choices__inner {
+    @apply rounded-md;
+}
+
 .tms-page {
-    @apply w-full max-w-none space-y-8;
+    @apply w-full space-y-5;
 }
 
 .tms-page-intro {
-    @apply text-sm text-gray-600 dark:text-gray-400;
+    @apply text-sm leading-6 text-gray-600 dark:text-gray-400;
 }

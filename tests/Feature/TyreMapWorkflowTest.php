@@ -24,9 +24,10 @@ class TyreMapWorkflowTest extends TestCase
     {
         $layout = app(VehicleTyreLayoutBuilder::class)->buildLayout(10, 3, 'P');
 
-        $this->assertSame(3, $layout['layout_version']);
+        $this->assertSame(VehicleTyreLayoutBuilder::LAYOUT_VERSION, $layout['layout_version']);
         $this->assertCount(10, $layout['positions']);
         $this->assertSame('P1', $layout['positions'][0]['code']);
+        $this->assertSame('A', $layout['positions'][0]['display_code']);
         $this->assertSame('single', $layout['positions'][0]['dual']);
         $this->assertSame('outer', $layout['positions'][2]['dual']);
     }

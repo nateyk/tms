@@ -44,6 +44,7 @@ class TmsSampleDataSeeder extends Seeder
 
         $layoutBuilder = app(VehicleTyreLayoutBuilder::class);
         $powerLayout = $layoutBuilder->buildLayout(10, 3, 'P');
+        $heavyTruckLayout = $layoutBuilder->buildLayout(24, 6, 'P');
         $trailerLayout = $layoutBuilder->buildLayout(12, 3, 'T');
         $rigidLayout = $layoutBuilder->buildLayout(6, 2, 'R');
 
@@ -65,6 +66,17 @@ class TmsSampleDataSeeder extends Seeder
                 'axle_count' => 3,
                 'tyre_count' => 12,
                 'layout_json' => $trailerLayout,
+                'status' => 'active',
+            ]
+        );
+
+        $heavyTruckType = VehicleType::query()->updateOrCreate(
+            ['name' => 'Heavy Truck 24 Tyres + 2 Spares'],
+            [
+                'asset_type' => AssetType::PowerVehicle->value,
+                'axle_count' => 6,
+                'tyre_count' => 24,
+                'layout_json' => $heavyTruckLayout,
                 'status' => 'active',
             ]
         );
@@ -102,6 +114,17 @@ class TmsSampleDataSeeder extends Seeder
             ]
         );
 
+        $trk024 = Vehicle::query()->firstOrCreate(
+            ['vehicle_code' => 'TRK-024'],
+            [
+                'plate_number' => 'AA-024-HTK',
+                'asset_type' => AssetType::PowerVehicle,
+                'vehicle_type_id' => $heavyTruckType->id,
+                'status' => VehicleStatus::Active,
+                'odometer' => 186400,
+            ]
+        );
+
         $trl045 = Vehicle::query()->firstOrCreate(
             ['vehicle_code' => 'TRL-045'],
             [
@@ -128,7 +151,7 @@ class TmsSampleDataSeeder extends Seeder
         $brand = TyreBrand::query()->first();
         $size = TyreSize::query()->first();
 
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 60; $i++) {
             $code = sprintf('TYR-%04d', $i);
             Tyre::query()->firstOrCreate(
                 ['tyre_code' => $code],
@@ -150,6 +173,7 @@ class TmsSampleDataSeeder extends Seeder
 
         $this->assignTyresToVehicle($trk001, AssignmentAssetType::PowerVehicle, 6, $admin?->id);
         $this->assignTyresToVehicle($trl045, AssignmentAssetType::Trailer, 8, $admin?->id, 7);
+        $this->assignTyresToVehicle($trk024, AssignmentAssetType::PowerVehicle, 24, $admin?->id, 21);
     }
 
     private function assignTyresToVehicle(
@@ -160,8 +184,6 @@ class TmsSampleDataSeeder extends Seeder
         int $tyreOffset = 1
     ): void {
         $tyres = Tyre::query()
-            ->where('status', TyreStatus::Available)
-            ->where('current_location_type', TyreLocationType::Store)
             ->orderBy('tyre_code')
             ->skip($tyreOffset - 1)
             ->take($count)
@@ -173,16 +195,20 @@ class TmsSampleDataSeeder extends Seeder
         foreach ($tyres as $index => $tyre) {
             $position = $positionCodes[$index] ?? 'P'.($index + 1);
 
-            TyreAssignment::query()->create([
-                'tyre_id' => $tyre->id,
-                'asset_type' => $assetType,
-                'asset_id' => $vehicle->id,
-                'position_code' => $position,
-                'installed_date' => now()->subMonths(1)->toDateString(),
-                'installed_odometer' => $vehicle->odometer ?? 0,
-                'status' => TyreAssignmentStatus::Active,
-                'installed_by' => $userId,
-            ]);
+            TyreAssignment::query()->updateOrCreate(
+                [
+                    'asset_id' => $vehicle->id,
+                    'position_code' => $position,
+                    'status' => TyreAssignmentStatus::Active,
+                ],
+                [
+                    'tyre_id' => $tyre->id,
+                    'asset_type' => $assetType,
+                    'installed_date' => now()->subMonths(1)->toDateString(),
+                    'installed_odometer' => $vehicle->odometer ?? 0,
+                    'installed_by' => $userId,
+                ]
+            );
 
             $locationType = $assetType === AssignmentAssetType::Trailer
                 ? TyreLocationType::Trailer

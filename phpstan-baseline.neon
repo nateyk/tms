@@ -103,12 +103,6 @@ parameters:
 			path: app/Filament/Resources/TyreMovements/Schemas/TyreMovementForm.php
 
 		-
-			message: '#^Cannot access property \$asset_type on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Filament/Resources/Vehicles/Pages/ViewVehicle.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trailer\.$#'
 			identifier: property.notFound
 			count: 1

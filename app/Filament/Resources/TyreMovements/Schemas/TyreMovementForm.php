@@ -63,7 +63,13 @@ class TyreMovementForm
                                     ])
                                     ->orderBy('tyre_code'),
                             )
-                            ->getOptionLabelFromRecordUsing(fn (Tyre $record) => "{$record->tyre_code} · {$record->status->label()}")
+                            ->getOptionLabelFromRecordUsing(function (Tyre $record): string {
+                                $status = $record->status instanceof TyreStatus
+                                    ? $record->status
+                                    : TyreStatus::tryFrom((string) $record->status);
+
+                                return "{$record->tyre_code} - ".($status?->label() ?? 'Unknown');
+                            })
                             ->searchable(['tyre_code', 'serial_number'])
                             ->preload()
                             ->required()

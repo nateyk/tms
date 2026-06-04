@@ -8,6 +8,7 @@ use App\Enums\TyreStatus;
 use App\Filament\Resources\TyreMovements\TyreMovementResource;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
+use App\Models\TyreBrand;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Services\TyreMapWorkflowService;
@@ -51,13 +52,23 @@ class VehicleTyreMap extends Component
         $layoutBuilder = app(VehicleTyreLayoutBuilder::class);
 
         $vehicleType = $vehicle->vehicleType;
-        $prefix = $vehicle->asset_type === AssetType::Trailer ? 'T' : ($vehicle->asset_type === AssetType::RigidTruck ? 'R' : 'P');
+        $assetType = $vehicle->asset_type instanceof AssetType
+            ? $vehicle->asset_type->value
+            : (string) $vehicle->asset_type;
+        $prefix = match ($assetType) {
+            AssetType::Trailer->value => 'T',
+            AssetType::RigidTruck->value => 'R',
+            default => 'P',
+        };
         $tyreCount = $vehicleType instanceof VehicleType ? (int) $vehicleType->tyre_count : 0;
         $axleCount = $vehicleType instanceof VehicleType ? (int) $vehicleType->axle_count : 1;
+        $layoutJson = $vehicleType instanceof VehicleType && is_array($vehicleType->layout_json)
+            ? $vehicleType->layout_json
+            : null;
 
         $positions = $vehicleType instanceof VehicleType
             ? $layoutBuilder->resolvePositions(
-                $vehicleType->layout_json,
+                $layoutJson,
                 $tyreCount,
                 $axleCount,
                 $prefix,
@@ -71,13 +82,26 @@ class VehicleTyreMap extends Component
             ->get()
             ->keyBy('position_code');
 
-        $mapData = collect($positions)->map(function (array $position) use ($assignments, $workflow, $vehicle) {
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $positionCollection */
+        $positionCollection = collect($positions);
+
+        $mapData = $positionCollection->map(function (array $position) use ($assignments, $workflow, $vehicle) {
             $assignment = $assignments->get($position['code']);
             $tyre = $assignment?->tyre;
+            if (! $tyre instanceof Tyre) {
+                $tyre = null;
+            }
+
+            $brand = $tyre?->brand;
+            if (! $brand instanceof TyreBrand) {
+                $brand = null;
+            }
+
             $tyreStatus = $this->resolveTyreStatus($tyre);
 
             return [
                 'code' => $position['code'],
+                'display_code' => $position['display_code'] ?? $position['code'],
                 'label' => $position['label'] ?? $position['code'],
                 'axle' => $position['axle'] ?? null,
                 'side' => $position['side'] ?? null,
@@ -87,7 +111,7 @@ class VehicleTyreMap extends Component
                 'tyre_code' => $tyre instanceof Tyre ? $tyre->tyre_code : null,
                 'tyre_id' => $tyre instanceof Tyre ? $tyre->id : null,
                 'serial_number' => $tyre instanceof Tyre ? $tyre->serial_number : null,
-                'brand' => $tyre?->brand?->name,
+                'brand' => $brand?->name,
                 'tread_depth' => $tyre instanceof Tyre ? $tyre->current_tread_depth : null,
                 'status' => $tyreStatus?->label() ?? 'Empty',
                 'status_value' => $tyreStatus !== null ? $tyreStatus->value : 'empty',
@@ -105,6 +129,7 @@ class VehicleTyreMap extends Component
         $konvaConfig = [
             'slots' => $mapData->map(fn (array $slot) => [
                 'code' => $slot['code'],
+                'display_code' => $slot['display_code'],
                 'label' => $slot['label'],
                 'axle' => $slot['axle'],
                 'side' => $slot['side'],
@@ -115,6 +140,7 @@ class VehicleTyreMap extends Component
                 'color' => $slot['color'],
             ])->values()->all(),
             'selectedPosition' => $this->selectedPosition,
+            'assetType' => $assetType,
         ];
 
         return view('livewire.vehicle-tyre-map', [

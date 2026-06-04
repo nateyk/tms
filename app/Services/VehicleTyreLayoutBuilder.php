@@ -9,7 +9,7 @@ namespace App\Services;
  */
 class VehicleTyreLayoutBuilder
 {
-    public const LAYOUT_VERSION = 3;
+    public const LAYOUT_VERSION = 4;
 
     public const STAGE_WIDTH = 880;
 
@@ -24,6 +24,7 @@ class VehicleTyreLayoutBuilder
             6 => $this->layoutSixTyres($prefix),
             10 => $this->layoutTenTyres($prefix),
             12 => $this->layoutTwelveTyres($prefix),
+            24 => $this->layoutTwentyFourTyres($prefix),
             default => $this->layoutGridFallback($tyreCount, $prefix),
         };
 
@@ -145,6 +146,56 @@ class VehicleTyreLayoutBuilder
     }
 
     /**
+     * Paper form layout A-V with center spare tyres W and X.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function layoutTwentyFourTyres(string $prefix): array
+    {
+        $template = [
+            ['A', 1, 'left', 'single', 'Front Left'],
+            ['B', 1, 'right', 'single', 'Front Right'],
+            ['C', 2, 'left', 'outer', '1st Drive Axle Left Outer'],
+            ['D', 2, 'left', 'inner', '1st Drive Axle Left Inner'],
+            ['E', 2, 'right', 'inner', '1st Drive Axle Right Inner'],
+            ['F', 2, 'right', 'outer', '1st Drive Axle Right Outer'],
+            ['G', 3, 'left', 'outer', '2nd Drive Axle Left Outer'],
+            ['H', 3, 'left', 'inner', '2nd Drive Axle Left Inner'],
+            ['I', 3, 'right', 'inner', '2nd Drive Axle Right Inner'],
+            ['J', 3, 'right', 'outer', '2nd Drive Axle Right Outer'],
+            ['W', 4, 'center', 'single', 'Spare wheel between 1st and 2nd group'],
+            ['K', 5, 'left', 'outer', 'Tag Axle Left Outer'],
+            ['L', 5, 'left', 'inner', 'Tag Axle Left Inner'],
+            ['M', 5, 'right', 'inner', 'Tag Axle Right Inner'],
+            ['N', 5, 'right', 'outer', 'Tag Axle Right Outer'],
+            ['X', 6, 'center', 'single', 'Spare wheel between tag and rear group'],
+            ['O', 7, 'left', 'outer', 'Rear Axle Left Outer'],
+            ['P', 7, 'left', 'inner', 'Rear Axle Left Inner'],
+            ['Q', 7, 'right', 'inner', 'Rear Axle Right Inner'],
+            ['R', 7, 'right', 'outer', 'Rear Axle Right Outer'],
+            ['S', 8, 'left', 'outer', 'Rear Axle Left Outer (Rear)'],
+            ['T', 8, 'left', 'inner', 'Rear Axle Left Inner (Rear)'],
+            ['U', 8, 'right', 'inner', 'Rear Axle Right Inner (Rear)'],
+            ['V', 8, 'right', 'outer', 'Rear Axle Right Outer (Rear)'],
+        ];
+
+        $positions = [];
+        foreach ($template as $index => [$displayCode, $axle, $side, $dual, $label]) {
+            $positions[] = $this->slot(
+                sprintf('%s%d', $prefix, $index + 1),
+                $label,
+                $axle,
+                $side,
+                $dual,
+                null,
+                $displayCode
+            );
+        }
+
+        return $positions;
+    }
+
+    /**
      * @return list<array<string, mixed>>
      */
     protected function layoutGridFallback(int $tyreCount, string $prefix): array
@@ -158,7 +209,8 @@ class VehicleTyreLayoutBuilder
                 "Position {$prefix}{$i}",
                 max(1, $axle),
                 $i % 2 === 1 ? 'left' : 'right',
-                'single'
+                'single',
+                $i
             );
         }
 
@@ -174,11 +226,15 @@ class VehicleTyreLayoutBuilder
         int $axle,
         string $side,
         string $dual,
+        ?int $displayIndex = null,
+        ?string $displayCode = null,
     ): array {
         [$x, $y] = $this->coordinates($axle, $side, $dual);
+        $displayCode ??= $this->paperDisplayCode($displayIndex ?? (int) preg_replace('/\D+/', '', $code));
 
         return [
             'code' => $code,
+            'display_code' => $displayCode,
             'label' => $label,
             'axle' => $axle,
             'side' => $side,
@@ -196,14 +252,13 @@ class VehicleTyreLayoutBuilder
     protected function coordinates(int $axle, string $side, string $dual): array
     {
         $centerX = (int) (self::STAGE_WIDTH / 2);
-        $y = match ($axle) {
-            1 => 108,
-            2 => 268,
-            3 => 428,
-            default => 108 + (($axle - 1) * 160),
-        };
+        $y = 88 + (($axle - 1) * 86);
 
         if ($dual === 'single') {
+            if ($side === 'center') {
+                return [$centerX, $y];
+            }
+
             return [$side === 'left' ? 96 : self::STAGE_WIDTH - 96, $y];
         }
 
@@ -221,5 +276,14 @@ class VehicleTyreLayoutBuilder
         }
 
         return [$x, $y];
+    }
+
+    protected function paperDisplayCode(int $index): string
+    {
+        if ($index >= 1 && $index <= 26) {
+            return chr(64 + $index);
+        }
+
+        return (string) $index;
     }
 }

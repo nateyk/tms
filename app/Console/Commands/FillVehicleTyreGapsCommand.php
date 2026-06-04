@@ -8,6 +8,7 @@ use App\Enums\TyreSource;
 use App\Enums\TyreStatus;
 use App\Models\Store;
 use App\Models\Tyre;
+use App\Models\TyreMovement;
 use App\Models\TyreBrand;
 use App\Models\TyreSize;
 use App\Models\User;
@@ -76,6 +77,13 @@ class FillVehicleTyreGapsCommand extends Command
                 $movement = $approval->submit($movement);
                 $movement = $approval->check($movement);
                 $movement = $approval->approve($movement);
+
+                if (! $movement instanceof TyreMovement) {
+                    $this->error('Approval workflow returned an unexpected record type.');
+
+                    return self::FAILURE;
+                }
+
                 $approval->completeMovement($movement);
 
                 $this->line("  ✓ {$slot['code']} ← {$tyre->tyre_code}");

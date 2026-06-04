@@ -11,12 +11,9 @@ class TmsMovementsTrendChart extends ChartWidget
 
     protected ?string $heading = 'Completed Movements (8 weeks)';
 
-    protected ?string $maxHeight = '320px';
+    protected ?string $maxHeight = '240px';
 
-    protected int|string|array $columnSpan = [
-        'default' => 'full',
-        'md' => 1,
-    ];
+    protected int|string|array $columnSpan = 1;
 
     protected function getType(): string
     {
@@ -32,10 +29,30 @@ class TmsMovementsTrendChart extends ChartWidget
                 [
                     'label' => 'Movements',
                     'data' => $trend['data'],
-                    'backgroundColor' => '#d97706',
+                    'backgroundColor' => '#2563eb',
+                    'borderRadius' => 4,
                 ],
             ],
             'labels' => $trend['labels'],
+        ];
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => false,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'grid' => ['display' => false],
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                ],
+            ],
         ];
     }
 }

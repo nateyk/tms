@@ -1,66 +1,67 @@
 import Konva from 'konva';
 
-const DESIGN_WIDTH = 880;
-const DESIGN_HEIGHT = 600;
+const DESIGN_WIDTH = 520;
+const DESIGN_HEIGHT = 1510;
+const BODY_X = 192;
+const BODY_W = 136;
+const BODY_TOP = 34;
+const BODY_BOTTOM = 1478;
+const BADGE = '#0a3972';
+const TRAILER_DESIGN = { width: 520, height: 760 };
 
-const TYRE_RX = 20;
-const TYRE_RY = 38;
-
-const STATUS = {
-    green: {
-        fill: ['#4ade80', '#16a34a'],
-        stroke: '#15803d',
-        tread: '#14532d',
-        text: '#052e16',
-        glow: 'rgba(34, 197, 94, 0.35)',
-    },
-    blue: {
-        fill: ['#60a5fa', '#2563eb'],
-        stroke: '#1d4ed8',
-        tread: '#1e3a8a',
-        text: '#1e3a8a',
-        glow: 'rgba(59, 130, 246, 0.35)',
-    },
-    orange: {
-        fill: ['#fb923c', '#ea580c'],
-        stroke: '#c2410c',
-        tread: '#7c2d12',
-        text: '#431407',
-        glow: 'rgba(249, 115, 22, 0.35)',
-    },
-    red: {
-        fill: ['#f87171', '#dc2626'],
-        stroke: '#b91c1c',
-        tread: '#7f1d1d',
-        text: '#450a0a',
-        glow: 'rgba(239, 68, 68, 0.35)',
-    },
-    yellow: {
-        fill: ['#facc15', '#ca8a04'],
-        stroke: '#a16207',
-        tread: '#713f12',
-        text: '#422006',
-        glow: 'rgba(234, 179, 8, 0.35)',
-    },
-    black: {
-        fill: ['#6b7280', '#374151'],
-        stroke: '#1f2937',
-        tread: '#030712',
-        text: '#f9fafb',
-        glow: 'rgba(55, 65, 81, 0.4)',
-    },
-    gray: {
-        fill: ['#f8fafc', '#e2e8f0'],
-        stroke: '#94a3b8',
-        tread: '#64748b',
-        text: '#475569',
-        glow: 'rgba(148, 163, 184, 0.25)',
-    },
+const SLOTS = {
+    A: { kind: 'wheel', tire: [106, 190, 50, 112], badge: [48, 218], side: 'left' },
+    B: { kind: 'wheel', tire: [364, 190, 50, 112], badge: [462, 218], side: 'right' },
+    C: { kind: 'wheel', tire: [90, 398, 42, 120], badge: [48, 412], side: 'left' },
+    D: { kind: 'wheel', tire: [132, 398, 42, 120], badge: [48, 466], side: 'left' },
+    E: { kind: 'wheel', tire: [344, 398, 42, 120], badge: [462, 412], side: 'right' },
+    F: { kind: 'wheel', tire: [386, 398, 42, 120], badge: [462, 466], side: 'right' },
+    G: { kind: 'wheel', tire: [90, 578, 42, 120], badge: [48, 592], side: 'left' },
+    H: { kind: 'wheel', tire: [132, 578, 42, 120], badge: [48, 646], side: 'left' },
+    I: { kind: 'wheel', tire: [344, 578, 42, 120], badge: [462, 592], side: 'right' },
+    J: { kind: 'wheel', tire: [386, 578, 42, 120], badge: [462, 646], side: 'right' },
+    W: { kind: 'spare', wheel: [223, 742, 74], box: [198, 715, 124, 118], badge: [235, 808] },
+    K: { kind: 'wheel', tire: [90, 904, 42, 120], badge: [48, 918], side: 'left' },
+    L: { kind: 'wheel', tire: [132, 904, 42, 120], badge: [48, 972], side: 'left' },
+    M: { kind: 'wheel', tire: [344, 904, 42, 120], badge: [462, 918], side: 'right' },
+    N: { kind: 'wheel', tire: [386, 904, 42, 120], badge: [462, 972], side: 'right' },
+    X: { kind: 'spare', wheel: [223, 1096, 74], box: [198, 1069, 124, 118], badge: [235, 1162] },
+    O: { kind: 'wheel', tire: [90, 1244, 42, 120], badge: [48, 1258], side: 'left' },
+    P: { kind: 'wheel', tire: [132, 1244, 42, 120], badge: [48, 1312], side: 'left' },
+    Q: { kind: 'wheel', tire: [344, 1244, 42, 120], badge: [462, 1258], side: 'right' },
+    R: { kind: 'wheel', tire: [386, 1244, 42, 120], badge: [462, 1312], side: 'right' },
+    S: { kind: 'wheel', tire: [90, 1384, 42, 120], badge: [48, 1398], side: 'left' },
+    T: { kind: 'wheel', tire: [132, 1384, 42, 120], badge: [48, 1452], side: 'left' },
+    U: { kind: 'wheel', tire: [344, 1384, 42, 120], badge: [462, 1398], side: 'right' },
+    V: { kind: 'wheel', tire: [386, 1384, 42, 120], badge: [462, 1452], side: 'right' },
 };
 
-const SELECT = { stroke: '#f59e0b', glow: 'rgba(245, 158, 11, 0.45)' };
+const TRAILER_SLOTS = {
+    A: { kind: 'wheel', tire: [90, 150, 42, 120], badge: [48, 164], side: 'left' },
+    B: { kind: 'wheel', tire: [132, 150, 42, 120], badge: [48, 218], side: 'left' },
+    C: { kind: 'wheel', tire: [344, 150, 42, 120], badge: [462, 164], side: 'right' },
+    D: { kind: 'wheel', tire: [386, 150, 42, 120], badge: [462, 218], side: 'right' },
+    E: { kind: 'wheel', tire: [90, 340, 42, 120], badge: [48, 354], side: 'left' },
+    F: { kind: 'wheel', tire: [132, 340, 42, 120], badge: [48, 408], side: 'left' },
+    G: { kind: 'wheel', tire: [344, 340, 42, 120], badge: [462, 354], side: 'right' },
+    H: { kind: 'wheel', tire: [386, 340, 42, 120], badge: [462, 408], side: 'right' },
+    I: { kind: 'wheel', tire: [90, 530, 42, 120], badge: [48, 544], side: 'left' },
+    J: { kind: 'wheel', tire: [132, 530, 42, 120], badge: [48, 598], side: 'left' },
+    K: { kind: 'wheel', tire: [344, 530, 42, 120], badge: [462, 544], side: 'right' },
+    L: { kind: 'wheel', tire: [386, 530, 42, 120], badge: [462, 598], side: 'right' },
+};
 
-/** @type {Map<string, { select: (c: string|null) => void, resize: () => void, destroy: () => void }>} */
+const STATUS = {
+    green: '#16a34a',
+    blue: '#2563eb',
+    orange: '#ea580c',
+    red: '#dc2626',
+    yellow: '#ca8a04',
+    black: '#020617',
+    gray: '#94a3b8',
+};
+
+const SELECT = { stroke: '#f59e0b', fill: 'rgba(245, 158, 11, 0.16)' };
 const instances = new Map();
 
 function dark() {
@@ -70,470 +71,632 @@ function dark() {
 function palette() {
     return dark()
         ? {
-              canvas: ['#0c1222', '#111827'],
-              deck: '#1e293b',
-              deckStroke: '#334155',
-              chassis: '#273549',
-              chassisStroke: '#475569',
-              axle: '#64748b',
-              hub: '#334155',
-              hubStroke: '#94a3b8',
-              center: '#475569',
-              label: '#94a3b8',
-              labelStrong: '#e2e8f0',
-              dualBadge: '#1e293b',
-              dualBadgeText: '#94a3b8',
-              side: '#64748b',
-              ghost: '#334155',
+              paper: '#0b1220',
+              bodyFill: 'rgba(226, 232, 240, 0.12)',
+              bodyLine: 'rgba(203, 213, 225, 0.28)',
+              bodyShade: 'rgba(226, 232, 240, 0.2)',
+              glass: 'rgba(2, 6, 23, 0.72)',
+              axle: '#334155',
+              axleHi: '#94a3b8',
+              tyre: '#020617',
+              tyreSide: '#111827',
+              tread: '#475569',
           }
         : {
-              canvas: ['#f8fafc', '#eef2f7'],
-              deck: '#ffffff',
-              deckStroke: '#e2e8f0',
-              chassis: '#f1f5f9',
-              chassisStroke: '#cbd5e1',
-              axle: '#94a3b8',
-              hub: '#e2e8f0',
-              hubStroke: '#cbd5e1',
-              center: '#cbd5e1',
-              label: '#64748b',
-              labelStrong: '#334155',
-              dualBadge: '#f1f5f9',
-              dualBadgeText: '#64748b',
-              side: '#94a3b8',
-              ghost: '#cbd5e1',
+              paper: '#ffffff',
+              bodyFill: 'rgba(241, 245, 249, 0.72)',
+              bodyLine: 'rgba(148, 163, 184, 0.55)',
+              bodyShade: 'rgba(203, 213, 225, 0.72)',
+              glass: '#111827',
+              axle: '#45484d',
+              axleHi: '#aeb4bb',
+              tyre: '#111111',
+              tyreSide: '#2b2d31',
+              tread: '#6b7280',
           };
 }
 
-/**
- * @param {Konva.Group} root
- */
-function drawTyre(root, colors, empty, selected) {
-    const g = new Konva.Group({ listening: true });
+function displayCodeFor(slot) {
+    return String(slot.display_code || slot.label || slot.code);
+}
 
-    const glowRing = new Konva.Ellipse({
-        radiusX: TYRE_RX + 10,
-        radiusY: TYRE_RY + 10,
-        fill: SELECT.glow,
-        stroke: SELECT.stroke,
-        strokeWidth: 2.5,
-        visible: selected,
-    });
-    g.add(glowRing);
+function statusFor(slot) {
+    return STATUS[String(slot.color ?? 'gray')] ?? STATUS.gray;
+}
 
-    const casing = new Konva.Ellipse({
-        radiusX: TYRE_RX,
-        radiusY: TYRE_RY,
-        fillLinearGradientStartPoint: { x: -TYRE_RX, y: -TYRE_RY },
-        fillLinearGradientEndPoint: { x: TYRE_RX, y: TYRE_RY },
-        fillLinearGradientColorStops: empty
-            ? [0, 'transparent', 1, 'transparent']
-            : [0, colors.fill[0], 0.55, colors.fill[1], 1, colors.fill[1]],
-        stroke: selected ? SELECT.stroke : empty ? palette().ghost : colors.stroke,
-        strokeWidth: empty ? 2 : selected ? 3 : 2,
-        dash: empty ? [6, 4] : undefined,
-        shadowColor: empty ? 'transparent' : 'rgba(15,23,42,0.25)',
-        shadowBlur: selected ? 14 : 8,
-        shadowOffset: { x: 0, y: 3 },
-        shadowOpacity: empty ? 0 : 0.5,
-    });
-    g.add(casing);
+function layoutFor(slot, mode) {
+    const code = displayCodeFor(slot);
 
-    if (!empty) {
-        g.add(
-            new Konva.Ellipse({
-                radiusX: TYRE_RX - 3,
-                radiusY: TYRE_RY - 3,
-                stroke: colors.stroke,
-                strokeWidth: 1,
-                opacity: 0.35,
-            }),
-        );
-
-        const treadTop = -TYRE_RY + 10;
-        const treadH = TYRE_RY * 2 - 20;
-        for (let i = 0; i < 7; i++) {
-            const y = treadTop + i * (treadH / 7);
-            g.add(
-                new Konva.Line({
-                    points: [-TYRE_RX + 6, y, TYRE_RX - 6, y + 2],
-                    stroke: colors.tread,
-                    strokeWidth: 1.4,
-                    opacity: 0.35,
-                    lineCap: 'round',
-                }),
-            );
-        }
-
-        g.add(
-            new Konva.Rect({
-                x: -TYRE_RX + 8,
-                y: -4,
-                width: (TYRE_RX - 8) * 2,
-                height: 8,
-                fill: colors.tread,
-                opacity: 0.12,
-                cornerRadius: 2,
-            }),
-        );
+    if (mode === 'trailer' && TRAILER_SLOTS[code]) {
+        return TRAILER_SLOTS[code];
     }
 
-    root.add(g);
+    if (SLOTS[code]) {
+        return SLOTS[code];
+    }
 
-    return { group: g, casing, glowRing };
+    const side = String(slot.side ?? 'left');
+    const axle = Number(slot.axle || 1);
+    const y = 190 + (axle - 1) * 170;
+    return {
+        kind: 'wheel',
+        tire: side === 'right' ? [364, y, 50, 112] : [106, y, 50, 112],
+        badge: side === 'right' ? [462, y + 28] : [48, y + 28],
+        side,
+    };
 }
 
-/**
- * @param {Konva.Layer} layer
- * @param {Array<Record<string, unknown>>} slots
- * @param {ReturnType<typeof palette>} p
- */
-function drawDualMounts(layer, slots, p) {
-    const groups = new Map();
-
-    slots.forEach((s) => {
-        if (s.dual === 'single') {
-            return;
-        }
-        const k = `${s.axle}-${s.side}`;
-        if (!groups.has(k)) {
-            groups.set(k, []);
-        }
-        groups.get(k).push(s);
-    });
-
-    groups.forEach((pair) => {
-        if (pair.length < 2) {
-            return;
-        }
-        const xs = pair.map((s) => Number(s.x)).sort((a, b) => a - b);
-        const y = Number(pair[0].y);
-        const x1 = xs[0];
-        const x2 = xs[xs.length - 1];
-        const padX = TYRE_RX + 6;
-        const padY = TYRE_RY + 14;
-
-        layer.add(
-            new Konva.Rect({
-                x: x1 - padX,
-                y: y - padY,
-                width: x2 - x1 + padX * 2,
-                height: padY * 2,
-                cornerRadius: 12,
-                fill: p.dualBadge,
-                stroke: p.deckStroke,
-                strokeWidth: 1,
-                opacity: 0.85,
-            }),
-        );
-    });
+function designFor(mode) {
+    return mode === 'trailer'
+        ? TRAILER_DESIGN
+        : { width: DESIGN_WIDTH, height: DESIGN_HEIGHT };
 }
 
-function drawChassis(layer, p) {
-    const cx = DESIGN_WIDTH / 2;
+function drawFrame(layer, p, design) {
     layer.add(
-        new Konva.Line({
-            points: [
-                cx, 78,
-                cx - 52, 120,
-                cx - 58, DESIGN_HEIGHT - 72,
-                cx + 58, DESIGN_HEIGHT - 72,
-                cx + 52, 120,
-                cx, 78,
-            ],
-            closed: true,
-            fill: p.chassis,
-            stroke: p.chassisStroke,
-            strokeWidth: 1.5,
-            opacity: 0.9,
-        }),
-    );
-}
-
-/**
- * @param {HTMLElement} container
- */
-function createTyreMap(container, config) {
-    const slots = config.slots ?? [];
-    const meta = new Map();
-    const p = palette();
-
-    const stage = new Konva.Stage({
-        container,
-        width: DESIGN_WIDTH,
-        height: DESIGN_HEIGHT,
-    });
-
-    const bgLayer = new Konva.Layer({ listening: false });
-    const layer = new Konva.Layer();
-    const uiLayer = new Konva.Layer({ listening: false });
-    stage.add(bgLayer);
-    stage.add(layer);
-    stage.add(uiLayer);
-
-    bgLayer.add(
         new Konva.Rect({
             x: 0,
             y: 0,
-            width: DESIGN_WIDTH,
-            height: DESIGN_HEIGHT,
-            fillLinearGradientColorStops: [0, p.canvas[0], 1, p.canvas[1]],
-            fillLinearGradientStartPoint: { x: 0, y: 0 },
-            fillLinearGradientEndPoint: { x: DESIGN_WIDTH, y: DESIGN_HEIGHT },
+            width: design.width,
+            height: design.height,
+            fill: p.paper,
+            listening: false,
+        }),
+    );
+}
+
+function drawBadge(layer, x, y, text, selected, empty, onClick) {
+    const group = new Konva.Group({ x, y, listening: true });
+
+    group.add(
+        new Konva.Rect({
+            x: -5,
+            y: -5,
+            width: 50,
+            height: 50,
+            fill: selected ? SELECT.fill : 'transparent',
+            stroke: selected ? SELECT.stroke : 'transparent',
+            strokeWidth: 3,
+            cornerRadius: 7,
+        }),
+    );
+
+    group.add(
+        new Konva.Rect({
+            x: 0,
+            y: 0,
+            width: 40,
+            height: 40,
+            fill: BADGE,
+            stroke: empty ? '#60a5fa' : '#08315f',
+            strokeWidth: empty ? 2 : 1,
+            dash: empty ? [5, 3] : undefined,
+            cornerRadius: 5,
+            shadowColor: 'rgba(15, 23, 42, 0.22)',
+            shadowBlur: 6,
+            shadowOffsetY: 2,
+        }),
+    );
+
+    group.add(
+        new Konva.Text({
+            x: 0,
+            y: 5,
+            width: 40,
+            text,
+            align: 'center',
+            fontSize: 27,
+            fontStyle: 'bold',
+            fill: '#ffffff',
+            fontFamily: 'Inter, Arial, sans-serif',
+            listening: false,
+        }),
+    );
+
+    group.on('mouseenter', () => {
+        layer.getStage().container().style.cursor = 'pointer';
+        group.to({ scaleX: 1.05, scaleY: 1.05, duration: 0.08 });
+    });
+
+    group.on('mouseleave', () => {
+        layer.getStage().container().style.cursor = 'default';
+        group.to({ scaleX: 1, scaleY: 1, duration: 0.08 });
+    });
+
+    group.on('click tap', onClick);
+    layer.add(group);
+}
+
+function drawTreadedTyre(layer, x, y, w, h, p, empty) {
+    layer.add(
+        new Konva.Rect({
+            x,
+            y,
+            width: w,
+            height: h,
+            fillLinearGradientStartPoint: { x, y },
+            fillLinearGradientEndPoint: { x: x + w, y },
+            fillLinearGradientColorStops: [0, '#050505', 0.18, p.tyreSide, 0.5, empty ? '#4b5563' : p.tyre, 0.82, p.tyreSide, 1, '#050505'],
+            stroke: empty ? '#94a3b8' : '#050505',
+            strokeWidth: 1,
+            dash: empty ? [6, 5] : undefined,
+            cornerRadius: 13,
+            shadowColor: 'rgba(15, 23, 42, 0.24)',
+            shadowBlur: 7,
+            shadowOffsetY: 3,
+            listening: false,
+        }),
+    );
+
+    for (let i = 0; i < 6; i += 1) {
+        const tx = x + 7 + i * ((w - 14) / 5);
+        layer.add(
+            new Konva.Line({
+                points: [tx, y + 6, tx - 4, y + h / 2, tx, y + h - 6],
+                stroke: p.tread,
+                strokeWidth: 1.2,
+                opacity: empty ? 0.35 : 0.62,
+                listening: false,
+            }),
+        );
+    }
+
+    for (let i = 0; i < 10; i += 1) {
+        const ty = y + 10 + i * ((h - 20) / 9);
+        layer.add(
+            new Konva.Line({
+                points: [x + 5, ty, x + w - 5, ty + 3],
+                stroke: '#0f172a',
+                strokeWidth: 1,
+                opacity: empty ? 0.28 : 0.55,
+                listening: false,
+            }),
+        );
+    }
+}
+
+function drawSpareWheel(layer, x, y, size, p, empty) {
+    const radius = size / 2;
+    layer.add(
+        new Konva.Circle({
+            x: x + radius,
+            y: y + radius,
+            radius,
+            fillRadialGradientStartPoint: { x: x + radius, y: y + radius },
+            fillRadialGradientStartRadius: 8,
+            fillRadialGradientEndPoint: { x: x + radius, y: y + radius },
+            fillRadialGradientEndRadius: radius,
+            fillRadialGradientColorStops: [0, '#d1d5db', 0.28, '#f8fafc', 0.42, '#111827', 1, empty ? '#4b5563' : '#020617'],
+            stroke: empty ? '#94a3b8' : '#0f172a',
+            strokeWidth: 2,
+            dash: empty ? [6, 4] : undefined,
+            shadowColor: 'rgba(15, 23, 42, 0.24)',
+            shadowBlur: 7,
+            shadowOffsetY: 3,
+            listening: false,
+        }),
+    );
+
+    layer.add(
+        new Konva.Circle({
+            x: x + radius,
+            y: y + radius,
+            radius: 19,
+            fill: '#e5e7eb',
+            stroke: '#6b7280',
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    for (let i = 0; i < 8; i += 1) {
+        const angle = (Math.PI * 2 * i) / 8;
+        layer.add(
+            new Konva.Circle({
+                x: x + radius + Math.cos(angle) * 12,
+                y: y + radius + Math.sin(angle) * 12,
+                radius: 2.1,
+                fill: '#374151',
+                listening: false,
+            }),
+        );
+    }
+}
+
+function drawAxle(layer, y, p) {
+    layer.add(
+        new Konva.Line({
+            points: [122, y, 398, y],
+            stroke: p.axle,
+            strokeWidth: 9,
+            lineCap: 'round',
+            listening: false,
+        }),
+    );
+
+    layer.add(
+        new Konva.Circle({
+            x: 260,
+            y,
+            radius: 28,
+            fillRadialGradientStartPoint: { x: 260, y },
+            fillRadialGradientStartRadius: 4,
+            fillRadialGradientEndPoint: { x: 260, y },
+            fillRadialGradientEndRadius: 28,
+            fillRadialGradientColorStops: [0, p.axleHi, 0.4, p.axle, 1, '#111827'],
+            stroke: '#0f172a',
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [160, 190, 330, 360].forEach((x) => {
+        layer.add(
+            new Konva.Rect({
+                x,
+                y: y - 12,
+                width: 13,
+                height: 24,
+                fill: p.axle,
+                stroke: '#111827',
+                strokeWidth: 1,
+                cornerRadius: 3,
+                listening: false,
+            }),
+        );
+    });
+}
+
+function drawTrailerBody(layer, p) {
+    layer.add(
+        new Konva.Line({
+            points: [206, 62, 192, 700, 328, 700, 314, 62],
+            closed: true,
+            fill: p.bodyFill,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [
+        [BODY_X + 10, 78, 635],
+        [BODY_X + BODY_W - 10, 78, 635],
+    ].forEach(([x, y, h]) => {
+        layer.add(
+            new Konva.Line({
+                points: [x, y, x, y + h],
+                stroke: p.bodyLine,
+                strokeWidth: 5,
+                lineCap: 'round',
+                listening: false,
+            }),
+        );
+    });
+
+    layer.add(
+        new Konva.Circle({
+            x: 260,
+            y: 62,
+            radius: 12,
+            fill: p.axle,
+            stroke: '#111827',
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [210, 400, 590].forEach((y) => drawAxle(layer, y, p));
+
+    layer.add(
+        new Konva.Rect({
+            x: BODY_X - 18,
+            y: 710,
+            width: BODY_W + 36,
+            height: 20,
+            fill: p.bodyShade,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [
+        [BODY_X - 26, 710],
+        [BODY_X + BODY_W + 8, 710],
+    ].forEach(([x, y]) => {
+        layer.add(
+            new Konva.Rect({
+                x,
+                y,
+                width: 24,
+                height: 17,
+                fill: '#dc2626',
+                stroke: '#7f1d1d',
+                strokeWidth: 1,
+                listening: false,
+            }),
+        );
+    });
+}
+
+function drawVehicleBody(layer, p, mode) {
+    if (mode === 'trailer') {
+        drawTrailerBody(layer, p);
+        return;
+    }
+
+    layer.add(
+        new Konva.Rect({
+            x: BODY_X,
+            y: 168,
+            width: BODY_W,
+            height: BODY_BOTTOM - 198,
+            fill: p.bodyFill,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            cornerRadius: 4,
+            listening: false,
+        }),
+    );
+
+    layer.add(
+        new Konva.Line({
+            points: [
+                BODY_X - 22,
+                160,
+                BODY_X - 10,
+                88,
+                BODY_X + 18,
+                BODY_TOP + 10,
+                BODY_X + BODY_W - 18,
+                BODY_TOP + 10,
+                BODY_X + BODY_W + 10,
+                88,
+                BODY_X + BODY_W + 22,
+                160,
+            ],
+            closed: true,
+            fill: p.bodyFill,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            listening: false,
         }),
     );
 
     layer.add(
         new Konva.Rect({
-            x: 24,
-            y: 20,
-            width: DESIGN_WIDTH - 48,
-            height: DESIGN_HEIGHT - 40,
-            cornerRadius: 20,
-            fill: p.deck,
-            stroke: p.deckStroke,
-            strokeWidth: 1,
-            shadowColor: 'rgba(0,0,0,0.08)',
-            shadowBlur: 24,
-            shadowOffsetY: 8,
+            x: BODY_X + 8,
+            y: 95,
+            width: BODY_W - 16,
+            height: 50,
+            fill: p.glass,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            cornerRadius: 7,
+            listening: false,
         }),
     );
 
-    drawChassis(layer, p);
-
-    const frontLbl = new Konva.Label({ x: DESIGN_WIDTH / 2 - 42, y: 28, listening: false });
-    frontLbl.add(new Konva.Tag({ fill: p.deck, stroke: p.deckStroke, cornerRadius: 6 }));
-    frontLbl.add(
-        new Konva.Text({
-            text: '▲  FRONT',
-            fontSize: 11,
-            fontStyle: 'bold',
-            fill: p.labelStrong,
-            padding: 6,
-            fontFamily: 'Inter, system-ui, sans-serif',
-        }),
-    );
-    uiLayer.add(frontLbl);
-
-    layer.add(
-        new Konva.Line({
-            points: [DESIGN_WIDTH / 2, 56, DESIGN_WIDTH / 2, DESIGN_HEIGHT - 48],
-            stroke: p.center,
-            dash: [8, 6],
-            strokeWidth: 1,
-        }),
-    );
-
-    uiLayer.add(
-        new Konva.Text({
-            x: 36,
-            y: DESIGN_HEIGHT / 2 - 20,
-            text: 'LEFT',
-            fontSize: 10,
-            fontStyle: 'bold',
-            fill: p.side,
-            rotation: -90,
-            fontFamily: 'Inter, system-ui, sans-serif',
-        }),
-    );
-    uiLayer.add(
-        new Konva.Text({
-            x: DESIGN_WIDTH - 48,
-            y: DESIGN_HEIGHT / 2 + 20,
-            text: 'RIGHT',
-            fontSize: 10,
-            fontStyle: 'bold',
-            fill: p.side,
-            rotation: 90,
-            fontFamily: 'Inter, system-ui, sans-serif',
-        }),
-    );
-
-    const axles = [...new Set(slots.map((s) => s.axle).filter(Boolean))].sort(
-        (a, b) => Number(a) - Number(b),
-    );
-
-    axles.forEach((axle) => {
-        const sample = slots.find((s) => s.axle === axle);
-        if (!sample) {
-            return;
-        }
-        const y = Number(sample.y);
-        const isSteer = slots.some((s) => s.axle === axle && s.dual === 'single');
-
+    for (let i = 0; i < 5; i += 1) {
         layer.add(
             new Konva.Line({
-                points: [56, y, DESIGN_WIDTH - 56, y],
-                stroke: p.axle,
-                strokeWidth: 2.5,
-                lineCap: 'round',
-                opacity: 0.85,
+                points: [BODY_X + 22 + i * 22, 48, BODY_X + 22 + i * 22, 82],
+                stroke: p.bodyLine,
+                strokeWidth: 1,
+                opacity: 0.7,
+                listening: false,
             }),
         );
-
-        layer.add(
-            new Konva.Circle({
-                x: DESIGN_WIDTH / 2,
-                y,
-                radius: 11,
-                fill: p.hub,
-                stroke: p.hubStroke,
-                strokeWidth: 2,
-                shadowColor: 'rgba(0,0,0,0.15)',
-                shadowBlur: 4,
-                shadowOffsetY: 1,
-            }),
-        );
-
-        const badge = new Konva.Label({ x: 44, y: y - 10, listening: false });
-        badge.add(new Konva.Tag({ fill: p.dualBadge, stroke: p.deckStroke, cornerRadius: 4 }));
-        badge.add(
-            new Konva.Text({
-                text: isSteer ? `Axle ${axle} · Steer` : `Axle ${axle} · Drive`,
-                fontSize: 10,
-                fontStyle: '600',
-                fill: p.label,
-                padding: 4,
-                fontFamily: 'Inter, system-ui, sans-serif',
-            }),
-        );
-        uiLayer.add(badge);
-    });
-
-    drawDualMounts(layer, slots, p);
-
-    slots.forEach((slot) => {
-        const code = String(slot.code);
-        const colorKey = String(slot.color ?? 'gray');
-        const colors = STATUS[colorKey] ?? STATUS.gray;
-        const empty = !slot.tyre_code;
-        const x = Number(slot.x);
-        const y = Number(slot.y);
-        const selected = config.selectedPosition === code;
-
-        const hit = new Konva.Group({ x, y });
-        const { casing, glowRing } = drawTyre(hit, colors, empty, selected);
-
-        const pill = new Konva.Label({ x: -26, y: TYRE_RY + 8, listening: false });
-        pill.add(
-            new Konva.Tag({
-                fill: dark() ? '#0f172a' : '#ffffff',
-                stroke: empty ? p.ghost : colors.stroke,
-                cornerRadius: 5,
-                shadowColor: 'rgba(0,0,0,0.1)',
-                shadowBlur: 4,
-                shadowOffsetY: 1,
-            }),
-        );
-        pill.add(
-            new Konva.Text({
-                text: code,
-                fontSize: 11,
-                fontStyle: 'bold',
-                fill: empty ? p.label : colors.text,
-                padding: 5,
-                fontFamily: 'Inter, system-ui, sans-serif',
-            }),
-        );
-        hit.add(pill);
-
-        if (slot.tyre_code) {
-            const tc = String(slot.tyre_code);
-            hit.add(
-                new Konva.Text({
-                    x: -TYRE_RX,
-                    y: -5,
-                    width: TYRE_RX * 2,
-                    align: 'center',
-                    text: tc.replace('TYR-', ''),
-                    fontSize: 9,
-                    fontStyle: 'bold',
-                    fill: colors.text,
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    listening: false,
-                }),
-            );
-        } else {
-            hit.add(
-                new Konva.Text({
-                    x: -TYRE_RX,
-                    y: -4,
-                    width: TYRE_RX * 2,
-                    align: 'center',
-                    text: 'EMPTY',
-                    fontSize: 7,
-                    fontStyle: 'bold',
-                    letterSpacing: 0.5,
-                    fill: p.label,
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    listening: false,
-                }),
-            );
-        }
-
-        layer.add(hit);
-
-        hit.on('mouseenter', () => {
-            stage.container().style.cursor = 'pointer';
-            new Konva.Tween({
-                node: casing,
-                scaleX: 1.06,
-                scaleY: 1.06,
-                duration: 0.12,
-                easing: Konva.Easings.EaseOut,
-            }).play();
-        });
-
-        hit.on('mouseleave', () => {
-            stage.container().style.cursor = 'default';
-            new Konva.Tween({
-                node: casing,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 0.12,
-                easing: Konva.Easings.EaseOut,
-            }).play();
-        });
-
-        hit.on('click tap', () => config.onSelect?.(code));
-
-        meta.set(code, { hit, casing, glowRing, colors, empty, slot });
-    });
-
-    function select(code) {
-        config.selectedPosition = code;
-        meta.forEach((m, slotCode) => {
-            const isSel = slotCode === code;
-            m.glowRing.visible(isSel);
-            m.casing.stroke(isSel ? SELECT.stroke : m.empty ? palette().ghost : m.colors.stroke);
-            m.casing.strokeWidth(isSel ? 3 : 2);
-            m.casing.shadowBlur(isSel ? 16 : 8);
-        });
-        layer.batchDraw();
     }
 
-    select(config.selectedPosition ?? null);
+    [
+        [BODY_X - 44, 94],
+        [BODY_X + BODY_W + 24, 94],
+    ].forEach(([x, y]) => {
+        layer.add(
+            new Konva.Rect({
+                x,
+                y,
+                width: 24,
+                height: 43,
+                fill: p.glass,
+                stroke: p.bodyLine,
+                strokeWidth: 2,
+                cornerRadius: 5,
+                listening: false,
+            }),
+        );
+    });
+
+    [
+        [BODY_X + 10, 170, BODY_BOTTOM - 210],
+        [BODY_X + BODY_W - 10, 170, BODY_BOTTOM - 210],
+    ].forEach(([x, y, h]) => {
+        layer.add(
+            new Konva.Line({
+                points: [x, y, x, y + h],
+                stroke: p.bodyLine,
+                strokeWidth: 5,
+                lineCap: 'round',
+                listening: false,
+            }),
+        );
+    });
+
+    [246, 458, 638, 964, 1304, 1444].forEach((y) => drawAxle(layer, y, p));
+
+    layer.add(
+        new Konva.Rect({
+            x: BODY_X - 18,
+            y: BODY_BOTTOM - 22,
+            width: BODY_W + 36,
+            height: 20,
+            fill: p.bodyShade,
+            stroke: p.bodyLine,
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [
+        [BODY_X - 26, BODY_BOTTOM - 22],
+        [BODY_X + BODY_W + 8, BODY_BOTTOM - 22],
+    ].forEach(([x, y]) => {
+        layer.add(
+            new Konva.Rect({
+                x,
+                y,
+                width: 24,
+                height: 17,
+                fill: '#dc2626',
+                stroke: '#7f1d1d',
+                strokeWidth: 1,
+                listening: false,
+            }),
+        );
+    });
+}
+
+function drawSlot(layer, slot, selected, onSelect, p, mode) {
+    const code = String(slot.code);
+    const displayCode = displayCodeFor(slot);
+    const spec = layoutFor(slot, mode);
+    const empty = !slot.tyre_code;
+    const hitGroup = new Konva.Group({ listening: true });
+
+    if (spec.kind === 'spare') {
+        const [boxX, boxY, boxW, boxH] = spec.box;
+        const [wheelX, wheelY, wheelSize] = spec.wheel;
+
+        layer.add(
+            new Konva.Rect({
+                x: boxX,
+                y: boxY,
+                width: boxW,
+                height: boxH,
+                fill: 'rgba(255, 255, 255, 0.36)',
+                stroke: selected ? SELECT.stroke : '#2563eb',
+                strokeWidth: selected ? 3 : 1.5,
+                dash: [8, 6],
+                cornerRadius: 9,
+                listening: false,
+            }),
+        );
+        drawSpareWheel(layer, wheelX, wheelY, wheelSize, p, empty);
+
+        hitGroup.add(
+            new Konva.Rect({
+                x: boxX,
+                y: boxY,
+                width: boxW,
+                height: boxH,
+                fill: 'transparent',
+            }),
+        );
+        layer.add(hitGroup);
+    } else {
+        const [x, y, w, h] = spec.tire;
+        drawTreadedTyre(layer, x, y, w, h, p, empty);
+        hitGroup.add(
+            new Konva.Rect({
+                x,
+                y,
+                width: w,
+                height: h,
+                fill: selected ? SELECT.fill : 'transparent',
+                stroke: selected ? SELECT.stroke : 'transparent',
+                strokeWidth: 3,
+                cornerRadius: 12,
+            }),
+        );
+        layer.add(hitGroup);
+    }
+
+    drawBadge(layer, spec.badge[0], spec.badge[1], displayCode, selected, empty, () => onSelect(code));
+
+    hitGroup.on('mouseenter', () => {
+        layer.getStage().container().style.cursor = 'pointer';
+    });
+    hitGroup.on('mouseleave', () => {
+        layer.getStage().container().style.cursor = 'default';
+    });
+    hitGroup.on('click tap', () => onSelect(code));
+
+    const accent = statusFor(slot);
+    if (empty) {
+        const [x, y] = spec.kind === 'spare' ? spec.box : spec.tire;
+        layer.add(
+            new Konva.Circle({
+                x: x + 8,
+                y: y + 8,
+                radius: 4,
+                fill: accent,
+                listening: false,
+            }),
+        );
+    }
+}
+
+function createTyreMap(container, config) {
+    const mode = config.assetType === 'trailer' ? 'trailer' : 'truck';
+    const design = designFor(mode);
+    const stage = new Konva.Stage({
+        container,
+        width: design.width,
+        height: design.height,
+    });
+    const layer = new Konva.Layer();
+    stage.add(layer);
+
+    function redraw() {
+        const p = palette();
+        layer.destroyChildren();
+        drawFrame(layer, p, design);
+        drawVehicleBody(layer, p, mode);
+        (config.slots ?? []).forEach((slot) => {
+            drawSlot(
+                layer,
+                slot,
+                String(config.selectedPosition ?? '') === String(slot.code),
+                (code) => {
+                    config.selectedPosition = code;
+                    redraw();
+                    config.onSelect?.(code);
+                },
+                p,
+                mode,
+            );
+        });
+        layer.draw();
+    }
 
     function resize() {
         const wrap = container.parentElement;
         if (!wrap) {
             return;
         }
-        const w = wrap.clientWidth;
-        const scale = Math.min(w / DESIGN_WIDTH, 1);
-        stage.width(DESIGN_WIDTH * scale);
-        stage.height(DESIGN_HEIGHT * scale);
+
+        const scale = Math.min(wrap.clientWidth / design.width, 1);
+        stage.width(design.width * scale);
+        stage.height(design.height * scale);
+        container.style.minHeight = `${design.height * scale}px`;
         stage.scale({ x: scale, y: scale });
         stage.batchDraw();
     }
 
+    redraw();
     resize();
+
     const ro = new ResizeObserver(resize);
     ro.observe(container.parentElement ?? container);
 
     return {
         stage,
-        select,
+        select(code) {
+            config.selectedPosition = code;
+            redraw();
+        },
         resize,
         destroy() {
             ro.disconnect();
@@ -565,8 +728,8 @@ function initHost(host) {
     const map = createTyreMap(host, {
         slots: config.slots ?? [],
         selectedPosition: config.selectedPosition ?? null,
+        assetType: config.assetType ?? null,
         onSelect(code) {
-            map.select(code);
             wire?.call('selectPosition', code);
         },
     });
@@ -591,7 +754,7 @@ function initAll() {
 
 function teardownAll() {
     document.querySelectorAll('[data-tyre-map-konva]').forEach(destroyHost);
-    document.querySelectorAll('[data-tyre-map-konva]').forEach((h) => delete h.dataset.mounted);
+    document.querySelectorAll('[data-tyre-map-konva]').forEach((host) => delete host.dataset.mounted);
 }
 
 document.addEventListener('DOMContentLoaded', initAll);

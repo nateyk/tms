@@ -1,105 +1,638 @@
 .tms-tyre-map-shell {
-    --tms-map-accent: #d97706;
-    --tms-map-surface: #ffffff;
-    --tms-map-muted: #64748b;
-    --tms-map-border: rgba(148, 163, 184, 0.35);
-    --tms-map-glow: rgba(217, 119, 6, 0.15);
+    --tms-ink: #111827;
+    --tms-muted: #64748b;
+    --tms-line: #cbd5e1;
+    --tms-soft: #f8fafc;
+    --tms-paper: #ffffff;
+    --tms-accent: #d97706;
+    --tms-accent-soft: #fff7ed;
+}
+
+.tms-combination-shell {
+    --tms-ink: #111827;
+    --tms-muted: #64748b;
+    --tms-line: #cbd5e1;
+    --tms-soft: #f8fafc;
+    --tms-paper: #ffffff;
+    --tms-accent: #d97706;
+    display: grid;
+    gap: 1rem;
+}
+
+.dark .tms-combination-shell {
+    --tms-ink: #f8fafc;
+    --tms-muted: #94a3b8;
+    --tms-line: #475569;
+    --tms-soft: #0f172a;
+    --tms-paper: #111827;
+    --tms-accent: #f59e0b;
+}
+
+.tms-combination-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid var(--tms-line, #cbd5e1);
+    border-radius: 4px;
+    background: var(--tms-paper, #ffffff);
+    padding: 1rem 1.15rem;
+    color: var(--tms-ink, #111827);
+}
+
+.tms-combination-header p,
+.tms-combination-unit-head p {
+    margin: 0;
+    color: var(--tms-accent, #d97706);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tms-combination-header h2,
+.tms-combination-unit-head h3 {
+    margin: 0.1rem 0;
+    color: var(--tms-ink, #111827);
+    font-weight: 850;
+    letter-spacing: 0;
+}
+
+.tms-combination-header h2 {
+    font-size: 1.35rem;
+}
+
+.tms-combination-unit-head h3 {
+    font-size: 1.05rem;
+}
+
+.tms-combination-header span {
+    color: var(--tms-muted, #64748b);
+    font-size: 0.82rem;
+}
+
+.tms-combination-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+}
+
+.tms-combination-actions a,
+.tms-trailer-empty-bay a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.15rem;
+    border: 1px solid var(--tms-line, #cbd5e1);
+    border-radius: 4px;
+    background: var(--tms-paper, #ffffff);
+    color: var(--tms-ink, #111827);
+    padding: 0.42rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.tms-combination-actions a:hover,
+.tms-trailer-empty-bay a:hover {
+    background: var(--tms-soft, #f8fafc);
+}
+
+.tms-combination-actions a.is-primary,
+.tms-trailer-empty-bay a {
+    border-color: #d97706;
+    background: #d97706;
+    color: #ffffff;
+}
+
+.tms-combination-unit {
+    overflow: hidden;
+    border: 1px solid var(--tms-line, #cbd5e1);
+    border-radius: 4px;
+    background: var(--tms-paper, #ffffff);
+}
+
+.tms-combination-unit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--tms-line, #cbd5e1);
+    padding: 0.85rem 1rem;
+}
+
+.tms-combination-unit-head > span {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #dbeafe;
+    border-radius: 4px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    padding: 0.28rem 0.58rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.tms-combination-unit-head > span.is-warning {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.tms-combination-coupler {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2.4rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0 1rem;
+}
+
+.tms-combination-coupler span {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--tms-line, #cbd5e1), transparent);
+}
+
+.tms-combination-coupler strong {
+    display: block;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid var(--tms-line, #cbd5e1);
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at center, #111827 0 20%, transparent 21%),
+        linear-gradient(90deg, transparent 0 42%, #94a3b8 43% 57%, transparent 58%),
+        var(--tms-paper, #ffffff);
+}
+
+.tms-trailer-empty-bay {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    min-height: 11rem;
+    margin: 1rem;
+    border: 1px solid var(--tms-line, #cbd5e1);
+    border-radius: 4px;
+    background:
+        linear-gradient(90deg, rgba(217, 119, 6, 0.06), transparent 44%),
+        var(--tms-paper, #ffffff);
+    padding: 1rem;
+}
+
+.tms-trailer-empty-bay p {
+    margin: 0 0 0.2rem;
+    color: var(--tms-ink, #111827);
+    font-size: 1rem;
+    font-weight: 850;
+}
+
+.tms-trailer-empty-bay span {
+    color: var(--tms-muted, #64748b);
+    font-size: 0.82rem;
+}
+
+.tms-trailer-ghost {
+    position: relative;
+    height: 7.2rem;
+}
+
+.tms-trailer-ghost span {
+    position: absolute;
+    inset: 0.45rem 3.1rem 0.7rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 4px;
+    background: rgba(241, 245, 249, 0.85);
+}
+
+.tms-trailer-ghost i {
+    position: absolute;
+    bottom: 1.1rem;
+    width: 1.2rem;
+    height: 3.6rem;
+    border-radius: 0.35rem;
+    background: #111827;
+    box-shadow: inset 0.25rem 0 0 #374151;
+}
+
+.tms-trailer-ghost i:nth-of-type(1) {
+    left: 2.25rem;
+}
+
+.tms-trailer-ghost i:nth-of-type(2) {
+    right: 2.25rem;
+}
+
+.tms-trailer-ghost b {
+    position: absolute;
+    bottom: 2.8rem;
+    left: 3.3rem;
+    right: 3.3rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: #64748b;
 }
 
 .dark .tms-tyre-map-shell {
-    --tms-map-surface: #0f172a;
-    --tms-map-muted: #94a3b8;
-    --tms-map-border: rgba(71, 85, 105, 0.6);
-    --tms-map-glow: rgba(251, 191, 36, 0.12);
+    --tms-ink: #f8fafc;
+    --tms-muted: #94a3b8;
+    --tms-line: #475569;
+    --tms-soft: #0f172a;
+    --tms-paper: #111827;
+    --tms-accent: #f59e0b;
+    --tms-accent-soft: #292014;
 }
 
-.tms-tyre-map-card {
-    position: relative;
+.tms-vehicle-tyre-panel {
     overflow: hidden;
-    border-radius: 1rem;
-    border: 1px solid var(--tms-map-border);
-    background: linear-gradient(165deg, var(--tms-map-surface) 0%, color-mix(in srgb, var(--tms-map-surface) 92%, #e2e8f0) 100%);
-    box-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.04),
-        0 8px 24px rgba(15, 23, 42, 0.06);
+    border: 1px solid var(--tms-line);
+    border-radius: 4px;
+    background: var(--tms-paper);
+    color: var(--tms-ink);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 
-.dark .tms-tyre-map-card {
-    background: linear-gradient(165deg, #0f172a 0%, #020617 100%);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 12px 40px rgba(0, 0, 0, 0.35);
+.tms-vehicle-tyre-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--tms-line);
+    padding: 1rem 1.15rem;
 }
 
-.tms-tyre-map-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--tms-map-glow), transparent 70%);
+.tms-vehicle-tyre-header h3 {
+    margin: 0.1rem 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0;
 }
 
-.tms-tyre-map-canvas-wrap {
-    position: relative;
-    z-index: 1;
-    width: 100%;
+.tms-vehicle-tyre-header p {
+    margin: 0;
+    color: var(--tms-muted);
+    font-size: 0.82rem;
+}
+
+.tms-vehicle-tyre-kicker {
+    color: var(--tms-accent) !important;
+    font-size: 0.68rem !important;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tms-vehicle-tyre-counts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(5.2rem, 1fr));
+    gap: 0.5rem;
+}
+
+.tms-vehicle-tyre-counts div {
+    border: 1px solid var(--tms-line);
+    border-radius: 4px;
+    background: var(--tms-soft);
+    padding: 0.55rem 0.7rem;
+}
+
+.tms-vehicle-tyre-counts span {
+    display: block;
+    color: var(--tms-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tms-vehicle-tyre-counts strong {
+    display: block;
+    margin-top: 0.12rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.tms-vehicle-tyre-layout {
+    display: grid;
+    grid-template-columns: minmax(520px, 620px) minmax(360px, 1fr);
+    min-height: 760px;
+}
+
+.tms-vehicle-tyre-diagram {
     display: flex;
     justify-content: center;
-    padding: 0.5rem 0.75rem 1rem;
+    border-right: 1px solid var(--tms-line);
+    background: linear-gradient(180deg, var(--tms-soft), var(--tms-paper));
+    padding: 1rem 0.7rem;
 }
 
-.tms-tyre-map-canvas-host {
+.tms-vehicle-tyre-diagram [data-tyre-map-konva] {
     width: 100%;
-    max-width: 880px;
-    min-height: 420px;
-    aspect-ratio: 880 / 600;
+    max-width: 520px;
+    min-height: 1510px;
 }
 
-.tms-tyre-map-canvas-host canvas {
+.tms-vehicle-tyre-diagram canvas {
     display: block;
     margin: 0 auto;
-    border-radius: 0.75rem;
 }
 
-.tms-tyre-map-legend-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    border-radius: 9999px;
-    border: 1px solid var(--tms-map-border);
-    background: color-mix(in srgb, var(--tms-map-surface) 85%, transparent);
-    padding: 0.25rem 0.625rem;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--tms-map-muted);
-    backdrop-filter: blur(8px);
+.tms-vehicle-tyre-side {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    padding: 1rem;
 }
 
-.tms-tyre-map-stat {
+.tms-vehicle-tyre-selected {
+    border: 1px solid color-mix(in srgb, var(--tms-accent) 45%, var(--tms-line));
+    border-radius: 4px;
+    background: var(--tms-accent-soft);
+    padding: 0.9rem;
+}
+
+.tms-vehicle-tyre-selected.is-idle {
+    border-color: var(--tms-line);
+    background: var(--tms-soft);
+}
+
+.tms-vehicle-tyre-selected p,
+.tms-vehicle-tyre-guide h4 {
+    margin: 0 0 0.6rem;
+    color: var(--tms-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tms-selected-position-line {
     display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    border-radius: 0.625rem;
-    border: 1px solid var(--tms-map-border);
-    background: color-mix(in srgb, var(--tms-map-surface) 90%, transparent);
-    padding: 0.5rem 0.75rem;
-    min-width: 5.5rem;
+    align-items: center;
+    gap: 0.65rem;
 }
 
-.tms-tyre-map-stat strong {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #0f172a;
-    line-height: 1.2;
+.tms-selected-position-line strong,
+.tms-guide-row strong {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 2px;
+    background: #111827;
+    color: #ffffff;
+    font-weight: 900;
 }
 
-.dark .tms-tyre-map-stat strong {
+.tms-selected-position-line span {
+    min-width: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.tms-vehicle-tyre-selected small,
+.tms-vehicle-tyre-selected > span {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--tms-muted);
+    font-size: 0.76rem;
+}
+
+.tms-vehicle-tyre-selected dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0.9rem 0 0;
+}
+
+.tms-vehicle-tyre-selected dt {
+    color: var(--tms-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tms-vehicle-tyre-selected dd {
+    margin: 0.12rem 0 0;
+    overflow-wrap: anywhere;
+    font-weight: 750;
+}
+
+.tms-vehicle-tyre-selected a {
+    color: var(--tms-accent);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.tms-vehicle-tyre-selected a:hover {
+    text-decoration: underline;
+}
+
+.tms-selected-empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--tms-accent) 35%, transparent);
+    padding-top: 0.75rem;
+}
+
+.tms-selected-empty span {
+    color: var(--tms-muted);
+    font-weight: 750;
+}
+
+.tms-vehicle-tyre-guide {
+    display: grid;
+    gap: 0.85rem;
+    max-width: 520px;
+}
+
+.tms-vehicle-tyre-guide > h4 {
+    margin-bottom: -0.15rem;
+    color: #1e293b;
+    font-size: 1.35rem;
+    line-height: 1.05;
+}
+
+.dark .tms-vehicle-tyre-guide > h4 {
     color: #f8fafc;
 }
 
-.tms-tyre-map-detail {
-    border-radius: 1rem;
-    border: 1px solid color-mix(in srgb, var(--tms-map-accent) 35%, transparent);
-    background: linear-gradient(135deg, color-mix(in srgb, var(--tms-map-accent) 8%, var(--tms-map-surface)) 0%, var(--tms-map-surface) 60%);
-    box-shadow: 0 4px 20px var(--tms-map-glow);
+.tms-guide-group {
+    overflow: hidden;
+    border: 1px solid var(--tms-line);
+    border-radius: 4px;
+    background: var(--tms-paper);
+}
+
+.tms-guide-group header {
+    background: var(--guide-tone, #2563eb);
+    color: #ffffff;
+    padding: 0.46rem 0.75rem;
+    font-size: 0.86rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.tms-guide-group header span {
+    margin-left: 0.25rem;
+    font-size: 0.66rem;
+    font-weight: 800;
+    opacity: 0.9;
+}
+
+.tms-guide-group > div {
+    padding: 0 0.75rem;
+}
+
+.tms-guide-row {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.72rem;
+    width: 100%;
+    min-height: 3rem;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--tms-line) 80%, transparent);
+    background: transparent;
+    color: var(--tms-ink);
+    padding: 0.42rem 0;
+    text-align: left;
+}
+
+.tms-guide-row:last-child {
+    border-bottom: 0;
+}
+
+.tms-guide-row:hover,
+.tms-guide-row.is-selected {
+    background: color-mix(in srgb, var(--guide-tone, #2563eb) 10%, transparent);
+}
+
+.tms-guide-row.is-selected strong {
+    outline: 2px solid var(--tms-accent);
+    outline-offset: 2px;
+}
+
+.tms-guide-row.is-empty strong {
+    background: color-mix(in srgb, #111827 82%, transparent);
+}
+
+.tms-guide-row.is-spare {
+    min-height: 3.25rem;
+    background: color-mix(in srgb, var(--guide-tone, #7c3aed) 5%, transparent);
+}
+
+.tms-guide-row.is-spare strong {
+    width: 2.15rem;
+    height: 2.15rem;
+    background: #0a3972;
+}
+
+.tms-guide-row span {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.tms-guide-row b {
+    overflow: hidden;
+    color: var(--tms-ink);
+    font-size: 0.86rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tms-guide-row small {
+    overflow: hidden;
+    color: var(--tms-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tone-blue { --guide-tone: #2563eb; }
+.tone-green { --guide-tone: #65a30d; }
+.tone-orange { --guide-tone: #f97316; }
+.tone-purple { --guide-tone: #7c3aed; }
+.tone-teal { --guide-tone: #0d9488; }
+.tone-red { --guide-tone: #dc2626; }
+
+.tms-guide-note {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid #bfdbfe;
+    border-radius: 4px;
+    background: color-mix(in srgb, #eff6ff 72%, var(--tms-paper));
+    padding: 0.75rem;
+    color: #1e3a8a;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.dark .tms-guide-note {
+    border-color: #1d4ed8;
+    background: color-mix(in srgb, #172554 42%, var(--tms-paper));
+    color: #bfdbfe;
+}
+
+.tms-guide-note strong {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.tms-guide-note span {
+    min-width: 0;
+}
+
+@media (max-width: 1024px) {
+    .tms-vehicle-tyre-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .tms-vehicle-tyre-diagram {
+        border-right: 0;
+        border-bottom: 1px solid var(--tms-line);
+    }
+}
+
+@media (max-width: 640px) {
+    .tms-combination-header,
+    .tms-combination-unit-head,
+    .tms-trailer-empty-bay {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .tms-combination-actions {
+        justify-content: flex-start;
+    }
+
+    .tms-vehicle-tyre-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .tms-vehicle-tyre-counts,
+    .tms-vehicle-tyre-selected dl {
+        grid-template-columns: 1fr;
+    }
+
+    .tms-guide-row b,
+    .tms-guide-row small {
+        white-space: normal;
+    }
+
+    .tms-guide-row {
+        grid-template-columns: 1fr;
+    }
 }

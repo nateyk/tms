@@ -11,12 +11,9 @@ class TmsTyreLocationChart extends ChartWidget
 
     protected ?string $heading = 'Tyres by Location';
 
-    protected ?string $maxHeight = '320px';
+    protected ?string $maxHeight = '240px';
 
-    protected int|string|array $columnSpan = [
-        'default' => 'full',
-        'md' => 1,
-    ];
+    protected int|string|array $columnSpan = 1;
 
     protected function getType(): string
     {
@@ -32,6 +29,14 @@ class TmsTyreLocationChart extends ChartWidget
                     'display' => false,
                 ],
             ],
+            'scales' => [
+                'x' => [
+                    'beginAtZero' => true,
+                ],
+                'y' => [
+                    'grid' => ['display' => false],
+                ],
+            ],
         ];
     }
 
@@ -44,7 +49,8 @@ class TmsTyreLocationChart extends ChartWidget
                 [
                     'label' => 'Tyres',
                     'data' => $chart['data'],
-                    'backgroundColor' => $chart['colors'],
+                    'backgroundColor' => ['#2563eb', '#0f9f8f', '#0891b2', '#64748b'],
+                    'borderRadius' => 4,
                 ],
             ],
             'labels' => $chart['labels'],

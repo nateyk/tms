@@ -13,12 +13,9 @@ class TmsFleetUtilizationChart extends ChartWidget
 
     protected ?string $description = 'Active tyre positions vs empty slots on active vehicles';
 
-    protected ?string $maxHeight = '320px';
+    protected ?string $maxHeight = '240px';
 
-    protected int|string|array $columnSpan = [
-        'default' => 'full',
-        'md' => 1,
-    ];
+    protected int|string|array $columnSpan = 1;
 
     protected function getType(): string
     {
@@ -33,10 +30,22 @@ class TmsFleetUtilizationChart extends ChartWidget
             'datasets' => [
                 [
                     'data' => [$utilization['filled'], $utilization['empty']],
-                    'backgroundColor' => ['#16a34a', '#e5e7eb'],
+                    'backgroundColor' => ['#0f9f8f', '#e2e8f0'],
                 ],
             ],
             'labels' => ['Filled', 'Empty'],
+        ];
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'cutout' => '64%',
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                ],
+            ],
         ];
     }
 }

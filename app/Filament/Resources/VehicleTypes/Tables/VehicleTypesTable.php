@@ -20,11 +20,19 @@ class VehicleTypesTable
                     ->badge()
                     ->searchable(),
                 TextColumn::make('axle_count')
+                    ->label('Axles')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('tyre_count')
+                    ->label('Tyres')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('spare_count')
+                    ->label('Spares')
+                    ->state(fn ($record): int => collect($record->layout_json['positions'] ?? [])
+                        ->filter(fn (array $position): bool => in_array($position['display_code'] ?? null, ['W', 'X'], true))
+                        ->count())
+                    ->badge(),
                 TextColumn::make('status')
                     ->searchable(),
                 TextColumn::make('created_at')
