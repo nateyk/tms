@@ -11,7 +11,7 @@ class StoresTable
 {
     public static function configure(Table $table): Table
     {
-        return $table->columns([
+        return $table->striped()->paginated([10, 25, 50])->defaultPaginationPageOption(10)->columns([
             TextColumn::make('code')->searchable()->sortable(),
             TextColumn::make('name')->searchable(),
             IconColumn::make('is_default')->boolean()->label('Default'),

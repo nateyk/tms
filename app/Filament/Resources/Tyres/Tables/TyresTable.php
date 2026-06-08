@@ -17,49 +17,75 @@ class TyresTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
                 TextColumn::make('tyre_code')
+                    ->label('Code')
                     ->searchable(),
                 TextColumn::make('serial_number')
+                    ->label('Serial')
+                    ->limit(18)
                     ->searchable(),
                 TextColumn::make('brand.name')
+                    ->label('Brand')
                     ->searchable(),
                 TextColumn::make('size.id')
-                    ->searchable(),
+                    ->label('Size')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('pattern')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('supplier')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('purchase_date')
                     ->date()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('purchase_price')
                     ->money()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('invoice_number')
-                    ->searchable(),
+                    ->label('Invoice')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('initial_tread_depth')
+                    ->label('Initial')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('current_tread_depth')
+                    ->label('Tread')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('source')
                     ->badge()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('current_location_type')
+                    ->label('Location')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('current_location_id')
+                    ->label('Loc ID')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('current_position_code')
-                    ->searchable(),
+                    ->label('Pos')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('qr_code_path')
-                    ->searchable(),
+                    ->label('QR')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

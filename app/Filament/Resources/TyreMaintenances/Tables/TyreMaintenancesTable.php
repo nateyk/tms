@@ -14,14 +14,17 @@ class TyreMaintenancesTable
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
-                TextColumn::make('maintenance_no')->searchable()->sortable(),
+                TextColumn::make('maintenance_no')->label('No')->searchable()->sortable(),
                 TextColumn::make('tyre.tyre_code')->label('Tyre')->searchable(),
-                TextColumn::make('problem_type')->badge(),
-                TextColumn::make('maintenance_date')->date()->sortable(),
+                TextColumn::make('problem_type')->label('Problem')->badge(),
+                TextColumn::make('maintenance_date')->label('Date')->date()->sortable(),
                 TextColumn::make('cost')->money('ETB')->sortable(),
                 TextColumn::make('status')->badge()->sortable(),
-                TextColumn::make('technician')->toggleable(),
+                TextColumn::make('technician')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')->options(MaintenanceStatus::class),

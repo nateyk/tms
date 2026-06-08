@@ -17,24 +17,36 @@ class VehiclesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
                 TextColumn::make('vehicle_code')
+                    ->label('Code')
                     ->searchable(),
                 TextColumn::make('plate_number')
+                    ->label('Plate')
                     ->searchable(),
                 TextColumn::make('asset_type')
+                    ->label('Asset')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('vehicleType.name')
+                    ->label('Type')
+                    ->limit(28)
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('currentLocation.name')
-                    ->searchable(),
+                    ->label('Location')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('odometer')
+                    ->label('Odo')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

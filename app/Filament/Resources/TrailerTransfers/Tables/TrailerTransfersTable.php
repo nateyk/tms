@@ -13,42 +13,62 @@ class TrailerTransfersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
                 TextColumn::make('transfer_no')
+                    ->label('No')
                     ->searchable(),
                 TextColumn::make('trailer_vehicle_id')
+                    ->label('Trailer')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('fromPowerVehicle.id')
+                    ->label('From')
                     ->searchable(),
                 TextColumn::make('toPowerVehicle.id')
+                    ->label('To')
                     ->searchable(),
                 TextColumn::make('transfer_date')
+                    ->label('Date')
                     ->date()
                     ->sortable(),
                 TextColumn::make('from_odometer')
+                    ->label('From odo')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('to_odometer')
+                    ->label('To odo')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('location.name')
+                    ->label('Location')
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('prepared_by')
+                    ->label('Prepared')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('checked_by')
+                    ->label('Checked')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('approved_by')
+                    ->label('Approved')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('completed_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

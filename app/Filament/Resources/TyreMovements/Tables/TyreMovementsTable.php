@@ -15,15 +15,18 @@ class TyreMovementsTable
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
-                TextColumn::make('movement_no')->searchable()->sortable(),
+                TextColumn::make('movement_no')->label('No')->searchable()->sortable(),
                 TextColumn::make('tyre.tyre_code')->label('Tyre')->searchable(),
-                TextColumn::make('movement_type')->badge(),
-                TextColumn::make('movement_date')->date()->sortable(),
-                TextColumn::make('from_location_type')->badge()->toggleable(),
-                TextColumn::make('to_location_type')->badge()->toggleable(),
+                TextColumn::make('movement_type')->label('Type')->badge(),
+                TextColumn::make('movement_date')->label('Date')->date()->sortable(),
+                TextColumn::make('from_location_type')->label('From')->badge()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('to_location_type')->label('To')->badge()->toggleable(),
                 TextColumn::make('status')->badge()->sortable(),
-                TextColumn::make('preparedByUser.name')->label('Prepared by')->toggleable(),
+                TextColumn::make('preparedByUser.name')->label('Prepared')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('completed_at')->dateTime()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

@@ -14,11 +14,11 @@
 }
 
 .fi-main-ctn {
-    @apply mx-auto w-full max-w-[88rem] px-3 py-3 sm:px-4 lg:px-5;
+    @apply w-full max-w-none px-3 py-2.5 sm:px-4 lg:px-5;
 }
 
 .fi-page {
-    @apply w-full gap-y-3;
+    @apply w-full gap-y-2.5;
 }
 
 .fi-page-header {
@@ -26,7 +26,7 @@
 }
 
 .fi-header-heading {
-    @apply text-lg font-semibold tracking-tight text-gray-950 sm:text-xl dark:text-white;
+    @apply text-lg font-semibold tracking-tight text-gray-950 dark:text-white;
 }
 
 .fi-header-subheading {
@@ -39,6 +39,19 @@
 
 .fi-topbar {
     @apply min-h-12 border-b border-gray-200/80 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/85;
+}
+
+.fi-topbar nav,
+.fi-topbar {
+    @apply h-12;
+}
+
+.fi-logo {
+    @apply text-base font-semibold tracking-tight;
+}
+
+.fi-global-search {
+    @apply max-w-72;
 }
 
 .fi-sidebar {
@@ -61,6 +74,10 @@
     @apply rounded-md px-2 py-1.5 text-[0.8125rem] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white;
 }
 
+.fi-sidebar-item-icon {
+    @apply size-[1.125rem];
+}
+
 .fi-sidebar-item-active a {
     @apply bg-blue-50 font-semibold text-blue-800 ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-100 dark:ring-blue-900/60;
 }
@@ -76,7 +93,7 @@
 .fi-section,
 .fi-wi-widget > section,
 .fi-ta-ctn {
-    @apply rounded-md border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900;
+    @apply rounded-md border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.035)] dark:border-gray-800 dark:bg-gray-900;
 }
 
 .fi-section-header {
@@ -88,7 +105,7 @@
 }
 
 .fi-wi-stats-overview-stat {
-    @apply relative min-h-20 overflow-hidden rounded-md border border-gray-200/80 bg-white px-3 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900;
+    @apply relative min-h-16 overflow-hidden rounded-md border border-gray-200/80 bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900;
 }
 
 .fi-wi-stats-overview-stat::before {
@@ -97,7 +114,7 @@
 }
 
 .fi-wi-stats-overview-stat-value {
-    @apply text-lg font-semibold tracking-tight;
+    @apply text-base font-semibold tracking-tight;
 }
 
 .fi-wi-stats-overview-stat-label {
@@ -105,7 +122,7 @@
 }
 
 .fi-wi-stats-overview-stat-description {
-    @apply text-xs leading-5 text-gray-500 dark:text-gray-400;
+    @apply text-xs leading-4 text-gray-500 dark:text-gray-400;
 }
 
 .fi-wi-chart {
@@ -134,11 +151,11 @@
 }
 
 .fi-ta-header {
-    @apply px-3 py-2.5;
+    @apply gap-2 px-3 py-2;
 }
 
 .fi-ta-search-field .fi-input-wrp {
-    @apply h-8 min-w-64 text-sm;
+    @apply h-8 min-w-56 text-sm;
 }
 
 .fi-ta-table {
@@ -147,7 +164,7 @@
 
 .fi-ta-header-cell,
 .fi-ta-cell {
-    @apply px-3 py-2.5;
+    @apply px-2.5 py-2;
 }
 
 .fi-ta-header-cell {
@@ -163,16 +180,25 @@
 }
 
 .fi-ta-pagination {
-    @apply px-3 py-2;
+    @apply px-3 py-1.5 text-xs;
+}
+
+.fi-ta-actions {
+    @apply gap-1;
+}
+
+.fi-link,
+.fi-ac-link-action {
+    @apply text-xs;
 }
 
 .fi-btn {
-    @apply rounded-md text-sm;
+    @apply h-8 rounded-md px-3 text-sm;
 }
 
 .fi-input-wrp,
 .fi-fo-field-wrp .choices__inner {
-    @apply rounded-md text-sm;
+    @apply min-h-8 rounded-md text-sm;
 }
 
 .fi-fo-component-ctn {
@@ -185,7 +211,12 @@
 
 .fi-fieldset,
 .fi-section-content {
-    @apply px-4 py-3;
+    @apply px-4 py-2.5;
+}
+
+.fi-fo-field-wrp-label,
+.fi-fo-field-wrp-helper-text {
+    @apply text-xs;
 }
 
 .tms-page {

@@ -13,10 +13,15 @@ class VehicleTypesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->striped()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
             ->columns([
                 TextColumn::make('name')
+                    ->limit(34)
                     ->searchable(),
                 TextColumn::make('asset_type')
+                    ->label('Asset')
                     ->badge()
                     ->searchable(),
                 TextColumn::make('axle_count')
