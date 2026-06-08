@@ -15,7 +15,7 @@ class Dashboard extends BaseDashboard
 
     public function getSubheading(): ?string
     {
-        return 'Monitor tyre inventory, fleet fitment, movement activity, and approvals from one control surface.';
+        return 'Tyre inventory, fleet fitment, movement activity, and approvals.';
     }
 
     public function getColumns(): int | array

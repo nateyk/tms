@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('16.25rem')
+            ->sidebarWidth('13.75rem')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.hooks.head'))
             ->navigationGroups([
