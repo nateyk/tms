@@ -2,7 +2,7 @@
     $filled = $mapData->whereNotNull('tyre_code')->count();
     $total = $mapData->count();
     $empty = $total - $filled;
-    $spareCount = $spareTyres->count();
+    $spareCount = $spareTyres->whereNotNull('tyre_code')->count();
     $selectedSlot = $selectedPosition ? $mapData->firstWhere('code', $selectedPosition) : null;
     $isTrailer = $vehicle->asset_type?->value === 'trailer';
     $guideGroups = $isTrailer
@@ -64,7 +64,7 @@
                         <span>Open</span>
                         <strong>{{ $empty }}</strong>
                     </div>
-                    @if ($spareCount > 0)
+                    @if ($spareTyres->isNotEmpty())
                         <div>
                             <span>Spares</span>
                             <strong>{{ $spareCount }}/{{ $spareCapacity }}</strong>
@@ -148,11 +148,18 @@
                             </div>
                             <div class="tms-spare-list">
                                 @foreach ($spareTyres as $spare)
-                                    <article class="tms-spare-card">
+                                    <article @class(['tms-spare-card', 'is-empty' => ! $spare['tyre_code']])>
                                         <strong>{{ $spare['display_code'] ?: '?' }}</strong>
                                         <span>
-                                            <b>{{ $spare['tyre_code'] }}</b>
-                                            <small>{{ $spare['owner_label'] }} | {{ $spare['serial_number'] }}</small>
+                                            <b>{{ $spare['tyre_code'] ?: 'No spare tyre assigned' }}</b>
+                                            <small>
+                                                {{ $spare['owner_label'] }}
+                                                @if ($spare['serial_number'])
+                                                    | {{ $spare['serial_number'] }}
+                                                @else
+                                                    | Open pocket
+                                                @endif
+                                            </small>
                                         </span>
                                     </article>
                                 @endforeach

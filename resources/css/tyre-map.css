@@ -502,6 +502,11 @@
     padding: 0.56rem;
 }
 
+.tms-spare-card.is-empty {
+    border-color: color-mix(in srgb, #94a3b8 60%, var(--tms-line));
+    background: color-mix(in srgb, #f8fafc 74%, var(--tms-paper));
+}
+
 .tms-spare-card > strong {
     display: inline-grid;
     place-items: center;
@@ -512,6 +517,12 @@
     color: #ffffff;
     font-size: 1rem;
     font-weight: 900;
+}
+
+.tms-spare-card.is-empty > strong {
+    background: #64748b;
+    outline: 2px dashed color-mix(in srgb, #60a5fa 68%, transparent);
+    outline-offset: 2px;
 }
 
 .tms-spare-card span {

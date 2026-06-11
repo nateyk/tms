@@ -91,27 +91,34 @@ class VehicleTyreMap extends Component
             }
         }
 
-        $spareTyres = Tyre::query()
-            ->where('current_location_type', TyreLocationType::PowerVehicle)
+        $spareCode = $assetType === AssetType::Trailer->value ? 'X' : 'W';
+        $spareLabel = $assetType === AssetType::Trailer->value ? 'Trailer spare' : 'Power spare';
+
+        $assignedSpareTyres = Tyre::query()
+            ->where('current_location_type', TyreLocationType::PowerVehicle->value)
             ->where('current_location_id', $spareOwner->id)
-            ->where('current_position_code', 'like', 'SPARE-%')
+            ->where('current_position_code', 'SPARE-'.$spareCode)
             ->with('brand')
             ->orderBy('current_position_code')
             ->get()
-            ->map(function (Tyre $tyre) use ($spareOwner, $vehicle): array {
-                $brand = $tyre->brand;
+            ->keyBy(fn (Tyre $tyre): string => str_replace('SPARE-', '', (string) $tyre->current_position_code));
+
+        $spareTyres = collect([$spareCode])
+            ->map(function (string $displayCode) use ($assignedSpareTyres, $spareCode, $spareLabel): array {
+                $tyre = $assignedSpareTyres->get($displayCode);
+                $brand = $tyre instanceof Tyre ? $tyre->brand : null;
                 if (! $brand instanceof TyreBrand) {
                     $brand = null;
                 }
 
                 return [
-                    'position' => (string) $tyre->current_position_code,
-                    'display_code' => str_replace('SPARE-', '', (string) $tyre->current_position_code),
-                    'tyre_code' => $tyre->tyre_code,
-                    'serial_number' => $tyre->serial_number,
+                    'position' => 'SPARE-'.$spareCode,
+                    'display_code' => $displayCode,
+                    'tyre_code' => $tyre instanceof Tyre ? $tyre->tyre_code : null,
+                    'serial_number' => $tyre instanceof Tyre ? $tyre->serial_number : null,
                     'brand' => $brand?->name,
-                    'status' => $this->resolveTyreStatus($tyre)?->label() ?? 'Available',
-                    'owner_label' => $spareOwner->id === $vehicle->id ? 'Power unit spare' : 'Combination spare',
+                    'status' => $this->resolveTyreStatus($tyre)?->label() ?? 'Open spare pocket',
+                    'owner_label' => $spareLabel,
                 ];
             });
 
@@ -181,7 +188,7 @@ class VehicleTyreMap extends Component
             'mapData' => $mapData,
             'emptySlots' => $emptySlots,
             'spareTyres' => $spareTyres,
-            'spareCapacity' => 2,
+            'spareCapacity' => $spareTyres->count(),
             'konvaConfig' => $konvaConfig,
             'movementsIndexUrl' => TyreMovementResource::getUrl('index'),
             'legend' => [

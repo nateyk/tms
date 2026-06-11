@@ -2,6 +2,7 @@ import Konva from 'konva';
 
 const DESIGN_WIDTH = 520;
 const DESIGN_HEIGHT = 1510;
+const TRUCK_BODY_BOTTOM_PADDING = 132;
 const BODY_X = 192;
 const BODY_W = 136;
 const BODY_TOP = 34;
@@ -152,7 +153,7 @@ function designFor(mode, slots) {
 
     return {
         width: DESIGN_WIDTH,
-        height: Math.max(760, Math.min(DESIGN_HEIGHT, lastAxle + 132)),
+        height: Math.max(760, Math.min(DESIGN_HEIGHT, lastAxle + TRUCK_BODY_BOTTOM_PADDING)),
     };
 }
 
