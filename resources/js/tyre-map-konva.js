@@ -126,10 +126,34 @@ function layoutFor(slot, mode) {
     };
 }
 
-function designFor(mode) {
-    return mode === 'trailer'
-        ? TRAILER_DESIGN
-        : { width: DESIGN_WIDTH, height: DESIGN_HEIGHT };
+function axleCentersForSlots(slots, mode) {
+    const centers = new Set();
+
+    (slots ?? []).forEach((slot) => {
+        const spec = layoutFor(slot, mode);
+        if (!spec || spec.kind === 'spare' || !spec.tire) {
+            return;
+        }
+
+        const [, y, , h] = spec.tire;
+        centers.add(Math.round(y + h / 2));
+    });
+
+    return Array.from(centers).sort((a, b) => a - b);
+}
+
+function designFor(mode, slots) {
+    if (mode === 'trailer') {
+        return TRAILER_DESIGN;
+    }
+
+    const axleCenters = axleCentersForSlots(slots, mode);
+    const lastAxle = axleCenters.length > 0 ? Math.max(...axleCenters) : 246;
+
+    return {
+        width: DESIGN_WIDTH,
+        height: Math.max(760, Math.min(DESIGN_HEIGHT, lastAxle + 132)),
+    };
 }
 
 function drawFrame(layer, p, design) {
@@ -420,18 +444,21 @@ function drawTrailerBody(layer, p) {
     });
 }
 
-function drawVehicleBody(layer, p, mode) {
+function drawVehicleBody(layer, p, mode, slots, design) {
     if (mode === 'trailer') {
         drawTrailerBody(layer, p);
         return;
     }
+
+    const bodyBottom = design.height - 32;
+    const axleCenters = axleCentersForSlots(slots, mode);
 
     layer.add(
         new Konva.Rect({
             x: BODY_X,
             y: 168,
             width: BODY_W,
-            height: BODY_BOTTOM - 198,
+            height: bodyBottom - 198,
             fill: p.bodyFill,
             stroke: p.bodyLine,
             strokeWidth: 2,
@@ -510,8 +537,8 @@ function drawVehicleBody(layer, p, mode) {
     });
 
     [
-        [BODY_X + 10, 170, BODY_BOTTOM - 210],
-        [BODY_X + BODY_W - 10, 170, BODY_BOTTOM - 210],
+        [BODY_X + 10, 170, bodyBottom - 210],
+        [BODY_X + BODY_W - 10, 170, bodyBottom - 210],
     ].forEach(([x, y, h]) => {
         layer.add(
             new Konva.Line({
@@ -524,12 +551,12 @@ function drawVehicleBody(layer, p, mode) {
         );
     });
 
-    [246, 458, 638, 964, 1304, 1444].forEach((y) => drawAxle(layer, y, p));
+    axleCenters.forEach((y) => drawAxle(layer, y, p));
 
     layer.add(
         new Konva.Rect({
             x: BODY_X - 18,
-            y: BODY_BOTTOM - 22,
+            y: bodyBottom - 22,
             width: BODY_W + 36,
             height: 20,
             fill: p.bodyShade,
@@ -540,8 +567,8 @@ function drawVehicleBody(layer, p, mode) {
     );
 
     [
-        [BODY_X - 26, BODY_BOTTOM - 22],
-        [BODY_X + BODY_W + 8, BODY_BOTTOM - 22],
+        [BODY_X - 26, bodyBottom - 22],
+        [BODY_X + BODY_W + 8, bodyBottom - 22],
     ].forEach(([x, y]) => {
         layer.add(
             new Konva.Rect({
@@ -640,7 +667,7 @@ function drawSlot(layer, slot, selected, onSelect, p, mode) {
 
 function createTyreMap(container, config) {
     const mode = config.assetType === 'trailer' ? 'trailer' : 'truck';
-    const design = designFor(mode);
+    const design = designFor(mode, config.slots ?? []);
     const stage = new Konva.Stage({
         container,
         width: design.width,
@@ -653,7 +680,7 @@ function createTyreMap(container, config) {
         const p = palette();
         layer.destroyChildren();
         drawFrame(layer, p, design);
-        drawVehicleBody(layer, p, mode);
+        drawVehicleBody(layer, p, mode, config.slots ?? [], design);
         (config.slots ?? []).forEach((slot) => {
             drawSlot(
                 layer,

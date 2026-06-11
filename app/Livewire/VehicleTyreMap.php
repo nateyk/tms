@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\AssetType;
 use App\Enums\TyreAssignmentStatus;
+use App\Enums\TyreLocationType;
 use App\Enums\TyreStatus;
 use App\Filament\Resources\TyreMovements\TyreMovementResource;
 use App\Models\Tyre;
@@ -82,6 +83,38 @@ class VehicleTyreMap extends Component
             ->get()
             ->keyBy('position_code');
 
+        $spareOwner = $vehicle;
+        if ($assetType === AssetType::Trailer->value) {
+            $attachedPower = $vehicle->attachedPower();
+            if ($attachedPower instanceof Vehicle) {
+                $spareOwner = $attachedPower;
+            }
+        }
+
+        $spareTyres = Tyre::query()
+            ->where('current_location_type', TyreLocationType::PowerVehicle)
+            ->where('current_location_id', $spareOwner->id)
+            ->where('current_position_code', 'like', 'SPARE-%')
+            ->with('brand')
+            ->orderBy('current_position_code')
+            ->get()
+            ->map(function (Tyre $tyre) use ($spareOwner, $vehicle): array {
+                $brand = $tyre->brand;
+                if (! $brand instanceof TyreBrand) {
+                    $brand = null;
+                }
+
+                return [
+                    'position' => (string) $tyre->current_position_code,
+                    'display_code' => str_replace('SPARE-', '', (string) $tyre->current_position_code),
+                    'tyre_code' => $tyre->tyre_code,
+                    'serial_number' => $tyre->serial_number,
+                    'brand' => $brand?->name,
+                    'status' => $this->resolveTyreStatus($tyre)?->label() ?? 'Available',
+                    'owner_label' => $spareOwner->id === $vehicle->id ? 'Power unit spare' : 'Combination spare',
+                ];
+            });
+
         /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $positionCollection */
         $positionCollection = collect($positions);
 
@@ -147,6 +180,8 @@ class VehicleTyreMap extends Component
             'vehicle' => $vehicle,
             'mapData' => $mapData,
             'emptySlots' => $emptySlots,
+            'spareTyres' => $spareTyres,
+            'spareCapacity' => 2,
             'konvaConfig' => $konvaConfig,
             'movementsIndexUrl' => TyreMovementResource::getUrl('index'),
             'legend' => [

@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\MovementType;
 use App\Enums\PredefinedTyreLayout;
+use App\Enums\TyreLocationType;
 use App\Models\Vehicle;
+use App\Models\VehicleCombination;
+use Livewire\Livewire;
 use App\Services\TyreMapWorkflowService;
 use App\Services\VehicleTyreLayoutBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,5 +83,49 @@ class TyreMapWorkflowTest extends TestCase
             );
             $this->assertCount($preset->tyreCount(), $layout['positions']);
         }
+    }
+
+    public function test_power_map_shows_spare_tyres_outside_mounted_position_count(): void
+    {
+        $power = Vehicle::query()
+            ->where('vehicle_code', 'like', '%A00765')
+            ->firstOrFail();
+
+        $spare = \App\Models\Tyre::query()
+            ->where('current_location_type', TyreLocationType::PowerVehicle)
+            ->where('current_location_id', $power->id)
+            ->where('current_position_code', 'like', 'SPARE-%')
+            ->firstOrFail();
+
+        Livewire::test(\App\Livewire\VehicleTyreMap::class, ['vehicleId' => $power->id])
+            ->assertSee('Mounted')
+            ->assertSee('10/10')
+            ->assertSee('Spare tyres')
+            ->assertSee($spare->serial_number)
+            ->assertDontSee('11/10');
+    }
+
+    public function test_attached_trailer_map_shows_power_unit_spare_tyres_as_combination_spares(): void
+    {
+        $power = Vehicle::query()
+            ->where('vehicle_code', 'like', '%A00765')
+            ->firstOrFail();
+
+        $trailerId = VehicleCombination::query()
+            ->where('power_vehicle_id', $power->id)
+            ->where('status', 'active')
+            ->value('trailer_vehicle_id');
+
+        $spare = \App\Models\Tyre::query()
+            ->where('current_location_type', TyreLocationType::PowerVehicle)
+            ->where('current_location_id', $power->id)
+            ->where('current_position_code', 'like', 'SPARE-%')
+            ->firstOrFail();
+
+        Livewire::test(\App\Livewire\VehicleTyreMap::class, ['vehicleId' => (int) $trailerId])
+            ->assertSee('Mounted')
+            ->assertSee('Spare tyres')
+            ->assertSee('Combination spare')
+            ->assertSee($spare->serial_number);
     }
 }

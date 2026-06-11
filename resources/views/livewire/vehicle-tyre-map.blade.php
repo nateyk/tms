@@ -2,6 +2,7 @@
     $filled = $mapData->whereNotNull('tyre_code')->count();
     $total = $mapData->count();
     $empty = $total - $filled;
+    $spareCount = $spareTyres->count();
     $selectedSlot = $selectedPosition ? $mapData->firstWhere('code', $selectedPosition) : null;
     $isTrailer = $vehicle->asset_type?->value === 'trailer';
     $guideGroups = $isTrailer
@@ -63,6 +64,12 @@
                         <span>Open</span>
                         <strong>{{ $empty }}</strong>
                     </div>
+                    @if ($spareCount > 0)
+                        <div>
+                            <span>Spares</span>
+                            <strong>{{ $spareCount }}/{{ $spareCapacity }}</strong>
+                        </div>
+                    @endif
                 </div>
             </header>
 
@@ -130,6 +137,29 @@
                         </div>
                     @endif
 
+                    @if ($spareTyres->isNotEmpty())
+                        <div class="tms-spare-bay">
+                            <div class="tms-spare-bay-head">
+                                <div>
+                                    <p>Spare tyres</p>
+                                    <strong>{{ $spareCount }}/{{ $spareCapacity }}</strong>
+                                </div>
+                                <span>Stored, not mounted</span>
+                            </div>
+                            <div class="tms-spare-list">
+                                @foreach ($spareTyres as $spare)
+                                    <article class="tms-spare-card">
+                                        <strong>{{ $spare['display_code'] ?: '?' }}</strong>
+                                        <span>
+                                            <b>{{ $spare['tyre_code'] }}</b>
+                                            <small>{{ $spare['owner_label'] }} | {{ $spare['serial_number'] }}</small>
+                                        </span>
+                                    </article>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="tms-vehicle-tyre-guide">
                         <h4>Tyre position guide</h4>
                         @foreach ($guideGroups as $group)
@@ -160,9 +190,9 @@
                                                     @if ($slot['tyre_code'])
                                                         {{ $slot['tyre_code'] }}
                                                     @elseif ($slot['install_url'] ?? null)
-                                                        Open position - fill tyre
+                                                        No tyre mounted - fill position
                                                     @else
-                                                        Open position
+                                                        No tyre mounted
                                                     @endif
                                                 </small>
                                             </span>

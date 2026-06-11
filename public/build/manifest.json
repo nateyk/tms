@@ -70,7 +70,7 @@
     "isEntry": true
   },
   "resources/css/tyre-map.css": {
-    "file": "assets/tyre-map-B7I4QJ83.css",
+    "file": "assets/tyre-map-BkdR6zvT.css",
     "name": "tyre-map",
     "names": [
       "tyre-map.css"
@@ -85,7 +85,7 @@
     "isEntry": true
   },
   "resources/js/tyre-map-konva.js": {
-    "file": "assets/tyre-map-konva-CXDLcJnP.js",
+    "file": "assets/tyre-map-konva-DyZRcvft.js",
     "name": "tyre-map-konva",
     "src": "resources/js/tyre-map-konva.js",
     "isEntry": true
