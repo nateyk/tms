@@ -19,7 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'vehicle.view', 'vehicle.create', 'vehicle.update', 'vehicle.tyre-map',
             'trailer.assign', 'trailer.transfer',
             'movement.create', 'movement.check', 'movement.approve', 'movement.reject',
-            'maintenance.create', 'maintenance.approve', 'maintenance.complete',
+            'maintenance.create', 'maintenance.approve', 'maintenance.reject', 'maintenance.complete',
             'disposal.create', 'disposal.check', 'disposal.approve', 'disposal.reject',
             'report.view', 'report.export',
             'audit.view', 'settings.manage',
@@ -38,9 +38,20 @@ class RolesAndPermissionsSeeder extends Seeder
                 'report.view',
             ],
             'Store Manager' => [
-                'tyre.view', 'tyre.create', 'tyre.update', 'tyre.approve',
+                'tyre.view', 'tyre.create', 'tyre.update',
                 'vehicle.view', 'vehicle.update', 'movement.create', 'movement.check',
+                'trailer.assign', 'trailer.transfer',
+                'maintenance.create', 'maintenance.complete',
                 'disposal.create', 'disposal.check', 'report.view', 'report.export',
+            ],
+            'Company Manager' => [
+                'tyre.view', 'tyre.approve',
+                'vehicle.view', 'vehicle.tyre-map',
+                'movement.approve', 'movement.reject',
+                'maintenance.approve', 'maintenance.reject',
+                'disposal.approve', 'disposal.reject',
+                'report.view', 'report.export',
+                'audit.view',
             ],
             'Technic Clerk' => [
                 'tyre.view', 'vehicle.view', 'vehicle.tyre-map',
@@ -75,5 +86,25 @@ class RolesAndPermissionsSeeder extends Seeder
         );
 
         $admin->syncRoles(['Super Admin']);
+
+        $storeManager = User::query()->firstOrCreate(
+            ['email' => 'store@menkem.com'],
+            [
+                'name' => 'Store Manager',
+                'password' => 'password',
+            ]
+        );
+
+        $storeManager->syncRoles(['Store Manager']);
+
+        $companyManager = User::query()->firstOrCreate(
+            ['email' => 'manager@menkem.com'],
+            [
+                'name' => 'Company Manager',
+                'password' => 'password',
+            ]
+        );
+
+        $companyManager->syncRoles(['Company Manager']);
     }
 }

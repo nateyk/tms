@@ -43,6 +43,7 @@ class User extends Authenticatable implements FilamentUser
             'Admin',
             'Store Keeper',
             'Store Manager',
+            'Company Manager',
             'Technic Clerk',
             'Technic and Maintenance Head',
             'Auditor',

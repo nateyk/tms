@@ -28,6 +28,7 @@ trait InteractsWithVoucherWorkflow
     protected function voucherWorkflowHeaderActions(string $modelClass, string $pdfRouteName): array
     {
         $approval = app(ApprovalService::class);
+        $permissions = $this->voucherWorkflowPermissions($modelClass);
 
         return [
             Action::make('download_pdf')
@@ -41,7 +42,7 @@ trait InteractsWithVoucherWorkflow
                 ->icon('heroicon-o-paper-airplane')
                 ->color('info')
                 ->visible(fn () => $this->voucherHasStatus($modelClass, VoucherStatus::Draft))
-                ->authorize(fn () => $this->userCan('movement.create'))
+                ->authorize(fn () => $this->userCan($permissions['create']))
                 ->requiresConfirmation()
                 ->action(fn () => $this->handleVoucherStep(
                     fn () => $approval->submit($this->filamentRecord($modelClass)),
@@ -53,7 +54,7 @@ trait InteractsWithVoucherWorkflow
                 ->icon('heroicon-o-clipboard-document-check')
                 ->color('warning')
                 ->visible(fn () => $this->voucherHasStatus($modelClass, VoucherStatus::Submitted))
-                ->authorize(fn () => $this->userCan('movement.check'))
+                ->authorize(fn () => $this->userCan($permissions['check']))
                 ->requiresConfirmation()
                 ->action(fn () => $this->handleVoucherStep(
                     fn () => $approval->check($this->filamentRecord($modelClass)),
@@ -65,7 +66,7 @@ trait InteractsWithVoucherWorkflow
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
                 ->visible(fn () => $this->voucherHasStatus($modelClass, VoucherStatus::Checked))
-                ->authorize(fn () => $this->userCan('movement.approve'))
+                ->authorize(fn () => $this->userCan($permissions['approve']))
                 ->requiresConfirmation()
                 ->action(fn () => $this->handleVoucherStep(
                     fn () => $approval->approve($this->filamentRecord($modelClass)),
@@ -77,7 +78,7 @@ trait InteractsWithVoucherWorkflow
                 ->icon('heroicon-o-check-circle')
                 ->color('primary')
                 ->visible(fn () => $this->voucherHasStatus($modelClass, VoucherStatus::Approved))
-                ->authorize(fn () => $this->userCan('movement.approve'))
+                ->authorize(fn () => $this->userCan($permissions['approve']))
                 ->requiresConfirmation()
                 ->modalDescription('This will apply changes to tyre inventory. This cannot be undone.')
                 ->action(fn () => $this->handleVoucherStep(
@@ -90,7 +91,7 @@ trait InteractsWithVoucherWorkflow
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->visible(fn () => $this->voucherIsRejectable($modelClass))
-                ->authorize(fn () => $this->userCan('movement.reject'))
+                ->authorize(fn () => $this->userCan($permissions['reject']))
                 ->schema([
                     Textarea::make('reason')->required(),
                 ])
@@ -104,6 +105,40 @@ trait InteractsWithVoucherWorkflow
             DeleteAction::make()
                 ->visible(fn () => $this->voucherHasStatus($modelClass, VoucherStatus::Draft)),
         ];
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     * @return array{create: string, check: string, approve: string, reject: string}
+     */
+    protected function voucherWorkflowPermissions(string $modelClass): array
+    {
+        return match ($modelClass) {
+            TyreMovement::class => [
+                'create' => 'movement.create',
+                'check' => 'movement.check',
+                'approve' => 'movement.approve',
+                'reject' => 'movement.reject',
+            ],
+            TrailerTransfer::class => [
+                'create' => 'trailer.transfer',
+                'check' => 'movement.check',
+                'approve' => 'movement.approve',
+                'reject' => 'movement.reject',
+            ],
+            TyreDisposal::class => [
+                'create' => 'disposal.create',
+                'check' => 'disposal.check',
+                'approve' => 'disposal.approve',
+                'reject' => 'disposal.reject',
+            ],
+            default => [
+                'create' => 'movement.create',
+                'check' => 'movement.check',
+                'approve' => 'movement.approve',
+                'reject' => 'movement.reject',
+            ],
+        };
     }
 
     protected function voucherHasStatus(string $modelClass, VoucherStatus $status): bool

@@ -78,6 +78,7 @@ trait InteractsWithMaintenanceWorkflow
                 ->label('Reject')
                 ->color('danger')
                 ->visible(fn () => $this->maintenanceIsRejectable())
+                ->authorize(fn () => $this->userCan('maintenance.reject'))
                 ->schema([
                     Textarea::make('reason')->required(),
                 ])
