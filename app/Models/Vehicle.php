@@ -7,6 +7,7 @@ use App\Enums\AssignmentAssetType;
 use App\Enums\CombinationStatus;
 use App\Enums\TyreAssignmentStatus;
 use App\Enums\VehicleStatus;
+use App\Services\VehicleAssetIdentityService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,9 @@ class Vehicle extends Model
     protected $fillable = [
         'vehicle_code',
         'plate_number',
+        'chassis_number',
+        'engine_number',
+        'manufacture_year',
         'asset_type',
         'vehicle_type_id',
         'status',
@@ -34,7 +38,21 @@ class Vehicle extends Model
             'asset_type' => AssetType::class,
             'status' => VehicleStatus::class,
             'odometer' => 'integer',
+            'manufacture_year' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Vehicle $vehicle): void {
+            $identity = app(VehicleAssetIdentityService::class);
+
+            foreach (array_keys($identity->uniqueIdentityFields()) as $field) {
+                $vehicle->{$field} = $identity->normalize($vehicle->{$field});
+            }
+
+            $identity->assertUnique($vehicle);
+        });
     }
 
     public function vehicleType(): BelongsTo

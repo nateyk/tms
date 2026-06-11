@@ -96,6 +96,9 @@ class TmsSampleDataSeeder extends Seeder
             ['vehicle_code' => 'TRK-001'],
             [
                 'plate_number' => 'AA-001-TRK',
+                'chassis_number' => 'CH-TRK-001',
+                'engine_number' => 'EN-TRK-001',
+                'manufacture_year' => 2020,
                 'asset_type' => AssetType::PowerVehicle,
                 'vehicle_type_id' => $powerType->id,
                 'status' => VehicleStatus::Active,
@@ -107,6 +110,9 @@ class TmsSampleDataSeeder extends Seeder
             ['vehicle_code' => 'TRK-008'],
             [
                 'plate_number' => 'AA-008-TRK',
+                'chassis_number' => 'CH-TRK-008',
+                'engine_number' => 'EN-TRK-008',
+                'manufacture_year' => 2020,
                 'asset_type' => AssetType::PowerVehicle,
                 'vehicle_type_id' => $powerType->id,
                 'status' => VehicleStatus::Active,
@@ -118,6 +124,9 @@ class TmsSampleDataSeeder extends Seeder
             ['vehicle_code' => 'TRK-024'],
             [
                 'plate_number' => 'AA-024-HTK',
+                'chassis_number' => 'CH-TRK-024',
+                'engine_number' => 'EN-TRK-024',
+                'manufacture_year' => 2024,
                 'asset_type' => AssetType::PowerVehicle,
                 'vehicle_type_id' => $heavyTruckType->id,
                 'status' => VehicleStatus::Active,
@@ -129,6 +138,8 @@ class TmsSampleDataSeeder extends Seeder
             ['vehicle_code' => 'TRL-045'],
             [
                 'plate_number' => 'AA-045-TRL',
+                'chassis_number' => 'CH-TRL-045',
+                'manufacture_year' => 2021,
                 'asset_type' => AssetType::Trailer,
                 'vehicle_type_id' => $trailerType->id,
                 'status' => VehicleStatus::Active,

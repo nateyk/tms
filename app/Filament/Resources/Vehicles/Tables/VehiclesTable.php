@@ -27,6 +27,14 @@ class VehiclesTable
                 TextColumn::make('plate_number')
                     ->label('Plate')
                     ->searchable(),
+                TextColumn::make('chassis_number')
+                    ->label('Chassis')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('engine_number')
+                    ->label('Engine')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('asset_type')
                     ->label('Asset')
                     ->badge()
@@ -47,6 +55,10 @@ class VehiclesTable
                     ->numeric()
                     ->sortable()
                     ->toggleable(),
+                TextColumn::make('manufacture_year')
+                    ->label('Year')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

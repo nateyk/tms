@@ -15,10 +15,16 @@ class VehicleInfolist
                 TextEntry::make('vehicle_code'),
                 TextEntry::make('plate_number')
                     ->placeholder('-'),
+                TextEntry::make('chassis_number')
+                    ->placeholder('-'),
+                TextEntry::make('engine_number')
+                    ->placeholder('-'),
                 TextEntry::make('asset_type')
                     ->badge(),
                 TextEntry::make('vehicleType.name')
                     ->label('Vehicle type'),
+                TextEntry::make('manufacture_year')
+                    ->placeholder('-'),
                 TextEntry::make('status')
                     ->badge(),
                 TextEntry::make('currentLocation.name')
