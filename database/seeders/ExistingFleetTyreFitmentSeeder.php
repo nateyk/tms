@@ -9,9 +9,17 @@ class ExistingFleetTyreFitmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $summary = app(ExistingFleetTyreFitmentImporter::class)->import($this->fitments());
+        $importer = app(ExistingFleetTyreFitmentImporter::class);
+        $reset = $importer->resetImportedAndDemoTyres();
+        $summary = $importer->import($this->fitments());
 
         if ($this->command) {
+            $this->command->info(sprintf(
+                'Existing fleet tyre reset: %d tyres, %d assignments removed.',
+                $reset['tyres'],
+                $reset['assignments'],
+            ));
+
             $this->command->info(sprintf(
                 'Existing fleet tyre fitments: %d imported (%d mounted, %d spare), %d skipped.',
                 $summary['imported'],

@@ -121,6 +121,33 @@ class ExistingFleetTyreFitmentImportTest extends TestCase
             ->where('status', TyreAssignmentStatus::Active)
             ->whereRelation('tyre', 'source', TyreSource::ExistingVehicle)
             ->count());
+
+        $this->assertFalse(Tyre::query()->where('tyre_code', 'like', 'TYR-%')->exists());
+        $this->assertFalse(Tyre::query()->where('serial_number', 'like', 'SN-TYR-%')->exists());
+        $this->assertFalse(Tyre::query()->where('source', TyreSource::PurchasedNewTyre)->exists());
+    }
+
+    public function test_full_seed_resets_previous_excel_import_before_reimporting(): void
+    {
+        $this->seed();
+
+        $originalCount = Tyre::query()
+            ->where('source', TyreSource::ExistingVehicle)
+            ->count();
+
+        Tyre::query()->where('source', TyreSource::ExistingVehicle)->firstOrFail()->update([
+            'notes' => 'dirty old import record',
+        ]);
+
+        $this->seed();
+
+        $this->assertSame($originalCount, Tyre::query()
+            ->where('source', TyreSource::ExistingVehicle)
+            ->count());
+
+        $this->assertFalse(Tyre::query()
+            ->where('notes', 'dirty old import record')
+            ->exists());
     }
 
     private function vehicleByPowerSuffix(string $suffix): Vehicle

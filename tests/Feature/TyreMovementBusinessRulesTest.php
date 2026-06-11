@@ -99,13 +99,18 @@ class TyreMovementBusinessRulesTest extends TestCase
 
     public function test_vehicle_to_vehicle_movement_closes_old_assignment_and_creates_new(): void
     {
-        $fromVehicle = Vehicle::query()->where('vehicle_code', 'TRK-001')->firstOrFail();
+        $fromVehicle = Vehicle::query()
+            ->where('asset_type', AssetType::PowerVehicle->value)
+            ->whereHas('activeTyreAssignments')
+            ->firstOrFail();
         $toVehicle = Vehicle::query()->where('vehicle_code', 'TRK-008')->firstOrFail();
         $tyre = Tyre::query()
             ->whereHas('activeAssignment', fn ($q) => $q->where('asset_id', $fromVehicle->id))
             ->firstOrFail();
 
         $assignment = $tyre->activeAssignment;
+        $this->assertInstanceOf(TyreAssignment::class, $assignment);
+
         $fromPosition = $assignment->position_code;
 
         $movement = TyreMovement::query()->create([
@@ -126,6 +131,7 @@ class TyreMovementBusinessRulesTest extends TestCase
         $this->movementService()->complete($movement, $this->user->id);
 
         $assignment->refresh();
+        $this->assertInstanceOf(TyreAssignment::class, $assignment);
         $this->assertEquals(TyreAssignmentStatus::Removed, $assignment->status);
 
         $newAssignment = TyreAssignment::query()

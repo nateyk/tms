@@ -19,6 +19,45 @@ use Illuminate\Support\Facades\DB;
 class ExistingFleetTyreFitmentImporter
 {
     /**
+     * @return array{tyres: int, assignments: int, movements: int, maintenances: int, disposals: int, inspections: int}
+     */
+    public function resetImportedAndDemoTyres(): array
+    {
+        $tyreIds = Tyre::withTrashed()
+            ->where('source', TyreSource::ExistingVehicle)
+            ->orWhere('tyre_code', 'like', 'TYR-%')
+            ->orWhere('serial_number', 'like', 'SN-TYR-%')
+            ->pluck('id');
+
+        if ($tyreIds->isEmpty()) {
+            return [
+                'tyres' => 0,
+                'assignments' => 0,
+                'movements' => 0,
+                'maintenances' => 0,
+                'disposals' => 0,
+                'inspections' => 0,
+            ];
+        }
+
+        return DB::transaction(function () use ($tyreIds): array {
+            $ids = $tyreIds->all();
+
+            $counts = [
+                'assignments' => DB::table('tyre_assignments')->whereIn('tyre_id', $ids)->delete(),
+                'movements' => DB::table('tyre_movements')->whereIn('tyre_id', $ids)->delete(),
+                'maintenances' => DB::table('tyre_maintenance')->whereIn('tyre_id', $ids)->delete(),
+                'disposals' => DB::table('tyre_disposals')->whereIn('tyre_id', $ids)->delete(),
+                'inspections' => DB::table('tyre_inspections')->whereIn('tyre_id', $ids)->delete(),
+            ];
+
+            $counts['tyres'] = Tyre::withTrashed()->whereIn('id', $ids)->forceDelete();
+
+            return $counts;
+        });
+    }
+
+    /**
      * @param  list<array{sheet: string, positions: list<array{position: string, brand?: string|null, serial?: string|null, fitted_km?: int|null}>}>  $sheets
      * @return array{imported: int, mounted: int, spares: int, skipped: int, errors: list<string>}
      */
