@@ -7,6 +7,7 @@ use App\Enums\TyreAssignmentStatus;
 use App\Enums\VehicleStatus;
 use App\Models\TyreAssignment;
 use App\Models\Vehicle;
+use App\Models\VehicleCombination;
 use App\Models\VehicleType;
 use App\Services\VehicleAssetIdentityService;
 use App\Services\VehicleAssetImportValidator;
@@ -204,5 +205,71 @@ class VehicleAssetIdentityTest extends TestCase
         $exitCode = Artisan::call('tms:scan-vehicle-asset-duplicates');
 
         $this->assertSame(1, $exitCode);
+    }
+
+    public function test_existing_fleet_workbook_assets_are_seeded_as_power_trailer_pairs(): void
+    {
+        $powerCodes = [
+            'ኢት-3-A00765',
+            'ኢት-3-A14761',
+            'ኢት-3-A14762',
+            'ኢት-3-A14763',
+            'ኢት-3-A14766',
+            'ኢት-3-A17806',
+            'ኢት-3-A17807',
+            'ኢት-3-A17808',
+            'ኢት-3-A17749',
+            'ኢት-3-A21632',
+            'ኢት-3-A21633',
+            'ኢት-3-A21634',
+            'ኢት-3-A21635',
+            'ኢት-3-A21636',
+            'ኢት-3-A23019',
+            'ኢት-3-A27036',
+            'ኢት-3-A27037',
+            'ኢት-3-A27049',
+        ];
+
+        $trailerCodes = [
+            'ኢት-3-34969',
+            'ኢት-3-34051',
+            'ኢት-3-34054',
+            'ኢት-3-34052',
+            'ኢት-3-34055',
+            'ኢት-3-34423',
+            'ኢት-3-34424',
+            'ኢት-3-34425',
+            'ኢት-3-34422',
+            'ኢት-3-36811',
+            'ኢት-3-36816',
+            'ኢት-3-36812',
+            'ኢት-3-36814',
+            'ኢት-3-36815',
+            'ኢት-3-36813',
+            'ኢት-3-34952',
+            'ኢት-3-34951',
+            'ኢት-3-35766',
+        ];
+
+        $this->assertSame(18, Vehicle::query()
+            ->where('asset_type', AssetType::PowerVehicle->value)
+            ->whereIn('vehicle_code', $powerCodes)
+            ->count());
+
+        $this->assertSame(18, Vehicle::query()
+            ->where('asset_type', AssetType::Trailer->value)
+            ->whereIn('vehicle_code', $trailerCodes)
+            ->count());
+
+        foreach ($powerCodes as $index => $powerCode) {
+            $power = Vehicle::query()->where('vehicle_code', $powerCode)->firstOrFail();
+            $trailer = Vehicle::query()->where('vehicle_code', $trailerCodes[$index])->firstOrFail();
+
+            $this->assertTrue(VehicleCombination::query()
+                ->where('power_vehicle_id', $power->id)
+                ->where('trailer_vehicle_id', $trailer->id)
+                ->where('status', 'active')
+                ->exists());
+        }
     }
 }

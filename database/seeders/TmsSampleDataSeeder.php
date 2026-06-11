@@ -146,6 +146,8 @@ class TmsSampleDataSeeder extends Seeder
             ]
         );
 
+        $this->seedExistingFleetAssets($powerType, $trailerType, $admin?->id);
+
         VehicleCombination::query()->firstOrCreate(
             [
                 'power_vehicle_id' => $trk001->id,
@@ -232,5 +234,91 @@ class TmsSampleDataSeeder extends Seeder
                 'status' => TyreStatus::Active,
             ]);
         }
+    }
+
+    private function seedExistingFleetAssets(VehicleType $powerType, VehicleType $trailerType, ?int $userId): void
+    {
+        foreach ($this->existingFleetRows() as $row) {
+            $power = Vehicle::query()->updateOrCreate(
+                ['vehicle_code' => $row['power_plate']],
+                [
+                    'plate_number' => $row['power_plate'],
+                    'engine_number' => $row['engine_number'],
+                    'chassis_number' => $row['power_chassis'],
+                    'manufacture_year' => $row['power_year'],
+                    'asset_type' => AssetType::PowerVehicle,
+                    'vehicle_type_id' => $powerType->id,
+                    'status' => VehicleStatus::Active,
+                    'notes' => trim("Existing fleet import. Driver: {$row['driver']}. Power capacity: {$row['power_capacity_quintal']} quintal. Total capacity: {$row['total_capacity_quintal']} quintal."),
+                ]
+            );
+
+            $trailer = Vehicle::query()->updateOrCreate(
+                ['vehicle_code' => $row['trailer_plate']],
+                [
+                    'plate_number' => $row['trailer_plate'],
+                    'chassis_number' => $row['trailer_chassis'],
+                    'engine_number' => null,
+                    'manufacture_year' => $row['trailer_year'],
+                    'asset_type' => AssetType::Trailer,
+                    'vehicle_type_id' => $trailerType->id,
+                    'status' => VehicleStatus::Active,
+                    'notes' => trim("Existing fleet import. Driver: {$row['driver']}. Trailer capacity: {$row['trailer_capacity_quintal']} quintal. Total capacity: {$row['total_capacity_quintal']} quintal."),
+                ]
+            );
+
+            VehicleCombination::query()->updateOrCreate(
+                [
+                    'power_vehicle_id' => $power->id,
+                    'trailer_vehicle_id' => $trailer->id,
+                    'status' => CombinationStatus::Active,
+                ],
+                [
+                    'attached_date' => now()->toDateString(),
+                    'attached_by' => $userId,
+                    'approved_by' => $userId,
+                    'notes' => 'Existing fleet pairing imported from source workbook.',
+                ]
+            );
+        }
+    }
+
+    /**
+     * @return list<array{
+     *     power_plate: string,
+     *     engine_number: string,
+     *     power_chassis: string,
+     *     trailer_plate: string,
+     *     trailer_chassis: string,
+     *     power_year: int,
+     *     trailer_year: int,
+     *     power_capacity_quintal: int,
+     *     trailer_capacity_quintal: int,
+     *     total_capacity_quintal: int,
+     *     driver: string
+     * }>
+     */
+    private function existingFleetRows(): array
+    {
+        return [
+            ['power_plate' => 'ኢት-3-A00765', 'engine_number' => 'WD61547*170107015817', 'power_chassis' => 'LZZ5BLSF3HN195982', 'trailer_plate' => 'ኢት-3-34969', 'trailer_chassis' => 'LA99FRJ37N0LFY971', 'power_year' => 2017, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ጠብቀው አንዱአለም'],
+            ['power_plate' => 'ኢት-3-A14761', 'engine_number' => 'WD615.47210807031467', 'power_chassis' => 'LZZ5BLSF7MN940307', 'trailer_plate' => 'ኢት-3-34051', 'trailer_chassis' => 'LA99403X7M0JYJ019', 'power_year' => 2021, 'trailer_year' => 2021, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ያሬድ በሻዉረድ'],
+            ['power_plate' => 'ኢት-3-A14762', 'engine_number' => 'WD615.47*210807031447*', 'power_chassis' => 'LZZ5BLSF3MN940305', 'trailer_plate' => 'ኢት-3-34054', 'trailer_chassis' => 'LA99403X7M0JYJ020', 'power_year' => 2021, 'trailer_year' => 2021, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ፋንታ በቀለ'],
+            ['power_plate' => 'ኢት-3-A14763', 'engine_number' => 'WD615.47210807032387', 'power_chassis' => 'LZZ5BLSF9MN940308', 'trailer_plate' => 'ኢት-3-34052', 'trailer_chassis' => 'LA99403X7M0JYJ018', 'power_year' => 2021, 'trailer_year' => 2021, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'እድሜአለም ንጉሴ'],
+            ['power_plate' => 'ኢት-3-A14766', 'engine_number' => 'WD615.47*210807031437', 'power_chassis' => 'LZZ5BLSF5MN940306', 'trailer_plate' => 'ኢት-3-34055', 'trailer_chassis' => 'LA99403X7M0JYJ021', 'power_year' => 2021, 'trailer_year' => 2021, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => '-'],
+            ['power_plate' => 'ኢት-3-A17806', 'engine_number' => 'WD615.47220507043177', 'power_chassis' => 'LZZ5BLSF5NW070908', 'trailer_plate' => 'ኢት-3-34423', 'trailer_chassis' => 'LA99FRA32N0LFY036', 'power_year' => 2022, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'አለማየሁ ሀይሉ'],
+            ['power_plate' => 'ኢት-3-A17807', 'engine_number' => 'WD615.472205070431147', 'power_chassis' => 'LZZ5BLSF7NW070909', 'trailer_plate' => 'ኢት-3-34424', 'trailer_chassis' => 'LA99FRA34N0LFY037', 'power_year' => 2022, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'መሀሪ ፀጋይ'],
+            ['power_plate' => 'ኢት-3-A17808', 'engine_number' => 'WD615.47220607004827', 'power_chassis' => 'LZZ5BLSF3NW070907', 'trailer_plate' => 'ኢት-3-34425', 'trailer_chassis' => 'LA99FRA30NOLFFY035', 'power_year' => 2022, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ዘላለም ጌትነት'],
+            ['power_plate' => 'ኢት-3-A17749', 'engine_number' => 'WD615.47220507043167', 'power_chassis' => 'LZZ5BLSF1NW070906', 'trailer_plate' => 'ኢት-3-34422', 'trailer_chassis' => 'LA99FRA36N0LFY038', 'power_year' => 2022, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ዮናስ ተካ'],
+            ['power_plate' => 'ኢት-3-A21632', 'engine_number' => 'WD615.47*2107070030097', 'power_chassis' => 'LZZ5BLSFOMA908614', 'trailer_plate' => 'ኢት-3-36811', 'trailer_chassis' => 'LA99FRA3XNOLFY950', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ገ/ሂዎት አበርሃ'],
+            ['power_plate' => 'ኢት-3-A21633', 'engine_number' => 'WD615.47*210707025827', 'power_chassis' => 'LZZ5BLSF2MA908615', 'trailer_plate' => 'ኢት-3-36816', 'trailer_chassis' => 'LA99FRA31NOLFY948', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ቁምላቸው ተረፈ'],
+            ['power_plate' => 'ኢት-3-A21634', 'engine_number' => 'WD615.47*210707032307', 'power_chassis' => 'LZZ5BLSFMA908612', 'trailer_plate' => 'ኢት-3-36812', 'trailer_chassis' => 'LA99FRA33NOLFY949', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ሙሉጌታ ሲሳይ'],
+            ['power_plate' => 'ኢት-3-A21635', 'engine_number' => 'WD615.47*210707030027', 'power_chassis' => 'LZZ5BLSF5MA908611', 'trailer_plate' => 'ኢት-3-36814', 'trailer_chassis' => 'LA99FRA33N0LFY952', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ቶላዋቅ ካሳሁን'],
+            ['power_plate' => 'ኢት-3-A21636', 'engine_number' => 'WD615.47*210407015697', 'power_chassis' => 'LZZ5BLSF7MA868399', 'trailer_plate' => 'ኢት-3-36815', 'trailer_chassis' => 'LA99FRA35N0LFY953', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ቶፊቅ አባራያ'],
+            ['power_plate' => 'ኢት-3-A23019', 'engine_number' => 'WD615.47*210707030037', 'power_chassis' => 'LZZ5BLSF4MA908616', 'trailer_plate' => 'ኢት-3-36813', 'trailer_chassis' => 'LA99FRRA31N0LFY951', 'power_year' => 2021, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ማማሩ ይታየው'],
+            ['power_plate' => 'ኢት-3-A27036', 'engine_number' => 'WP125400E2011423G048920', 'power_chassis' => 'LZZ5BLSFXPN044975', 'trailer_plate' => 'ኢት-3-34952', 'trailer_chassis' => 'LA99FRA31N0LFY030', 'power_year' => 2023, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'አዝመራው አዳሙ'],
+            ['power_plate' => 'ኢት-3-A27037', 'engine_number' => 'WP125400E201142G048918', 'power_chassis' => 'LZZ5BLSF3PN044977', 'trailer_plate' => 'ኢት-3-34951', 'trailer_chassis' => 'LA99FRA33N0LFY031', 'power_year' => 2023, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ዳንኤል መንገሻ'],
+            ['power_plate' => 'ኢት-3-A27049', 'engine_number' => 'WP125400E2011423G048923', 'power_chassis' => 'LZZ5BSF1PN044976', 'trailer_plate' => 'ኢት-3-35766', 'trailer_chassis' => 'LA99FRA38NOLFY963', 'power_year' => 2023, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ረዲኢ ገብረመድህን'],
+        ];
     }
 }
