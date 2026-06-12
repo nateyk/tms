@@ -50,6 +50,7 @@ const TRAILER_SLOTS = {
     J: { kind: 'wheel', tire: [132, 530, 42, 120], badge: [48, 598], side: 'left' },
     K: { kind: 'wheel', tire: [344, 530, 42, 120], badge: [462, 544], side: 'right' },
     L: { kind: 'wheel', tire: [386, 530, 42, 120], badge: [462, 598], side: 'right' },
+    X: { kind: 'spare', wheel: [223, 664, 74], box: [198, 637, 124, 118], badge: [235, 730] },
 };
 
 const STATUS = {
@@ -169,7 +170,12 @@ function visualBottomForSlots(slots, mode) {
 
 function designFor(mode, slots) {
     if (mode === 'trailer') {
-        return TRAILER_DESIGN;
+        const lastVisual = visualBottomForSlots(slots, mode);
+
+        return {
+            ...TRAILER_DESIGN,
+            height: Math.max(TRAILER_DESIGN.height, Math.min(860, lastVisual + 64)),
+        };
     }
 
     const axleCenters = axleCentersForSlots(slots, mode);

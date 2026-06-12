@@ -104,13 +104,12 @@ class TyreMapWorkflowTest extends TestCase
             ->assertSee('Mounted')
             ->assertSee('10/10')
             ->assertSee('Spare tyres')
-            ->assertSee('2/2')
+            ->assertSee('1/1')
             ->assertSee('W')
-            ->assertSee('X')
             ->assertSee('SPARE-W')
-            ->assertSee('SPARE-X')
             ->assertSee('KC06165J306')
-            ->assertSee('G233B23074')
+            ->assertDontSee('SPARE-X')
+            ->assertDontSee('G233B23074')
             ->assertDontSee('11/10');
     }
 
@@ -127,7 +126,7 @@ class TyreMapWorkflowTest extends TestCase
             ->assertSee('No spare tyre assigned');
     }
 
-    public function test_attached_trailer_map_shows_w_and_x_combination_spare_pockets(): void
+    public function test_attached_trailer_map_shows_x_combination_spare_pocket_only(): void
     {
         $power = Vehicle::query()
             ->where('vehicle_code', 'like', '%A14762')
@@ -151,8 +150,9 @@ class TyreMapWorkflowTest extends TestCase
             ->assertSee('Spare tyres')
             ->assertSee('Combination spare')
             ->assertSee('X')
-            ->assertSee('W')
-            ->assertSee('KC06165J306')
-            ->assertSee('G233B23074');
+            ->assertSee('SPARE-X')
+            ->assertSee('G233B23074')
+            ->assertDontSee('SPARE-W')
+            ->assertDontSee('KC06165J306');
     }
 }

@@ -91,7 +91,7 @@ class VehicleTyreMap extends Component
             }
         }
 
-        $spareCodes = ['W', 'X'];
+        $spareCodes = $assetType === AssetType::Trailer->value ? ['X'] : ['W'];
         $spareLabel = $assetType === AssetType::Trailer->value ? 'Combination spare' : 'Power spare';
 
         $assignedSpareTyres = Tyre::query()
@@ -166,9 +166,7 @@ class VehicleTyreMap extends Component
             ]);
         });
 
-        $spareMapSlots = $assetType === AssetType::Trailer->value
-            ? collect()
-            : $spareTyres->map(fn (array $spare): array => [
+        $spareMapSlots = $spareTyres->map(fn (array $spare): array => [
                 'code' => $spare['position'],
                 'display_code' => $spare['display_code'],
                 'label' => $spare['owner_label'].' '.$spare['display_code'],
