@@ -91,17 +91,24 @@ class TyreMapWorkflowTest extends TestCase
             ->where('vehicle_code', 'like', '%A14762')
             ->firstOrFail();
 
-        $spare = \App\Models\Tyre::query()
+        $spares = \App\Models\Tyre::query()
             ->where('current_location_type', TyreLocationType::PowerVehicle)
             ->where('current_location_id', $power->id)
-            ->where('current_position_code', 'SPARE-W')
-            ->firstOrFail();
+            ->whereIn('current_position_code', ['SPARE-W', 'SPARE-X'])
+            ->orderBy('current_position_code')
+            ->get();
+
+        $this->assertCount(2, $spares);
 
         Livewire::test(\App\Livewire\VehicleTyreMap::class, ['vehicleId' => $power->id])
             ->assertSee('Mounted')
             ->assertSee('10/10')
             ->assertSee('Spare tyres')
-            ->assertSee($spare->serial_number)
+            ->assertSee('2/2')
+            ->assertSee('W')
+            ->assertSee('X')
+            ->assertSee('KC06165J306')
+            ->assertSee('G233B23074')
             ->assertDontSee('11/10');
     }
 
@@ -118,7 +125,7 @@ class TyreMapWorkflowTest extends TestCase
             ->assertSee('No spare tyre assigned');
     }
 
-    public function test_attached_trailer_map_uses_x_as_the_trailer_spare_pocket(): void
+    public function test_attached_trailer_map_shows_w_and_x_combination_spare_pockets(): void
     {
         $power = Vehicle::query()
             ->where('vehicle_code', 'like', '%A14762')
@@ -129,16 +136,21 @@ class TyreMapWorkflowTest extends TestCase
             ->where('status', 'active')
             ->value('trailer_vehicle_id');
 
-        $spare = \App\Models\Tyre::query()
+        $spares = \App\Models\Tyre::query()
             ->where('current_location_type', TyreLocationType::PowerVehicle)
             ->where('current_location_id', $power->id)
-            ->where('current_position_code', 'SPARE-X')
-            ->firstOrFail();
+            ->whereIn('current_position_code', ['SPARE-W', 'SPARE-X'])
+            ->orderBy('current_position_code')
+            ->get();
+
+        $this->assertCount(2, $spares);
 
         Livewire::test(\App\Livewire\VehicleTyreMap::class, ['vehicleId' => (int) $trailerId])
             ->assertSee('Spare tyres')
-            ->assertSee('Trailer spare')
+            ->assertSee('Combination spare')
             ->assertSee('X')
-            ->assertSee($spare->serial_number);
+            ->assertSee('W')
+            ->assertSee('KC06165J306')
+            ->assertSee('G233B23074');
     }
 }

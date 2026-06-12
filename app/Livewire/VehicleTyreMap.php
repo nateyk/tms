@@ -91,20 +91,20 @@ class VehicleTyreMap extends Component
             }
         }
 
-        $spareCode = $assetType === AssetType::Trailer->value ? 'X' : 'W';
-        $spareLabel = $assetType === AssetType::Trailer->value ? 'Trailer spare' : 'Power spare';
+        $spareCodes = ['W', 'X'];
+        $spareLabel = $assetType === AssetType::Trailer->value ? 'Combination spare' : 'Power spare';
 
         $assignedSpareTyres = Tyre::query()
             ->where('current_location_type', TyreLocationType::PowerVehicle->value)
             ->where('current_location_id', $spareOwner->id)
-            ->where('current_position_code', 'SPARE-'.$spareCode)
+            ->whereIn('current_position_code', array_map(fn (string $code): string => 'SPARE-'.$code, $spareCodes))
             ->with('brand')
             ->orderBy('current_position_code')
             ->get()
             ->keyBy(fn (Tyre $tyre): string => str_replace('SPARE-', '', (string) $tyre->current_position_code));
 
-        $spareTyres = collect([$spareCode])
-            ->map(function (string $displayCode) use ($assignedSpareTyres, $spareCode, $spareLabel): array {
+        $spareTyres = collect($spareCodes)
+            ->map(function (string $displayCode) use ($assignedSpareTyres, $spareLabel): array {
                 $tyre = $assignedSpareTyres->get($displayCode);
                 $brand = $tyre instanceof Tyre ? $tyre->brand : null;
                 if (! $brand instanceof TyreBrand) {
@@ -112,7 +112,7 @@ class VehicleTyreMap extends Component
                 }
 
                 return [
-                    'position' => 'SPARE-'.$spareCode,
+                    'position' => 'SPARE-'.$displayCode,
                     'display_code' => $displayCode,
                     'tyre_code' => $tyre instanceof Tyre ? $tyre->tyre_code : null,
                     'serial_number' => $tyre instanceof Tyre ? $tyre->serial_number : null,
