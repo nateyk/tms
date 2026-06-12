@@ -166,6 +166,21 @@ class VehicleTyreMap extends Component
             ]);
         });
 
+        $spareMapSlots = $assetType === AssetType::Trailer->value
+            ? collect()
+            : $spareTyres->map(fn (array $spare): array => [
+                'code' => $spare['position'],
+                'display_code' => $spare['display_code'],
+                'label' => $spare['owner_label'].' '.$spare['display_code'],
+                'axle' => null,
+                'side' => 'center',
+                'dual' => 'spare',
+                'x' => 0,
+                'y' => 0,
+                'tyre_code' => $spare['tyre_code'],
+                'color' => $spare['tyre_code'] ? 'blue' : 'gray',
+            ]);
+
         $konvaConfig = [
             'slots' => $mapData->map(fn (array $slot) => [
                 'code' => $slot['code'],
@@ -178,7 +193,7 @@ class VehicleTyreMap extends Component
                 'y' => $slot['y'],
                 'tyre_code' => $slot['tyre_code'],
                 'color' => $slot['color'],
-            ])->values()->all(),
+            ])->concat($spareMapSlots)->values()->all(),
             'selectedPosition' => $this->selectedPosition,
             'assetType' => $assetType,
         ];

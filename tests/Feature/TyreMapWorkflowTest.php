@@ -107,6 +107,8 @@ class TyreMapWorkflowTest extends TestCase
             ->assertSee('2/2')
             ->assertSee('W')
             ->assertSee('X')
+            ->assertSee('SPARE-W')
+            ->assertSee('SPARE-X')
             ->assertSee('KC06165J306')
             ->assertSee('G233B23074')
             ->assertDontSee('11/10');

@@ -143,6 +143,30 @@ function axleCentersForSlots(slots, mode) {
     return Array.from(centers).sort((a, b) => a - b);
 }
 
+function visualBottomForSlots(slots, mode) {
+    const bottoms = [0];
+
+    (slots ?? []).forEach((slot) => {
+        const spec = layoutFor(slot, mode);
+        if (!spec) {
+            return;
+        }
+
+        if (spec.kind === 'spare' && spec.box) {
+            const [, y, , h] = spec.box;
+            bottoms.push(y + h);
+            return;
+        }
+
+        if (spec.tire) {
+            const [, y, , h] = spec.tire;
+            bottoms.push(y + h);
+        }
+    });
+
+    return Math.max(...bottoms);
+}
+
 function designFor(mode, slots) {
     if (mode === 'trailer') {
         return TRAILER_DESIGN;
@@ -150,10 +174,11 @@ function designFor(mode, slots) {
 
     const axleCenters = axleCentersForSlots(slots, mode);
     const lastAxle = axleCenters.length > 0 ? Math.max(...axleCenters) : 246;
+    const lastVisual = visualBottomForSlots(slots, mode);
 
     return {
         width: DESIGN_WIDTH,
-        height: Math.max(760, Math.min(DESIGN_HEIGHT, lastAxle + TRUCK_BODY_BOTTOM_PADDING)),
+        height: Math.max(760, Math.min(DESIGN_HEIGHT, Math.max(lastAxle + TRUCK_BODY_BOTTOM_PADDING, lastVisual + 64))),
     };
 }
 
