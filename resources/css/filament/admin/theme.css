@@ -10,7 +10,7 @@
 }
 
 .fi-body {
-    @apply bg-[#f4f7fb] text-slate-950 antialiased dark:bg-slate-950 dark:text-white;
+    @apply bg-[#f6f8fb] text-slate-950 antialiased dark:bg-slate-950 dark:text-white;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
@@ -20,19 +20,19 @@ html {
 }
 
 .fi-main-ctn {
-    @apply mx-auto w-full max-w-[1320px] px-3 py-3 sm:px-4 lg:px-5;
+    @apply mx-auto w-full max-w-[1420px] px-3.5 py-4 sm:px-5 lg:px-6;
 }
 
 .fi-page {
-    @apply w-full gap-y-3;
+    @apply w-full gap-y-4;
 }
 
 .fi-page-header {
-    @apply mb-1 px-0 py-0;
+    @apply mb-0 rounded-2xl border border-slate-200/70 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900;
 }
 
 .fi-header-heading {
-    @apply text-[1.18rem] font-semibold leading-7 tracking-normal text-slate-950 dark:text-white;
+    @apply text-[1.2rem] font-semibold leading-7 tracking-normal text-slate-900 dark:text-white;
 }
 
 .fi-header-subheading {
@@ -44,38 +44,38 @@ html {
 }
 
 .fi-topbar {
-    @apply min-h-11 border-b border-slate-200/80 bg-white/90 shadow-[0_1px_8px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90;
+    @apply min-h-14 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_12px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90;
 }
 
 .fi-topbar nav,
 .fi-topbar {
-    @apply h-11;
+    @apply h-14;
 }
 
 .fi-logo {
-    @apply text-[0.95rem] font-semibold tracking-normal text-slate-950 dark:text-white;
+    @apply text-[1.02rem] font-semibold tracking-normal text-slate-950 dark:text-white;
 }
 
 .fi-global-search {
-    @apply max-w-56;
+    @apply max-w-72;
 }
 
 .fi-sidebar {
-    @apply border-e border-slate-900/80 bg-[#0b1220] text-slate-100 shadow-[4px_0_18px_rgba(15,23,42,0.08)] dark:border-slate-900 dark:bg-slate-950;
+    @apply border-e border-slate-200 bg-white text-slate-700 shadow-[4px_0_22px_rgba(15,23,42,0.05)] dark:border-slate-900 dark:bg-slate-950;
 }
 
 .fi-sidebar-header {
-    @apply h-11 border-b border-white/10 px-2 dark:border-slate-900;
+    @apply h-14 border-b border-slate-100 px-4 dark:border-slate-900;
 }
 
 .fi-sidebar .fi-logo {
-    @apply text-[0.92rem] text-white;
+    @apply text-[1rem] font-semibold text-slate-950 dark:text-white;
 }
 
 .fi-sidebar-nav {
-    @apply gap-y-0 overflow-x-hidden px-1.5 py-1.5;
+    @apply gap-y-0 overflow-x-hidden px-3 py-4;
     scrollbar-width: thin;
-    scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    scrollbar-color: #d1d5db transparent;
 }
 
 .fi-sidebar-nav::-webkit-scrollbar {
@@ -83,7 +83,7 @@ html {
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-slate-500/50 dark:bg-slate-700;
+    @apply rounded-full bg-slate-300 dark:bg-slate-700;
 }
 
 .fi-sidebar-nav::-webkit-scrollbar-track {
@@ -91,11 +91,11 @@ html {
 }
 
 .fi-sidebar-group-label {
-    @apply px-2 pb-1 pt-3 text-[0.57rem] font-semibold uppercase tracking-[0.1em] text-slate-400/90 dark:text-slate-500;
+    @apply px-3 pb-2 pt-5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500;
 }
 
 .fi-sidebar-group-btn {
-    @apply min-h-7 rounded-md;
+    @apply min-h-8 rounded-xl;
 }
 
 .fi-sidebar-group-collapse-btn {
@@ -103,28 +103,28 @@ html {
 }
 
 .fi-sidebar-group-items {
-    @apply gap-y-0.5;
+    @apply gap-y-1;
 }
 
 .fi-sidebar-item a {
-    @apply relative min-h-7 rounded-md px-2 py-1 text-[0.78rem] font-medium text-slate-300 transition-colors hover:bg-white/8 hover:text-white dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white;
+    @apply relative min-h-9 rounded-xl px-3 py-2 text-[0.86rem] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white;
 }
 
 .fi-sidebar-item-icon {
-    @apply size-4 text-slate-400 dark:text-slate-500;
+    @apply size-[1.1rem] text-slate-400 dark:text-slate-500;
 }
 
 .fi-sidebar-item-active a {
-    @apply bg-sky-500/14 font-semibold text-white ring-1 ring-sky-400/25 dark:bg-sky-950/40 dark:text-sky-100 dark:ring-sky-900/60;
+    @apply bg-blue-50 font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-sky-950/40 dark:text-sky-100 dark:ring-sky-900/60;
 }
 
 .fi-sidebar-item-active .fi-sidebar-item-icon {
-    @apply text-sky-300 dark:text-sky-200;
+    @apply text-blue-600 dark:text-sky-200;
 }
 
 .fi-sidebar-item-active a::before {
     content: '';
-    @apply absolute inset-y-1 left-0 w-0.5 rounded-full bg-sky-300;
+    @apply absolute inset-y-2 left-1 w-1 rounded-full bg-blue-500;
 }
 
 .fi-topbar-item-label {
@@ -132,58 +132,58 @@ html {
 }
 
 .fi-topbar .fi-input-wrp {
-    @apply h-7.5 rounded-md border-slate-200 bg-white text-[0.8rem] shadow-none dark:border-slate-800 dark:bg-slate-900;
+    @apply h-10 rounded-xl border-slate-200 bg-white text-[0.88rem] shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900;
 }
 
 .fi-section,
 .fi-wi-widget > section,
 .fi-ta-ctn {
-    @apply rounded-md border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.045)] dark:border-slate-800 dark:bg-slate-900;
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900;
 }
 
 .fi-section-header {
-    @apply border-b border-slate-100 px-3 py-2 dark:border-slate-800;
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-800;
 }
 
 .fi-wi-stats-overview {
-    @apply gap-2;
+    @apply gap-3;
 }
 
 .fi-wi-stats-overview-stat {
-    @apply relative min-h-[4.05rem] overflow-hidden rounded-md border border-slate-200/80 bg-white px-2.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.035)] transition-colors hover:border-sky-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-sky-900;
+    @apply relative min-h-[5rem] overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_10px_26px_rgba(15,23,42,0.03)] transition-colors hover:border-blue-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-sky-900;
 }
 
 .fi-wi-stats-overview-stat::before {
     content: '';
-    @apply absolute inset-y-0 left-0 w-0.5 bg-sky-600;
+    @apply absolute inset-x-4 top-0 h-0.5 rounded-full bg-blue-600;
 }
 
 .fi-wi-stats-overview-stat-value {
-    @apply text-[0.98rem] font-semibold leading-5 tracking-normal text-slate-950 dark:text-white;
+    @apply text-[1.18rem] font-semibold leading-6 tracking-normal text-slate-950 dark:text-white;
 }
 
 .fi-wi-stats-overview-stat-label {
-    @apply text-[0.72rem] font-semibold leading-4 text-slate-600 dark:text-slate-300;
+    @apply text-[0.83rem] font-semibold leading-5 text-slate-700 dark:text-slate-300;
 }
 
 .fi-wi-stats-overview-stat-description {
-    @apply text-[0.68rem] leading-3.5 text-slate-500 dark:text-slate-400;
+    @apply text-xs leading-4 text-slate-500 dark:text-slate-400;
 }
 
 .fi-wi-stats-overview-stat-icon {
-    @apply size-4 text-slate-400;
+    @apply size-5 text-slate-400;
 }
 
 .fi-wi-chart {
-    @apply overflow-hidden rounded-md border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900;
+    @apply overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900;
 }
 
 .fi-wi-chart header {
-    @apply border-b border-slate-100 px-3 py-2 dark:border-slate-800;
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-800;
 }
 
 .fi-wi-chart h3 {
-    @apply text-[0.86rem] font-semibold leading-5 text-slate-950 dark:text-white;
+    @apply text-base font-semibold leading-6 text-slate-900 dark:text-white;
 }
 
 .fi-wi-chart p {
@@ -200,24 +200,24 @@ html {
 }
 
 .fi-ta-header {
-    @apply gap-1.5 border-b border-slate-100 px-2.5 py-1.5 dark:border-slate-800;
+    @apply gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800;
 }
 
 .fi-ta-search-field .fi-input-wrp {
-    @apply h-8 min-w-48 text-[0.8125rem];
+    @apply h-10 min-w-64 rounded-xl text-[0.88rem];
 }
 
 .fi-ta-table {
-    @apply text-[0.78rem];
+    @apply text-[0.875rem];
 }
 
 .fi-ta-header-cell,
 .fi-ta-cell {
-    @apply px-2 py-1.25;
+    @apply px-4 py-3;
 }
 
 .fi-ta-header-cell {
-    @apply bg-slate-50 text-xs font-semibold uppercase tracking-normal text-slate-600 dark:bg-slate-900 dark:text-slate-300;
+    @apply bg-slate-50 text-xs font-semibold uppercase tracking-[0.04em] text-slate-500 dark:bg-slate-900 dark:text-slate-300;
 }
 
 .fi-ta-row {
@@ -229,7 +229,7 @@ html {
 }
 
 .fi-ta-pagination {
-    @apply border-t border-slate-100 px-2.5 py-1.5 text-xs dark:border-slate-800;
+    @apply border-t border-slate-100 px-4 py-3 text-sm dark:border-slate-800;
 }
 
 .fi-ta-content {
@@ -256,12 +256,12 @@ html {
 }
 
 .fi-btn {
-    @apply h-7 rounded-md px-2.5 text-[0.78rem] font-medium shadow-none;
+    @apply h-9 rounded-lg px-3 text-[0.86rem] font-medium shadow-none;
 }
 
 .fi-input-wrp,
 .fi-fo-field-wrp .choices__inner {
-    @apply min-h-7.5 rounded-md text-[0.8rem];
+    @apply min-h-9 rounded-lg text-[0.86rem];
 }
 
 .fi-fo-component-ctn {
@@ -274,7 +274,7 @@ html {
 
 .fi-fieldset,
 .fi-section-content {
-    @apply px-3 py-2.5;
+    @apply px-5 py-4;
 }
 
 .fi-fo-field-wrp-label,
