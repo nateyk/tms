@@ -11,7 +11,7 @@ class TmsMovementsTrendChart extends ChartWidget
 
     protected ?string $heading = 'Completed Movements (8 weeks)';
 
-    protected ?string $maxHeight = '210px';
+    protected ?string $maxHeight = '190px';
 
     protected int|string|array $columnSpan = 1;
 
