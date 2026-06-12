@@ -13,7 +13,7 @@ class TmsFleetUtilizationChart extends ChartWidget
 
     protected ?string $description = 'Active tyre positions vs empty slots on active vehicles';
 
-    protected ?string $maxHeight = '240px';
+    protected ?string $maxHeight = '210px';
 
     protected int|string|array $columnSpan = 1;
 

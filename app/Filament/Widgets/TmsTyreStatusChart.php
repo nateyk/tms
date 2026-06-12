@@ -12,7 +12,7 @@ class TmsTyreStatusChart extends ChartWidget
 
     protected ?string $heading = 'Tyres by Status';
 
-    protected ?string $maxHeight = '240px';
+    protected ?string $maxHeight = '210px';
 
     protected int|string|array $columnSpan = 1;
 
