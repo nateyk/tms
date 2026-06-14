@@ -20,8 +20,8 @@ class TmsStatsOverview extends StatsOverviewWidget
             'default' => 2,
             'sm' => 3,
             'lg' => 4,
-            'xl' => 7,
-            '2xl' => 7,
+            'xl' => 4,
+            '2xl' => 4,
         ];
     }
 

@@ -73,7 +73,7 @@ html {
 }
 
 .fi-sidebar-nav {
-    @apply gap-y-0 overflow-x-hidden px-2.5 py-3.5;
+    @apply gap-y-0 overflow-x-hidden px-2 py-3;
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
 }
@@ -91,7 +91,7 @@ html {
 }
 
 .fi-sidebar-group-label {
-    @apply px-2.5 pb-2 pt-[1.125rem] text-[0.61rem] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500;
+    @apply px-2 pb-1.5 pt-3 text-[0.61rem] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500;
 }
 
 .fi-sidebar-group-btn {
@@ -103,7 +103,7 @@ html {
 }
 
 .fi-sidebar-group-items {
-    @apply gap-y-0.5;
+    @apply gap-y-0.5 pl-0.5;
 }
 
 .fi-sidebar-item a {
@@ -197,6 +197,14 @@ html {
 .fi-ta-header,
 .fi-ta-content {
     @apply bg-white dark:bg-slate-900;
+}
+
+.fi-sc-has-gap {
+    @apply gap-2.5;
+}
+
+.fi-sc-grid {
+    @apply gap-2.5;
 }
 
 .fi-ta-header {
