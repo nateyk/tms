@@ -1,5 +1,6 @@
 import { PropsWithChildren, ReactNode } from "react";
 import {AppSidebar} from "@/components/app-sidebar";
+import {FlashMessages} from "@/components/flash-messages";
 import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
 import {Separator} from "@/components/ui/separator";
 import {
@@ -38,6 +39,7 @@ export default function AuthenticatedLayout({
                 </header>
 
                 <main className="p-4 md:pt-0 h-full">
+                    <FlashMessages />
                     {children}
                 </main>
             </SidebarInset>

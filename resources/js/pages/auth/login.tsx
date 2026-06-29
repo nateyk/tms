@@ -45,9 +45,9 @@ export default function Login({
             <form onSubmit={submit}>
                 <Card className="mx-auto max-w-sm">
                     <CardHeader>
-                        <CardTitle className="text-2xl">Login</CardTitle>
+                        <CardTitle className="text-2xl">Menkem TMS</CardTitle>
                         <CardDescription>
-                            Enter your email below to login to your account
+                            Sign in to the tyre management dashboard
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
