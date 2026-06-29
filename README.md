@@ -1,46 +1,73 @@
-# Laravel + shadcn/ui + InertiaJS Starter Template
+# Menkem Tyre Management System (TMS)
 
-![Laravel + shadcn/ui + InertiaJS Starter Template](https://raw.githubusercontent.com/mahmudz/laravel-shadcn-app-panel/main/public/repository-cover.png)
+Production-ready tyre lifecycle management for **Menkem International Business PLC**.
 
-This is a template to start building a custom user/admin panel quickly.
-Feel free to customize this template to fit the specific needs of your Laravel application!
+## Stack
 
-## Technologies
+- Laravel 12 (PHP 8.2+)
+- Inertia.js + React + TypeScript
+- shadcn/ui + Tailwind CSS
+- MySQL/MariaDB (SQLite supported for local dev)
+- Spatie: Permission, Activity Log, Media Library
+- Laravel Sanctum (API-ready)
+- DomPDF, Simple QR Code, Konva.js (vehicle tyre maps)
 
-- [Laravel 11](https://laravel.com/docs/)
-- [shadcn/ui](https://ui.shadcn.com/docs)
-- [InertiaJS](https://inertiajs.com/)
+## Repository
 
-## Prerequisites
+GitHub: https://github.com/nateyk/tms
 
-Before you begin, ensure you have met the following requirements:
+## Quick start
 
-- PHP >= 8.2
-- Composer (for package management)
-- Node.js & npm (for frontend dependencies)
-- MySQL or another [compatible database](https://laravel.com/docs/11.x/database#configuration)
-
-## Installation
-
-1. Clone the repository: `git clone https://github.com/mahmudz/laravel-shadcn-app-panel.git`
-2. Navigate into the project directory: `cd [project directory]`
-3. Install PHP dependencies: `composer install`
-4. Copy `.env.example` to `.env` and configure your environment variables, including database settings and application key.
-5. Generate application key: `php artisan key:generate`
-6. Run database migrations: `php artisan migrate`
-7. Optionally, seed the database: `php artisan db:seed`
-8. Install frontend dependencies: `npm install && npm run dev` (for development) or `npm install && npm run build` (for production)
-
-## Usage
-
-To start the development server, run:
-
-```
+```bash
+git clone https://github.com/nateyk/tms.git
+cd tms
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan storage:link
+npm run build
 php artisan serve
 ```
 
-Access the application in your browser at `http://localhost:8000` by default.
+In a second terminal: `npm run dev`
 
-## Contact
+**App:** http://localhost:8000  
+**Login:** `admin@menkem.com` / `password`  
+**QR scan example:** http://localhost:8000/tyres/scan/TYR-0001
 
-If you have any questions, feedback, or support requests, you can reach me here [mahmudbappy.pri@gmail.com](https://github.com/mahmudz/laravel-shadcn-app-panel.git)
+## Modules (Inertia rebuild)
+
+| Status | Module |
+|--------|--------|
+| Done | Administration — Users, Roles, Settings |
+| Done | Fleet — Vehicle Types, Stores, Vehicles, Dashboard |
+| Done | Tyres — registration, QR, approval |
+| Done | Tyre Movements — 10 types + voucher workflow |
+| Planned | Trailer Transfers, Maintenance, Disposals |
+| Planned | Pending Approvals, Reports, Audit Logs |
+
+## Core business rules
+
+1. One active location per tyre
+2. One active assignment per tyre and per vehicle position
+3. Tyre location updates only on movement completion
+4. Trailer transfer changes power–trailer combination only
+5. Disposed tyres cannot move
+6. Pending movements block new movements for the same tyre
+
+## Voucher workflow
+
+Draft → Submitted → Checked → Approved → Completed (inventory updates on completion)
+
+## Tests
+
+```bash
+composer test
+php artisan test --filter=TyreMovementBusinessRulesTest
+```
+
+## License
+
+Proprietary — Menkem International Business PLC.
