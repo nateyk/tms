@@ -153,4 +153,60 @@ class TyreMovement extends Model
             ->filter()
             ->implode(' - ') ?: (string) $id;
     }
+
+    public function requiresSourceOdometer(): bool
+    {
+        return in_array($this->from_location_type, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true);
+    }
+
+    public function requiresDestinationOdometer(): bool
+    {
+        return in_array($this->to_location_type, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true);
+    }
+
+    public function sourceVehicle(): ?Vehicle
+    {
+        if (!$this->requiresSourceOdometer() || !$this->from_location_id) {
+            return null;
+        }
+
+        return Vehicle::query()->find($this->from_location_id);
+    }
+
+    public function destinationVehicle(): ?Vehicle
+    {
+        if (!$this->requiresDestinationOdometer() || !$this->to_location_id) {
+            return null;
+        }
+
+        return Vehicle::query()->find($this->to_location_id);
+    }
+
+    public function sourceOdometerLabel(): string
+    {
+        if (!$this->requiresSourceOdometer()) {
+            return 'N/A';
+        }
+
+        $vehicle = $this->sourceVehicle();
+        if ($vehicle) {
+            return $vehicle->displayCodeWithPlate();
+        }
+
+        return 'Unknown Vehicle';
+    }
+
+    public function destinationOdometerLabel(): string
+    {
+        if (!$this->requiresDestinationOdometer()) {
+            return 'N/A';
+        }
+
+        $vehicle = $this->destinationVehicle();
+        if ($vehicle) {
+            return $vehicle->displayCodeWithPlate();
+        }
+
+        return 'Unknown Vehicle';
+    }
 }

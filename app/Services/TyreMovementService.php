@@ -18,6 +18,7 @@ class TyreMovementService
     public function __construct(
         protected TyreAssignmentService $assignmentService,
         protected VoucherNumberGenerator $numberGenerator,
+        protected VehicleOdometerService $odometerService,
     ) {}
 
     public function assertCanCreateMovement(Tyre $tyre): void
@@ -126,6 +127,108 @@ class TyreMovementService
                 ->performedOn($movement)
                 ->withProperties(['approved_by' => $approvedBy])
                 ->log('Tyre movement completed');
+
+            return $movement->fresh();
+        });
+    }
+
+    public function completeWithOdometer(TyreMovement $movement, array $odometerData, int $completedBy): TyreMovement
+    {
+        return DB::transaction(function () use ($movement, $odometerData, $completedBy) {
+            $tyre = Tyre::query()->whereKey($movement->tyre_id)->lockForUpdate()->firstOrFail();
+
+            if ($tyre->isDisposed()) {
+                throw new TyreBusinessException('Cannot complete movement for disposed tyre.');
+            }
+
+            if (!$movement->isPending()) {
+                throw new TyreBusinessException('Movement must be approved before completion.');
+            }
+
+            $this->validateSourceAtApproval($movement, $tyre);
+            $this->validateDestinationAtApproval($movement);
+
+            // Update movement with odometer values
+            $fromOdometer = $odometerData['from_odometer'] ?? null;
+            $toOdometer = $odometerData['to_odometer'] ?? null;
+
+            $movement->update([
+                'from_odometer' => $fromOdometer,
+                'to_odometer' => $toOdometer,
+            ]);
+
+            // Record odometer readings for vehicles
+            $sourceVehicle = $movement->sourceVehicle();
+            $destinationVehicle = $movement->destinationVehicle();
+
+            if ($sourceVehicle && $fromOdometer !== null) {
+                $this->odometerService->recordMovementOdometer(
+                    $sourceVehicle,
+                    $fromOdometer,
+                    $movement->id,
+                    $completedBy
+                );
+            }
+
+            if ($destinationVehicle && $toOdometer !== null) {
+                // Avoid duplicate recording if same vehicle
+                if (!$sourceVehicle || $sourceVehicle->id !== $destinationVehicle->id) {
+                    $this->odometerService->recordMovementOdometer(
+                        $destinationVehicle,
+                        $toOdometer,
+                        $movement->id,
+                        $completedBy
+                    );
+                }
+            }
+
+            // Close active assignment using from_odometer
+            $removedOdometer = $fromOdometer ?? $toOdometer;
+            $this->assignmentService->closeActiveAssignment(
+                $tyre,
+                $removedOdometer,
+                $completedBy,
+                $movement->id
+            );
+
+            // Create new assignment using to_odometer if destination is vehicle
+            [$locationType, $locationId, $position, $status, $assetType] = $this->resolveDestination($movement);
+
+            if ($assetType && $locationId && $position) {
+                $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($locationId);
+                $this->assignmentService->createActiveAssignment(
+                    $tyre,
+                    $assetType,
+                    $vehicle,
+                    $position,
+                    $toOdometer,
+                    $completedBy,
+                    $movement->id
+                );
+            }
+
+            // Update tyre location
+            $this->assignmentService->updateTyreLocation($tyre, $locationType, $locationId, $position, $status);
+
+            // Mark movement completed
+            $movement->update([
+                'status' => VoucherStatus::Completed,
+                'approved_by' => $completedBy,
+                'approved_at' => now(),
+                'completed_at' => now(),
+            ]);
+
+            // Log activity with odometer details
+            activity()
+                ->performedOn($movement)
+                ->withProperties([
+                    'completed_by' => $completedBy,
+                    'from_odometer' => $fromOdometer,
+                    'to_odometer' => $toOdometer,
+                    'source_vehicle' => $sourceVehicle?->displayCodeWithPlate(),
+                    'destination_vehicle' => $destinationVehicle?->displayCodeWithPlate(),
+                ])
+                ->log('Tyre movement completed with odometer readings');
 
             return $movement->fresh();
         });

@@ -1,5 +1,7 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreStatusBadge } from "@/components/tyres/tyre-status-badge";
+import { TyreUsageSummaryCard } from "@/components/tyres/tyre-usage-summary-card";
+import { TyreUsageHistoryList } from "@/components/tyres/tyre-usage-history-list";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -59,16 +61,34 @@ type TyreDetail = {
     qr_scan_url: string;
     total_km: number;
     cost_per_km: number | null;
+    usage_summary: {
+        has_baseline: boolean;
+        status: string;
+        total_used_km: number | null;
+        usage_percentage: number | null;
+        estimated_remaining_percentage: number | null;
+        baseline_percentage: number | null;
+        expected_life_km: number | null;
+    };
+    usage_history: {
+        id: number;
+        vehicle_code: string | null;
+        vehicle_plate: string | null;
+        position_code: string;
+        installed_odometer: number | null;
+        removed_odometer: number | null;
+        km_used: number | null;
+        installed_date: string | null;
+        removed_date: string | null;
+        status: string;
+        movement_id: number | null;
+        is_active: boolean;
+    }[];
     created_at: string | null;
     updated_at: string | null;
     recent_movements: {
         movement_no: string;
         movement_type: string;
-        status: string;
-    }[];
-    recent_maintenance: {
-        maintenance_no: string;
-        problem_type: string;
         status: string;
     }[];
 };
@@ -309,33 +329,11 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                     </Card>
                 )}
 
-                {tyre.recent_maintenance.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Recent maintenance</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Maintenance no.</TableHead>
-                                        <TableHead>Problem</TableHead>
-                                        <TableHead>Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {tyre.recent_maintenance.map((record) => (
-                                        <TableRow key={record.maintenance_no}>
-                                            <TableCell>{record.maintenance_no}</TableCell>
-                                            <TableCell>{record.problem_type}</TableCell>
-                                            <TableCell>{record.status}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                )}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <TyreUsageSummaryCard usage={tyre.usage_summary} />
+                    <TyreUsageHistoryList history={tyre.usage_history} />
+                </div>
+
             </div>
         </AuthenticatedLayout>
     );

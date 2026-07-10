@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Tyre;
 use App\Models\TyreDisposal;
-use App\Models\TyreMaintenance;
 use App\Models\TyreMovement;
 use App\Models\TrailerTransfer;
 use App\Models\Vehicle;
@@ -24,11 +23,6 @@ class VoucherPdfController extends Controller
     public function trailerTransfer(TrailerTransfer $transfer): Response
     {
         return $this->pdf->trailerTransfer($transfer);
-    }
-
-    public function maintenance(TyreMaintenance $maintenance): Response
-    {
-        return $this->pdf->maintenance($maintenance);
     }
 
     public function disposal(TyreDisposal $disposal): Response

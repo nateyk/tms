@@ -50,6 +50,11 @@ class TyreDisposalService
                 'completed_at' => now(),
             ]);
 
+            activity()
+                ->performedOn($disposal)
+                ->withProperties(['approved_by' => $approvedBy])
+                ->log('Tyre disposal completed');
+
             return $disposal->fresh();
         });
     }

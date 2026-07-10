@@ -45,6 +45,13 @@ type MovementDetail = {
     approved_at: string | null;
     completed_at: string | null;
     pdf_url: string;
+    // Odometer completion data
+    requires_source_odometer: boolean;
+    requires_destination_odometer: boolean;
+    source_odometer_label: string;
+    destination_odometer_label: string;
+    source_vehicle_latest_odometer: number | null;
+    destination_vehicle_latest_odometer: number | null;
 };
 
 type Permissions = {
@@ -89,9 +96,25 @@ export default function MovementsShow({
                             </p>
                         </div>
                         <VoucherWorkflowActions
-                            movementId={movement.id}
+                            recordId={movement.id}
+                            routePrefix="tyres.movements"
                             can={can}
                             pdfUrl={movement.pdf_url}
+                            entityLabel="movement"
+                            completeDescription="This applies changes to tyre inventory. This cannot be undone."
+                            movementData={{
+                                id: movement.id,
+                                movement_no: movement.movement_no,
+                                tyre_code: movement.tyre_code || "",
+                                from_location_display: movement.from_location_display,
+                                to_location_display: movement.to_location_display,
+                                requires_source_odometer: movement.requires_source_odometer,
+                                requires_destination_odometer: movement.requires_destination_odometer,
+                                source_odometer_label: movement.source_odometer_label,
+                                destination_odometer_label: movement.destination_odometer_label,
+                                source_vehicle_latest_odometer: movement.source_vehicle_latest_odometer,
+                                destination_vehicle_latest_odometer: movement.destination_vehicle_latest_odometer,
+                            }}
                         />
                     </CardHeader>
                     <CardContent className="space-y-6">

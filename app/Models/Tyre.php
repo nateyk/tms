@@ -101,6 +101,11 @@ class Tyre extends Model implements HasMedia
         return $this->hasMany(TyreInspection::class);
     }
 
+    public function baseline(): HasOne
+    {
+        return $this->hasOne(TyreBaseline::class);
+    }
+
     public function isDisposed(): bool
     {
         return $this->status === TyreStatus::Disposed;
@@ -157,5 +162,20 @@ class Tyre extends Model implements HasMedia
         }
 
         return Vehicle::query()->find($this->current_location_id);
+    }
+
+    public function hasBaseline(): bool
+    {
+        return $this->baseline()->exists();
+    }
+
+    public function calculateUsageSummary(): array
+    {
+        return app(\App\Services\TyreUsageTrackingService::class)->calculateTyreUsage($this);
+    }
+
+    public function getUsageHistory(): \Illuminate\Database\Eloquent\Collection
+    {
+        return app(\App\Services\TyreUsageTrackingService::class)->getUsageHistory($this);
     }
 }

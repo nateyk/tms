@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\AssetType;
+use App\Enums\DisposalReason;
 use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
 use App\Enums\TyreStatus;
+use App\Models\Store;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreBrand;
@@ -208,6 +210,8 @@ class VehicleMapDataService
         $payload = [
             'vehicle' => $this->serializeVehicle($vehicle),
             'tyreMap' => $map,
+            'movementFormProps' => $this->movementFormOptions(),
+            'disposalFormProps' => $this->disposalFormOptions(),
         ];
 
         if ($vehicle->isPowerVehicle()) {
@@ -257,5 +261,90 @@ class VehicleMapDataService
         $status = $tyre->status;
 
         return $status instanceof TyreStatus ? $status : TyreStatus::tryFrom((string) $status);
+    }
+
+    /** @return array<string, mixed> */
+    private function movementFormOptions(): array
+    {
+        $tyres = Tyre::query()
+            ->whereIn('status', [
+                TyreStatus::Available,
+                TyreStatus::Active,
+                TyreStatus::Maintenance,
+            ])
+            ->orderBy('tyre_code')
+            ->get(['id', 'tyre_code', 'serial_number', 'status', 'current_location_type', 'current_location_id', 'current_position_code'])
+            ->map(fn (Tyre $tyre) => [
+                'id' => $tyre->id,
+                'tyre_code' => $tyre->tyre_code,
+                'serial_number' => $tyre->serial_number,
+                'status_label' => $tyre->status->label(),
+                'current_location_type' => $tyre->current_location_type?->value,
+                'current_location_id' => $tyre->current_location_id,
+                'current_position_code' => $tyre->current_position_code,
+                'source_label' => $this->tyreSourceLabel($tyre),
+            ]);
+
+        return [
+            'tyres' => $tyres,
+            'stores' => Store::query()->orderBy('name')->get(['id', 'code', 'name'])->map(fn (Store $s) => [
+                'id' => $s->id,
+                'label' => collect([$s->code, $s->name])->filter()->implode(' - ') ?: "Store #{$s->id}",
+            ]),
+            'powerVehicles' => Vehicle::query()
+                ->whereIn('asset_type', ['power_vehicle', 'rigid_truck'])
+                ->orderBy('vehicle_code')
+                ->get(['id', 'vehicle_code', 'plate_number'])
+                ->map(fn (Vehicle $v) => [
+                    'id' => $v->id,
+                    'label' => $v->displayCodeWithPlate(),
+                ]),
+            'trailers' => Vehicle::query()
+                ->where('asset_type', 'trailer')
+                ->orderBy('vehicle_code')
+                ->get(['id', 'vehicle_code', 'plate_number'])
+                ->map(fn (Vehicle $v) => [
+                    'id' => $v->id,
+                    'label' => $v->displayCodeWithPlate(),
+                ]),
+            'destinationTypes' => collect(TyreLocationType::cases())->map(fn (TyreLocationType $type) => [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ]),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function disposalFormOptions(): array
+    {
+        return [
+            'tyres' => Tyre::query()
+                ->whereIn('status', [TyreStatus::Available, TyreStatus::Active, TyreStatus::Maintenance])
+                ->orderBy('tyre_code')
+                ->get(['id', 'tyre_code', 'status'])
+                ->map(fn (Tyre $tyre) => [
+                    'id' => $tyre->id,
+                    'tyre_code' => $tyre->tyre_code,
+                    'status_label' => $tyre->status->label(),
+                ]),
+            'disposalReasons' => collect(DisposalReason::cases())->map(fn (DisposalReason $reason) => [
+                'value' => $reason->value,
+                'label' => $reason->label(),
+            ]),
+        ];
+    }
+
+    private function tyreSourceLabel(Tyre $tyre): string
+    {
+        if (! $tyre->current_location_type || ! $tyre->current_location_id) {
+            return 'Unknown location';
+        }
+
+        return match ($tyre->current_location_type) {
+            TyreLocationType::Store => Store::query()->find($tyre->current_location_id)?->name ?? "Store #{$tyre->current_location_id}",
+            TyreLocationType::PowerVehicle, TyreLocationType::Trailer => Vehicle::query()->find($tyre->current_location_id)?->displayCodeWithPlate() ?? "Vehicle #{$tyre->current_location_id}",
+            TyreLocationType::MaintenanceCenter => "Maintenance center #{$tyre->current_location_id}",
+            TyreLocationType::DisposalYard => "Disposal yard #{$tyre->current_location_id}",
+        };
     }
 }

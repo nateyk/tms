@@ -73,8 +73,8 @@ class TyreController extends Controller
             'brand',
             'size',
             'movements' => fn ($q) => $q->latest()->limit(10),
-            'maintenanceRecords' => fn ($q) => $q->latest()->limit(10),
             'activeAssignment.vehicle',
+            'baseline',
         ]);
 
         return Inertia::render('tyres/show', [
@@ -216,16 +216,13 @@ class TyreController extends Controller
             'qr_scan_url' => route('tyres.scan', $tyre->tyre_code),
             'total_km' => $tyre->totalKmUsed(),
             'cost_per_km' => $tyre->costPerKm(),
+            'usage_summary' => $tyre->calculateUsageSummary(),
+            'usage_history' => $tyre->getUsageHistory(),
             'created_at' => $tyre->created_at?->toDateTimeString(),
             'updated_at' => $tyre->updated_at?->toDateTimeString(),
             'recent_movements' => $tyre->movements->map(fn ($m) => [
                 'movement_no' => $m->movement_no,
                 'movement_type' => $m->movement_type->label(),
-                'status' => $m->status->label(),
-            ]),
-            'recent_maintenance' => $tyre->maintenanceRecords->map(fn ($m) => [
-                'maintenance_no' => $m->maintenance_no,
-                'problem_type' => $m->problem_type->label(),
                 'status' => $m->status->label(),
             ]),
         ];

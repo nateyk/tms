@@ -21,8 +21,8 @@
 - [x] Placeholder routes for all modules
 - [x] Voucher PDF + QR scan routes
 - [x] API routes registered
-- [ ] Fix TypeScript build (profile form null user)
-- [ ] `php artisan storage:link`
+- [x] Fix TypeScript build (profile form null user)
+- [x] `php artisan storage:link`
 - [ ] Port feature tests from legacy TMS
 
 ## Phase 1 — Administration (Next)

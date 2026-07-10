@@ -4,6 +4,7 @@ import {
     CircleDot,
     ClipboardCheck,
     FileBarChart,
+    Gauge,
     History,
     LayoutDashboard,
     Recycle,
@@ -12,7 +13,6 @@ import {
     Store,
     Truck,
     Users,
-    Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -71,16 +71,16 @@ export const tmsNavigation: NavGroup[] = [
                 permission: "tyre.view",
             },
             {
+                title: "Reading Monitoring",
+                url: "/tyres/reading-monitoring",
+                icon: Gauge,
+                permission: "tyre-reading.view",
+            },
+            {
                 title: "Tyre Movements",
                 url: "/tyres/movements",
                 icon: History,
                 permission: "movement.create",
-            },
-            {
-                title: "Tyre Maintenances",
-                url: "/tyres/maintenances",
-                icon: Wrench,
-                permission: "maintenance.create",
             },
             {
                 title: "Tyre Disposals",

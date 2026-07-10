@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { Info } from "lucide-react";
-import { TyreMapCanvas, KonvaSlot } from "@/components/fleet/tyre-map-canvas";
+import { ModernTyreMap, KonvaSlot } from "@/components/fleet/modern-tyre-map";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { TyreMovementDialog } from "@/components/fleet/tyre-movement-dialog";
+import { TyreDisposalDialog } from "@/components/fleet/tyre-disposal-dialog";
 
 export type MapSlot = {
     code: string;
@@ -81,15 +83,35 @@ type VehicleTyreMapPanelProps = {
     tyreMap: TyreMapPayload;
     trailer?: VehicleSummary | null;
     trailerTyreMap?: TyreMapPayload | null;
+    movementFormProps?: {
+        tyres: Array<{
+            id: number;
+            tyre_code: string;
+            serial_number: string;
+            status_label: string;
+            current_location_type: string | null;
+            current_location_id: number | null;
+            current_position_code: string | null;
+            source_label: string;
+        }>;
+        stores: Array<{ id: number; label: string }>;
+        powerVehicles: Array<{ id: number; label: string }>;
+        trailers: Array<{ id: number; label: string }>;
+        destinationTypes: Array<{ value: string; label: string }>;
+    };
+    disposalFormProps?: {
+        tyres: Array<{ id: number; tyre_code: string; status_label: string }>;
+        disposalReasons: Array<{ value: string; label: string }>;
+    };
 };
 
 const TRUCK_GUIDE_DEFINITIONS = [
     { title: "Front axle", codes: ["A", "B"] },
     { title: "1st drive axle", codes: ["C", "D", "E", "F"] },
     { title: "2nd drive axle", codes: ["G", "H", "I", "J"] },
-    { title: "Spare wheel", subtitle: "Between 1st and 2nd drive", codes: ["W"] },
+    { title: "Spare wheel (front)", subtitle: "Between 1st and 2nd drive", codes: ["W"] },
     { title: "Tag axle", codes: ["K", "L", "M", "N"] },
-    { title: "Spare wheel", subtitle: "Between tag and rear", codes: ["X"] },
+    { title: "Spare wheel (rear)", subtitle: "Between tag and rear", codes: ["X"] },
     { title: "Rear axle", codes: ["O", "P", "Q", "R", "S", "T", "U", "V"] },
 ] as const;
 
@@ -271,8 +293,8 @@ function GuideSection({
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {unitLabel}
             </p>
-            {groups.map((group) => (
-                <Card key={`${unit}-${group.title}`} className="overflow-hidden shadow-none">
+            {groups.map((group, index) => (
+                <Card key={`${unit}-${group.title}-${group.subtitle || index}`} className="overflow-hidden shadow-none">
                     <CardHeader className="space-y-0 border-b bg-muted/50 px-3 py-2">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wide">
                             {group.title}
@@ -332,6 +354,7 @@ function TyreDiagramBlock({
     payload,
     selection,
     onSelect,
+    onContextMenuAction,
     diagramHeight,
 }: {
     unit: MapUnit;
@@ -341,6 +364,7 @@ function TyreDiagramBlock({
     payload: TyreMapPayload;
     selection: MapSelection;
     onSelect: (code: string) => void;
+    onContextMenuAction: (action: string, slot: KonvaSlot) => void;
     diagramHeight: number;
 }) {
     if (payload.mapData.length === 0) {
@@ -364,13 +388,13 @@ function TyreDiagramBlock({
                 className="w-full overflow-y-auto overflow-x-hidden px-3 py-3"
                 style={{ height: diagramHeight }}
             >
-                <TyreMapCanvas
+                <ModernTyreMap
                     mapId={mapId}
                     assetType={payload.konvaConfig.assetType}
                     slots={payload.konvaConfig.slots}
                     selectedPosition={selection?.unit === unit ? selection.code : null}
                     onSelect={onSelect}
-                    fitMode="width"
+                    onContextMenuAction={onContextMenuAction}
                 />
             </div>
         </div>
@@ -382,8 +406,13 @@ export function VehicleTyreMapPanel({
     tyreMap,
     trailer,
     trailerTyreMap,
+    movementFormProps,
+    disposalFormProps,
 }: VehicleTyreMapPanelProps) {
     const [selection, setSelection] = useState<MapSelection>(null);
+    const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+    const [disposalDialogOpen, setDisposalDialogOpen] = useState(false);
+    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(null);
 
     const counts = useMemo(() => mergeCounts(tyreMap, trailerTyreMap), [tyreMap, trailerTyreMap]);
     const spareCapacity = useMemo(
@@ -438,6 +467,33 @@ export function VehicleTyreMapPanel({
         setSelection({ unit, code });
     };
 
+    const handleContextMenuAction = (action: string, slot: KonvaSlot, x?: number, y?: number) => {
+        const payload = slot.code && tyreMap.konvaConfig.slots.find(s => s.code === slot.code) ? tyreMap : trailerTyreMap;
+        if (!payload) return;
+
+        const mapSlot = payload.mapData.find((s) => s.code === slot.code);
+        if (!mapSlot) return;
+
+        // Select the slot first
+        const unit = payload === tyreMap ? "power" : "trailer";
+        setSelection({ unit, code: slot.code });
+
+        if (action === "view") {
+            // View is handled by the selection
+            return;
+        }
+
+        if (action === "movement" && mapSlot.tyre_id) {
+            setSelectedTyreId(mapSlot.tyre_id);
+            setMovementDialogOpen(true);
+        }
+
+        if (action === "disposal" && mapSlot.tyre_id) {
+            setSelectedTyreId(mapSlot.tyre_id);
+            setDisposalDialogOpen(true);
+        }
+    };
+
     if (tyreMap.mapData.length === 0 && !trailerTyreMap?.mapData.length) {
         return (
             <Card>
@@ -456,155 +512,182 @@ export function VehicleTyreMapPanel({
         : powerDiagramHeight + 40;
 
     return (
-        <Card>
-            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-4">
-                <div>
-                    <CardDescription>Vehicle tyre map</CardDescription>
-                    <CardTitle>{vehicle.display_code ?? vehicle.vehicle_code}</CardTitle>
-                    {headerMeta && <CardDescription className="mt-1">{headerMeta}</CardDescription>}
-                </div>
-                <div className="flex gap-2">
-                    <CountStat label="Mounted" value={`${counts.mounted}/${counts.total}`} />
-                    <CountStat label="Open" value={counts.empty} />
-                    {spareCapacity > 0 && (
-                        <CountStat
-                            label="Spares"
-                            value={`${counts.spares_filled}/${spareCapacity}`}
-                        />
-                    )}
-                </div>
-            </CardHeader>
-
-            <CardContent className="p-0">
-                <div className="grid lg:grid-cols-[13fr_7fr] lg:divide-x">
-                    <div className="min-w-0 bg-muted/10 lg:min-h-0">
-                        <TyreDiagramBlock
-                            unit="power"
-                            sectionLabel="Power unit"
-                            vehicleCode={vehicle.vehicle_code}
-                            mapId={`power-${vehicle.id}`}
-                            payload={tyreMap}
-                            selection={selection}
-                            onSelect={(code) => handleSelect("power", code)}
-                            diagramHeight={powerDiagramHeight}
-                        />
-
-                        {hasTrailer && (
-                            <>
-                                <Separator />
-                                <TyreDiagramBlock
-                                    unit="trailer"
-                                    sectionLabel="Attached trailer"
-                                    vehicleCode={trailer!.vehicle_code}
-                                    mapId={`trailer-${trailer!.id}`}
-                                    payload={trailerTyreMap!}
-                                    selection={selection}
-                                    onSelect={(code) => handleSelect("trailer", code)}
-                                    diagramHeight={trailerDiagramHeight}
-                                />
-                            </>
+        <>
+            <Card>
+                <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-4">
+                    <div>
+                        <CardDescription>Vehicle tyre map</CardDescription>
+                        <CardTitle>{vehicle.display_code ?? vehicle.vehicle_code}</CardTitle>
+                        {headerMeta && <CardDescription className="mt-1">{headerMeta}</CardDescription>}
+                    </div>
+                    <div className="flex gap-2">
+                        <CountStat label="Mounted" value={`${counts.mounted}/${counts.total}`} />
+                        <CountStat label="Open" value={counts.empty} />
+                        {spareCapacity > 0 && (
+                            <CountStat
+                                label="Spares"
+                                value={`${counts.spares_filled}/${spareCapacity}`}
+                            />
                         )}
                     </div>
+                </CardHeader>
 
-                    <div
-                        className="flex flex-col gap-2.5 p-3 lg:overflow-y-auto"
-                        style={{ minHeight: rightPanelHeight }}
-                    >
-                        <Card className="shadow-none shrink-0">
-                            <CardHeader className="pb-2 pt-0">
-                                <CardTitle className="text-sm font-medium">Selected position</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {selectedSlot && selection ? (
-                                    <SelectedSlotDetails
-                                        slot={selectedSlot}
-                                        positionCode={selection.code}
+                <CardContent className="p-0">
+                    <div className="grid lg:grid-cols-[13fr_7fr] lg:divide-x">
+                        <div className="min-w-0 bg-muted/10 lg:min-h-0">
+                            <TyreDiagramBlock
+                                unit="power"
+                                sectionLabel="Power unit"
+                                vehicleCode={vehicle.vehicle_code}
+                                mapId={`power-${vehicle.id}`}
+                                payload={tyreMap}
+                                selection={selection}
+                                onSelect={(code) => handleSelect("power", code)}
+                                onContextMenuAction={handleContextMenuAction}
+                                diagramHeight={powerDiagramHeight}
+                            />
+
+                            {hasTrailer && (
+                                <>
+                                    <Separator />
+                                    <TyreDiagramBlock
+                                        unit="trailer"
+                                        sectionLabel="Attached trailer"
+                                        vehicleCode={trailer!.vehicle_code}
+                                        mapId={`trailer-${trailer!.id}`}
+                                        payload={trailerTyreMap!}
+                                        selection={selection}
+                                        onSelect={(code) => handleSelect("trailer", code)}
+                                        onContextMenuAction={handleContextMenuAction}
+                                        diagramHeight={trailerDiagramHeight}
                                     />
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        Click a labelled position on the diagram or in the guide
-                                        below.
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
+                                </>
+                            )}
+                        </div>
 
-                        {allSpares.length > 0 && (
+                        <div
+                            className="flex flex-col gap-2.5 p-3 lg:overflow-y-auto"
+                            style={{ minHeight: rightPanelHeight }}
+                        >
                             <Card className="shadow-none shrink-0">
-                                <CardHeader className="flex flex-row items-center justify-between pb-2 pt-0">
-                                    <CardTitle className="text-sm font-medium">Spare tyres</CardTitle>
-                                    <Badge variant="secondary">
-                                        {counts.spares_filled}/{spareCapacity}
-                                    </Badge>
+                                <CardHeader className="pb-2 pt-0">
+                                    <CardTitle className="text-sm font-medium">Selected position</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-2">
-                                    {allSpares.map((spare) => (
-                                        <div
-                                            key={spare.position}
-                                            className="flex items-center gap-3 rounded-lg border border-dashed p-3"
-                                        >
-                                            <PositionBadge
-                                                code={spare.display_code || "?"}
-                                                empty={!spare.tyre_code}
-                                            />
-                                            <div className="min-w-0">
-                                                <p className="truncate text-sm font-medium">
-                                                    {spare.tyre_code || "No spare assigned"}
-                                                </p>
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {spare.owner_label}
-                                                    {spare.serial_number
-                                                        ? ` · ${spare.serial_number}`
-                                                        : " · Open pocket"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <CardContent>
+                                    {selectedSlot && selection ? (
+                                        <SelectedSlotDetails
+                                            slot={selectedSlot}
+                                            positionCode={selection.code}
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            Click a labelled position on the diagram or in the guide
+                                            below.
+                                        </p>
+                                    )}
                                 </CardContent>
                             </Card>
-                        )}
 
-                        <Card className="shadow-none min-h-0 flex-1 flex flex-col">
-                            <CardHeader className="pb-2 pt-0 shrink-0">
-                                <CardTitle className="text-sm font-medium">Tyre position guide</CardTitle>
-                            </CardHeader>
-                            <CardContent className="min-h-0 flex-1 p-0 pb-3">
-                                <ScrollArea className="h-full max-h-[280px] px-4 lg:max-h-none">
-                                    <div className="space-y-4 pb-2">
-                                        <GuideSection
-                                            unit="power"
-                                            unitLabel={`Power — ${vehicle.vehicle_code}`}
-                                            groups={powerGuide}
-                                            selection={selection}
-                                            onSelect={handleSelect}
-                                        />
+                            {allSpares.length > 0 && (
+                                <Card className="shadow-none shrink-0">
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2 pt-0">
+                                        <CardTitle className="text-sm font-medium">Spare tyres</CardTitle>
+                                        <Badge variant="secondary">
+                                            {counts.spares_filled}/{spareCapacity}
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="space-y-2">
+                                        {allSpares.map((spare) => (
+                                            <div
+                                                key={spare.position}
+                                                className="flex items-center gap-3 rounded-lg border border-dashed p-3"
+                                            >
+                                                <PositionBadge
+                                                    code={spare.display_code || "?"}
+                                                    empty={!spare.tyre_code}
+                                                />
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-medium">
+                                                        {spare.tyre_code || "No spare assigned"}
+                                                    </p>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {spare.owner_label}
+                                                        {spare.serial_number
+                                                            ? ` · ${spare.serial_number}`
+                                                            : " · Open pocket"}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            )}
 
-                                        {trailer && trailerTyreMap && (
+                            <Card className="shadow-none min-h-0 flex-1 flex flex-col">
+                                <CardHeader className="pb-2 pt-0 shrink-0">
+                                    <CardTitle className="text-sm font-medium">Tyre position guide</CardTitle>
+                                </CardHeader>
+                                <CardContent className="min-h-0 flex-1 p-0 pb-3">
+                                    <ScrollArea className="h-full max-h-[280px] px-4 lg:max-h-none">
+                                        <div className="space-y-4 pb-2">
                                             <GuideSection
-                                                unit="trailer"
-                                                unitLabel={`Trailer — ${trailer.vehicle_code}`}
-                                                groups={trailerGuide}
+                                                unit="power"
+                                                unitLabel={`Power — ${vehicle.vehicle_code}`}
+                                                groups={powerGuide}
                                                 selection={selection}
                                                 onSelect={handleSelect}
                                             />
-                                        )}
 
-                                        <Alert>
-                                            <Info className="h-4 w-4" />
-                                            <AlertDescription>
-                                                Standard tyre position guide. Spare wheels W and X
-                                                appear on the diagram when configured for this
-                                                vehicle type.
-                                            </AlertDescription>
-                                        </Alert>
-                                    </div>
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
+                                            {trailer && trailerTyreMap && (
+                                                <GuideSection
+                                                    unit="trailer"
+                                                    unitLabel={`Trailer — ${trailer.vehicle_code}`}
+                                                    groups={trailerGuide}
+                                                    selection={selection}
+                                                    onSelect={handleSelect}
+                                                />
+                                            )}
+
+                                            <Alert>
+                                                <Info className="h-4 w-4" />
+                                                <AlertDescription>
+                                                    Standard tyre position guide. Spare wheels W and X
+                                                    appear on the diagram when configured for this
+                                                    vehicle type.
+                                                </AlertDescription>
+                                            </Alert>
+                                        </div>
+                                    </ScrollArea>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+
+            {movementFormProps && (
+                <TyreMovementDialog
+                    open={movementDialogOpen}
+                    onOpenChange={setMovementDialogOpen}
+                    tyreId={selectedTyreId}
+                    tyres={movementFormProps.tyres}
+                    stores={movementFormProps.stores}
+                    powerVehicles={movementFormProps.powerVehicles}
+                    trailers={movementFormProps.trailers}
+                    destinationTypes={movementFormProps.destinationTypes}
+                />
+            )}
+
+            {disposalFormProps && (
+                <TyreDisposalDialog
+                    open={disposalDialogOpen}
+                    onOpenChange={setDisposalDialogOpen}
+                    tyreId={selectedTyreId}
+                    tyres={disposalFormProps.tyres}
+                    disposalReasons={disposalFormProps.disposalReasons}
+                />
+            )}
+        </>
     );
 }
 
