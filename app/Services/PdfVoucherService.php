@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\TrailerTransfer;
 use App\Models\Tyre;
 use App\Models\TyreDisposal;
+use App\Models\TyreMaintenance;
 use App\Models\TyreMovement;
 use App\Models\Vehicle;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -31,6 +32,17 @@ class PdfVoucherService
             'pdf.vouchers.trailer-transfer',
             ['transfer' => $transfer],
             "trailer-transfer-{$transfer->transfer_no}.pdf"
+        );
+    }
+
+    public function maintenance(TyreMaintenance $maintenance): Response
+    {
+        $maintenance->load(['tyre', 'preparedByUser', 'approvedByUser']);
+
+        return $this->download(
+            'pdf.vouchers.maintenance',
+            ['maintenance' => $maintenance],
+            "maintenance-{$maintenance->maintenance_no}.pdf"
         );
     }
 
@@ -63,6 +75,7 @@ class PdfVoucherService
             'size',
             'assignments' => fn ($q) => $q->latest(),
             'movements' => fn ($q) => $q->latest()->limit(50),
+            'maintenanceRecords' => fn ($q) => $q->latest()->limit(50),
         ]);
 
         return $this->download(

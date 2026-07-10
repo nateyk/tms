@@ -45,10 +45,8 @@ In a second terminal: `npm run dev`
 | Done | Fleet — Vehicle Types, Stores, Vehicles, Dashboard |
 | Done | Tyres — registration, QR, approval |
 | Done | Tyre Movements — 10 types + voucher workflow |
-| Done | Trailer Transfers — power–trailer reassignment workflow |
-| Done | Tyre Disposals — full workflow |
-| Done | Pending Approvals, Reports, Audit Logs |
-| Done | Phase 9 — API, artisan commands, test port, polish |
+| Planned | Trailer Transfers, Maintenance, Disposals |
+| Planned | Pending Approvals, Reports, Audit Logs |
 
 ## Core business rules
 
@@ -63,60 +61,12 @@ In a second terminal: `npm run dev`
 
 Draft → Submitted → Checked → Approved → Completed (inventory updates on completion)
 
-## API (Sanctum)
-
-All API routes require a valid Sanctum token (`auth:sanctum`).
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/tyres/{tyre_code}` | Tyre lookup for QR scan / mobile clients |
-
-Returns a `TyreScanResource` JSON payload (brand, size, status, location, assignment, QR URL, profile URL).
-
-**Example:**
-
-```bash
-# Create a token for a user, then:
-curl -H "Authorization: Bearer {token}" http://localhost:8000/api/tyres/TYR-0001
-```
-
-Public web scan page (no auth): `GET /tyres/scan/{tyre_code}`
-
-## Artisan commands
-
-| Command | Description |
-|---------|-------------|
-| `php artisan tms:scan-vehicle-asset-duplicates` | Report duplicate vehicle codes, plates, chassis numbers |
-| `php artisan tms:refresh-tyre-layouts` | Rebuild vehicle type layout JSON from tyre/axle counts |
-| `php artisan tms:fill-vehicle-tyre-gaps` | Fill empty vehicle positions from store stock (maintenance helper) |
-
 ## Tests
-
-Tests run against an in-memory SQLite database (see `phpunit.xml`).
 
 ```bash
 composer test
 php artisan test --filter=TyreMovementBusinessRulesTest
-php artisan test --filter=TyreApiLookupTest
 ```
-
-**Ported business-rule suites:** TyreMovementBusinessRules, TyreApiLookup, VoucherNumberGenerator, DashboardReportService, TyreRegistration, TyreMapWorkflow, VehicleAssetIdentity, TwoPersonOperatingModel, VoucherApprovalWorkflow, ExistingFleetTyreFitmentImport, TyreVehiclePlateDisplay, PdfVoucherLayout, VehicleTyreLayoutBuilder (unit).
-
-## Cleanup note: Tyre Maintenances removed
-
-The **Tyre Maintenances** module was removed from the Inertia rebuild by product decision (June 2026). Tyre **Disposals** and all other modules remain.
-
-**Removed from application usage:**
-- Routes under `/tyres/maintenances/*` and maintenance PDF voucher route
-- `TyreMaintenanceController`, `TyreMaintenancePolicy`, `TyreMaintenanceService`
-- Form requests, Inertia pages, React components, and maintenance PDF view
-- Pending-approvals queue, reports export, dashboard stat, QR scan maintenance section, and RBAC permissions (`maintenance.*`)
-- `TyreMaintenanceWorkflowTest`
-
-**Kept for database integrity:**
-- `tyre_maintenance` migration and `TyreMaintenance` model (no UI/routes)
-- `MaintenanceStatus` / `MaintenanceProblemType` enums (model casts)
-- `TyreStatus::Maintenance` and `TyreLocationType::MaintenanceCenter` (tyre movements to maintenance center still valid)
 
 ## License
 

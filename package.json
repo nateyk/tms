@@ -24,7 +24,6 @@
         "vite": "^5.0"
     },
     "dependencies": {
-        "@base-ui/react": "^1.6.0",
         "@inertiajs/vue3": "^2.0.0",
         "@radix-ui/react-alert-dialog": "^1.0.5",
         "@radix-ui/react-avatar": "^1.1.1",
@@ -46,7 +45,6 @@
         "konva": "^10.3.0",
         "lucide-react": "^0.378.0",
         "next-themes": "^0.3.0",
-        "react-is": "^19.2.7",
         "react-resizable-panels": "^2.0.19",
         "recharts": "^3.9.0",
         "tailwind-merge": "^2.3.0",

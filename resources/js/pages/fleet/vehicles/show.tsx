@@ -20,42 +20,16 @@ type VehicleSummary = {
     attached_power_code?: string | null;
 };
 
-type MovementFormProps = {
-    tyres: Array<{
-        id: number;
-        tyre_code: string;
-        serial_number: string;
-        status_label: string;
-        current_location_type: string | null;
-        current_location_id: number | null;
-        current_position_code: string | null;
-        source_label: string;
-    }>;
-    stores: Array<{ id: number; label: string }>;
-    powerVehicles: Array<{ id: number; label: string }>;
-    trailers: Array<{ id: number; label: string }>;
-    destinationTypes: Array<{ value: string; label: string }>;
-};
-
-type DisposalFormProps = {
-    tyres: Array<{ id: number; tyre_code: string; status_label: string }>;
-    disposalReasons: Array<{ value: string; label: string }>;
-};
-
 export default function VehiclesShow({
     vehicle,
     tyreMap,
     trailer,
     trailerTyreMap,
-    movementFormProps,
-    disposalFormProps,
 }: {
     vehicle: VehicleSummary;
     tyreMap: TyreMapPayload;
     trailer?: VehicleSummary | null;
     trailerTyreMap?: TyreMapPayload | null;
-    movementFormProps?: MovementFormProps;
-    disposalFormProps?: DisposalFormProps;
 }) {
     return (
         <AuthenticatedLayout header={vehicle.display_code}>
@@ -119,8 +93,6 @@ export default function VehiclesShow({
                     tyreMap={tyreMap}
                     trailer={trailer}
                     trailerTyreMap={trailerTyreMap}
-                    movementFormProps={movementFormProps}
-                    disposalFormProps={disposalFormProps}
                 />
             </div>
         </AuthenticatedLayout>

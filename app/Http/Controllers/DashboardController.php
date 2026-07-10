@@ -22,7 +22,7 @@ class DashboardController extends Controller
                 ['label' => 'Active on Fleet', 'value' => $stats['active_tyres']],
                 ['label' => 'In Store', 'value' => $stats['in_store']],
                 ['label' => 'Pending Approvals', 'value' => $stats['pending_movements'], 'href' => route('approvals.pending')],
-                ['label' => 'In Maintenance', 'value' => $stats['in_maintenance'], 'href' => route('tyres.index')],
+                ['label' => 'Tyre Maintenances', 'value' => $stats['pending_maintenance'], 'href' => route('tyres.maintenances.index')],
                 ['label' => 'Pending Registration', 'value' => $stats['pending_registration'], 'href' => route('tyres.index')],
                 ['label' => 'Power Units', 'value' => $stats['power_vehicles'], 'href' => route('fleet.vehicles.index')],
                 ['label' => 'Trailers', 'value' => $stats['trailers'], 'href' => route('fleet.vehicles.index')],

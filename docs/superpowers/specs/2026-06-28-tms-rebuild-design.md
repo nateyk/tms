@@ -21,7 +21,7 @@ Full functional clone of the legacy Filament TMS as a Laravel + Inertia + React 
 | Group | Modules |
 |-------|---------|
 | Fleet Tyre Operations | Fleet (dashboard), Vehicle Types, Stores, Vehicles, Trailer Transfers |
-| Tyre Operations | Tyres, Tyre Movements, Tyre Disposals |
+| Tyre Operations | Tyres, Tyre Movements, Tyre Maintenances, Tyre Disposals |
 | Approvals & Reports | Pending Approvals, Reports, Audit Logs |
 | Administration | Users, Roles, Settings |
 
@@ -37,9 +37,8 @@ Full functional clone of the legacy Filament TMS as a Laravel + Inertia + React 
 ## Workflows
 
 **Vouchers** (movements, transfers, disposals): draft → submitted → checked → approved → completed  
+**Maintenance:** draft → submitted → approved → in_progress → completed  
 **Tyre registration:** pending_approval → available
-
-> **Note (2026-06):** Tyre Maintenances module removed from the Inertia app. Schema/model retained only; see README cleanup note.
 
 ## UI Standards
 
@@ -58,9 +57,9 @@ Full functional clone of the legacy Filament TMS as a Laravel + Inertia + React 
 | 4 | Tyres — registration, QR, media |
 | 5 | Tyre Movements — 10 types + voucher workflow |
 | 6 | Trailer Transfers |
-| 7 | Disposals |
+| 7 | Maintenance + Disposals |
 | 8 | Pending Approvals, Reports, Audit Logs |
-| 9 | API, artisan commands, test port, polish ✅ |
+| 9 | API, artisan commands, test port, polish |
 
 ## Out of Scope (Legacy Schema Only)
 

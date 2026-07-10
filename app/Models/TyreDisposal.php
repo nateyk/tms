@@ -8,13 +8,12 @@ use App\Enums\VoucherStatus;
 use App\Support\TyrePositionFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 class TyreDisposal extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use LogsActivity;
 
     protected $fillable = [
         'disposal_no',
@@ -66,21 +65,5 @@ class TyreDisposal extends Model
     public function lastPositionDisplay(): string
     {
         return TyrePositionFormatter::display($this->last_position_code);
-    }
-
-    public function displayNumber(): string
-    {
-        if (preg_match('/^([A-Z]+)-(\d{4})(\d{2})(\d{2})-(\d+)$/', $this->disposal_no, $matches)) {
-            return sprintf(
-                '%s-%s%s%s-%03d',
-                $matches[1],
-                substr($matches[2], -2),
-                $matches[3],
-                $matches[4],
-                (int) $matches[5],
-            );
-        }
-
-        return $this->disposal_no;
     }
 }

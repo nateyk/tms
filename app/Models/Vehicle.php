@@ -97,16 +97,6 @@ class Vehicle extends Model
         return $this->hasMany(VehicleCombination::class, 'trailer_vehicle_id');
     }
 
-    public function odometerReadings(): HasMany
-    {
-        return $this->hasMany(VehicleOdometerReading::class);
-    }
-
-    public function latestOdometerReading(): HasOne
-    {
-        return $this->hasOne(VehicleOdometerReading::class)->latestOfMany();
-    }
-
     public function isPowerVehicle(): bool
     {
         return $this->asset_type === AssetType::PowerVehicle;
@@ -161,10 +151,5 @@ class Vehicle extends Model
     public function attachedPower(): ?Vehicle
     {
         return $this->activeCombinationAsTrailer?->powerVehicle;
-    }
-
-    public function latestKnownOdometer(): ?int
-    {
-        return app(\App\Services\VehicleOdometerService::class)->getLatestOdometer($this);
     }
 }

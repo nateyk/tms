@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MovementCompletionDialog } from "@/components/tyres/movement-completion-dialog";
 import { router } from "@inertiajs/react";
 import { CheckCircle, ClipboardCheck, FileDown, Send, XCircle } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -27,63 +26,37 @@ type VoucherPermissions = {
 };
 
 type VoucherWorkflowActionsProps = {
-    recordId: number;
-    routePrefix: string;
+    movementId: number;
     can: VoucherPermissions;
     pdfUrl?: string;
-    entityLabel?: string;
-    completeDescription?: string;
-    movementData?: {
-        id: number;
-        movement_no: string;
-        tyre_code: string;
-        from_location_display: string;
-        to_location_display: string;
-        requires_source_odometer: boolean;
-        requires_destination_odometer: boolean;
-        source_odometer_label: string;
-        destination_odometer_label: string;
-        source_vehicle_latest_odometer: number | null;
-        destination_vehicle_latest_odometer: number | null;
-    };
 };
 
-export function VoucherWorkflowActions({
-    recordId,
-    routePrefix,
-    can,
-    pdfUrl,
-    entityLabel = "voucher",
-    completeDescription = "This applies the approved changes. This cannot be undone.",
-    movementData,
-}: VoucherWorkflowActionsProps) {
+export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkflowActionsProps) {
     const [rejectReason, setRejectReason] = useState("");
     const [processing, setProcessing] = useState(false);
-    const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
 
-    const postAction = (action: string, payload: Record<string, string> = {}) => {
+    const postAction = (routeName: string, payload: Record<string, string> = {}) => {
         setProcessing(true);
-        router.post(route(`${routePrefix}.${action}`, recordId), payload, {
+        router.post(route(routeName, movementId), payload, {
             onFinish: () => setProcessing(false),
         });
     };
 
     const handleReject = (event: FormEvent) => {
         event.preventDefault();
-        postAction("reject", { reason: rejectReason });
+        postAction("tyres.movements.reject", { reason: rejectReason });
     };
 
     return (
-        <>
-            <div className="flex flex-wrap gap-2">
-                {pdfUrl && (
-                    <Button variant="outline" asChild>
-                        <a href={pdfUrl} target="_blank" rel="noreferrer">
-                            <FileDown className="mr-2 h-4 w-4" />
-                            PDF
-                        </a>
-                    </Button>
-                )}
+        <div className="flex flex-wrap gap-2">
+            {pdfUrl && (
+                <Button variant="outline" asChild>
+                    <a href={pdfUrl} target="_blank" rel="noreferrer">
+                        <FileDown className="mr-2 h-4 w-4" />
+                        PDF
+                    </a>
+                </Button>
+            )}
 
             {can.submit && (
                 <AlertDialog>
@@ -95,14 +68,14 @@ export function VoucherWorkflowActions({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Submit {entityLabel}?</AlertDialogTitle>
+                            <AlertDialogTitle>Submit movement?</AlertDialogTitle>
                             <AlertDialogDescription>
                                 This sends the voucher to a checker for review.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("submit")}>
+                            <AlertDialogAction onClick={() => postAction("tyres.movements.submit")}>
                                 Submit
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -124,7 +97,7 @@ export function VoucherWorkflowActions({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("check")}>
+                            <AlertDialogAction onClick={() => postAction("tyres.movements.check")}>
                                 Check
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -139,11 +112,11 @@ export function VoucherWorkflowActions({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Approve {entityLabel}?</AlertDialogTitle>
+                            <AlertDialogTitle>Approve movement?</AlertDialogTitle>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("approve")}>
+                            <AlertDialogAction onClick={() => postAction("tyres.movements.approve")}>
                                 Approve
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -152,38 +125,28 @@ export function VoucherWorkflowActions({
             )}
 
             {can.complete && (
-                <>
-                    {movementData ? (
-                        <Button
-                            disabled={processing}
-                            onClick={() => setCompletionDialogOpen(true)}
-                        >
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button disabled={processing}>
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Complete
                         </Button>
-                    ) : (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button disabled={processing}>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Complete
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Complete {entityLabel}?</AlertDialogTitle>
-                                    <AlertDialogDescription>{completeDescription}</AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => postAction("complete")}>
-                                        Complete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
-                </>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Complete movement?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This applies changes to tyre inventory. This cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => postAction("tyres.movements.complete")}>
+                                Complete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
 
             {can.reject && (
@@ -197,7 +160,7 @@ export function VoucherWorkflowActions({
                     <AlertDialogContent>
                         <form onSubmit={handleReject}>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Reject {entityLabel}</AlertDialogTitle>
+                                <AlertDialogTitle>Reject movement</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     Provide a reason for rejection.
                                 </AlertDialogDescription>
@@ -235,7 +198,7 @@ export function VoucherWorkflowActions({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Keep draft</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("cancel")}>
+                            <AlertDialogAction onClick={() => postAction("tyres.movements.cancel")}>
                                 Cancel draft
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -243,14 +206,5 @@ export function VoucherWorkflowActions({
                 </AlertDialog>
             )}
         </div>
-
-        {movementData && (
-            <MovementCompletionDialog
-                open={completionDialogOpen}
-                onOpenChange={setCompletionDialogOpen}
-                movement={movementData}
-            />
-        )}
-    </>
     );
 }

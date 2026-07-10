@@ -76,20 +76,4 @@ class TyreMaintenance extends Model
     {
         return TyrePositionFormatter::display($this->position_code);
     }
-
-    public function displayNumber(): string
-    {
-        if (preg_match('/^([A-Z]+)-(\d{4})(\d{2})(\d{2})-(\d+)$/', $this->maintenance_no, $matches)) {
-            return sprintf(
-                '%s-%s%s%s-%03d',
-                $matches[1],
-                substr($matches[2], -2),
-                $matches[3],
-                $matches[4],
-                (int) $matches[5],
-            );
-        }
-
-        return $this->maintenance_no;
-    }
 }

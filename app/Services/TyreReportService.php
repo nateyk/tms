@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MaintenanceStatus;
 use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
 use App\Enums\TyreStatus;
@@ -11,6 +12,7 @@ use App\Models\TrailerTransfer;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreDisposal;
+use App\Models\TyreMaintenance;
 use App\Models\TyreMovement;
 use App\Models\Vehicle;
 use App\Models\VehicleCombination;
@@ -67,7 +69,16 @@ class TyreReportService
                 ->latest()
                 ->get(),
             'disposals' => TyreDisposal::query()
-                ->whereIn('status', [VoucherStatus::Submitted, VoucherStatus::Checked, VoucherStatus::Approved])
+                ->whereIn('status', [VoucherStatus::Submitted, VoucherStatus::Checked])
+                ->with('tyre')
+                ->latest()
+                ->get(),
+            'maintenance' => TyreMaintenance::query()
+                ->whereIn('status', [
+                    MaintenanceStatus::Submitted,
+                    MaintenanceStatus::Approved,
+                    MaintenanceStatus::InProgress,
+                ])
                 ->with('tyre')
                 ->latest()
                 ->get(),
@@ -81,6 +92,15 @@ class TyreReportService
             ->when($from, fn ($q) => $q->whereDate('movement_date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('movement_date', '<=', $to))
             ->latest('movement_date');
+    }
+
+    public function maintenanceCostReport(?string $from = null, ?string $to = null): Builder
+    {
+        return TyreMaintenance::query()
+            ->with('tyre')
+            ->when($from, fn ($q) => $q->whereDate('maintenance_date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('maintenance_date', '<=', $to))
+            ->latest('maintenance_date');
     }
 
     public function disposalReport(?string $from = null, ?string $to = null): Builder
@@ -130,7 +150,7 @@ class TyreReportService
     public function tyreLifecycleReport(): Collection
     {
         return Tyre::query()
-            ->with(['brand', 'size', 'assignments', 'movements', 'disposals'])
+            ->with(['brand', 'size', 'assignments', 'movements', 'maintenanceRecords', 'disposals'])
             ->orderBy('tyre_code')
             ->get()
             ->map(fn (Tyre $tyre) => [
@@ -139,6 +159,7 @@ class TyreReportService
                 'location' => $tyre->current_location_type->label(),
                 'assignments_count' => $tyre->assignments->count(),
                 'movements_count' => $tyre->movements->count(),
+                'maintenance_count' => $tyre->maintenanceRecords->count(),
                 'disposed' => $tyre->disposals->where('status', VoucherStatus::Completed)->isNotEmpty() ? 'yes' : 'no',
                 'total_km' => $tyre->totalKmUsed(),
             ]);
@@ -161,15 +182,11 @@ class TyreReportService
                 VoucherStatus::Checked,
                 VoucherStatus::Approved,
             ])->count(),
-            'pending_transfers' => TrailerTransfer::query()->whereIn('status', [
-                VoucherStatus::Submitted,
-                VoucherStatus::Checked,
-                VoucherStatus::Approved,
-            ])->count(),
-            'pending_disposals' => TyreDisposal::query()->whereIn('status', [
-                VoucherStatus::Submitted,
-                VoucherStatus::Checked,
-                VoucherStatus::Approved,
+            'pending_maintenance' => TyreMaintenance::query()->whereIn('status', [
+                MaintenanceStatus::Draft,
+                MaintenanceStatus::Submitted,
+                MaintenanceStatus::Approved,
+                MaintenanceStatus::InProgress,
             ])->count(),
         ];
     }

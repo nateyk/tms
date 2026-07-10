@@ -5,13 +5,12 @@ namespace App\Models;
 use App\Enums\VoucherStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 class TrailerTransfer extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use LogsActivity;
 
     protected $fillable = [
         'transfer_no',

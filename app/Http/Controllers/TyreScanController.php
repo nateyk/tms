@@ -15,6 +15,7 @@ class TyreScanController extends Controller
                 'brand',
                 'size',
                 'movements' => fn ($q) => $q->latest()->limit(10),
+                'maintenanceRecords' => fn ($q) => $q->latest()->limit(10),
                 'assignments' => fn ($q) => $q->latest()->limit(10),
             ])
             ->firstOrFail();

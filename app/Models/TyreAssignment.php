@@ -78,21 +78,4 @@ class TyreAssignment extends Model
     {
         return TyrePositionFormatter::display($this->position_code);
     }
-
-    public function isActive(): bool
-    {
-        return $this->status === TyreAssignmentStatus::Active;
-    }
-
-    public function isClosed(): bool
-    {
-        return $this->status !== TyreAssignmentStatus::Active;
-    }
-
-    public function calculateCurrentUsedKm(int $latestOdometer): int
-    {
-        $installedOdometer = $this->installed_odometer ?? 0;
-
-        return max(0, $latestOdometer - $installedOdometer);
-    }
 }

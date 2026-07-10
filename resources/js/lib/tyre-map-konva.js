@@ -3,8 +3,8 @@ import Konva from 'konva';
 const DESIGN_WIDTH = 520;
 const DESIGN_HEIGHT = 1510;
 const TRUCK_BODY_BOTTOM_PADDING = 132;
-const BODY_X = 200;
-const BODY_W = 120;
+const BODY_X = 192;
+const BODY_W = 136;
 const BODY_TOP = 34;
 const BODY_BOTTOM = 1478;
 const BADGE = '#111827';
@@ -12,46 +12,46 @@ const TYRE_LABEL = '#ffffff';
 const TRAILER_DESIGN = { width: 520, height: 760 };
 
 const SLOTS = {
-    A: { kind: 'wheel', tire: [106, 164, 48, 112], badge: [36, 200], side: 'left' },
-    B: { kind: 'wheel', tire: [366, 164, 48, 112], badge: [444, 200], side: 'right' },
-    C: { kind: 'wheel', tire: [90, 400, 40, 120], badge: [36, 413], side: 'left' },
-    D: { kind: 'wheel', tire: [130, 400, 40, 120], badge: [36, 467], side: 'left' },
-    E: { kind: 'wheel', tire: [350, 400, 40, 120], badge: [444, 413], side: 'right' },
-    F: { kind: 'wheel', tire: [390, 400, 40, 120], badge: [444, 467], side: 'right' },
-    G: { kind: 'wheel', tire: [90, 540, 40, 120], badge: [36, 553], side: 'left' },
-    H: { kind: 'wheel', tire: [130, 540, 40, 120], badge: [36, 607], side: 'left' },
-    I: { kind: 'wheel', tire: [350, 540, 40, 120], badge: [444, 553], side: 'right' },
-    J: { kind: 'wheel', tire: [390, 540, 40, 120], badge: [444, 607], side: 'right' },
-    W: { kind: 'spare', wheel: [223, 728, 74], box: [198, 706, 124, 118], badge: [240, 745] },
-    K: { kind: 'wheel', tire: [90, 870, 40, 120], badge: [36, 883], side: 'left' },
-    L: { kind: 'wheel', tire: [130, 870, 40, 120], badge: [36, 937], side: 'left' },
-    M: { kind: 'wheel', tire: [350, 870, 40, 120], badge: [444, 883], side: 'right' },
-    N: { kind: 'wheel', tire: [390, 870, 40, 120], badge: [444, 937], side: 'right' },
-    X: { kind: 'spare', wheel: [223, 1058, 74], box: [198, 1036, 124, 118], badge: [240, 1075] },
-    O: { kind: 'wheel', tire: [90, 1200, 40, 120], badge: [36, 1213], side: 'left' },
-    P: { kind: 'wheel', tire: [130, 1200, 40, 120], badge: [36, 1267], side: 'left' },
-    Q: { kind: 'wheel', tire: [350, 1200, 40, 120], badge: [444, 1213], side: 'right' },
-    R: { kind: 'wheel', tire: [390, 1200, 40, 120], badge: [444, 1267], side: 'right' },
-    S: { kind: 'wheel', tire: [90, 1340, 40, 120], badge: [36, 1353], side: 'left' },
-    T: { kind: 'wheel', tire: [130, 1340, 40, 120], badge: [36, 1407], side: 'left' },
-    U: { kind: 'wheel', tire: [350, 1340, 40, 120], badge: [444, 1353], side: 'right' },
-    V: { kind: 'wheel', tire: [390, 1340, 40, 120], badge: [444, 1407], side: 'right' },
+    A: { kind: 'wheel', tire: [106, 190, 50, 112], badge: [48, 218], side: 'left' },
+    B: { kind: 'wheel', tire: [364, 190, 50, 112], badge: [462, 218], side: 'right' },
+    C: { kind: 'wheel', tire: [90, 398, 42, 120], badge: [48, 412], side: 'left' },
+    D: { kind: 'wheel', tire: [132, 398, 42, 120], badge: [48, 466], side: 'left' },
+    E: { kind: 'wheel', tire: [344, 398, 42, 120], badge: [462, 412], side: 'right' },
+    F: { kind: 'wheel', tire: [386, 398, 42, 120], badge: [462, 466], side: 'right' },
+    G: { kind: 'wheel', tire: [90, 578, 42, 120], badge: [48, 592], side: 'left' },
+    H: { kind: 'wheel', tire: [132, 578, 42, 120], badge: [48, 646], side: 'left' },
+    I: { kind: 'wheel', tire: [344, 578, 42, 120], badge: [462, 592], side: 'right' },
+    J: { kind: 'wheel', tire: [386, 578, 42, 120], badge: [462, 646], side: 'right' },
+    W: { kind: 'spare', wheel: [223, 742, 74], box: [198, 715, 124, 118], badge: [235, 808] },
+    K: { kind: 'wheel', tire: [90, 904, 42, 120], badge: [48, 918], side: 'left' },
+    L: { kind: 'wheel', tire: [132, 904, 42, 120], badge: [48, 972], side: 'left' },
+    M: { kind: 'wheel', tire: [344, 904, 42, 120], badge: [462, 918], side: 'right' },
+    N: { kind: 'wheel', tire: [386, 904, 42, 120], badge: [462, 972], side: 'right' },
+    X: { kind: 'spare', wheel: [223, 1096, 74], box: [198, 1069, 124, 118], badge: [235, 1162] },
+    O: { kind: 'wheel', tire: [90, 1244, 42, 120], badge: [48, 1258], side: 'left' },
+    P: { kind: 'wheel', tire: [132, 1244, 42, 120], badge: [48, 1312], side: 'left' },
+    Q: { kind: 'wheel', tire: [344, 1244, 42, 120], badge: [462, 1258], side: 'right' },
+    R: { kind: 'wheel', tire: [386, 1244, 42, 120], badge: [462, 1312], side: 'right' },
+    S: { kind: 'wheel', tire: [90, 1384, 42, 120], badge: [48, 1398], side: 'left' },
+    T: { kind: 'wheel', tire: [132, 1384, 42, 120], badge: [48, 1452], side: 'left' },
+    U: { kind: 'wheel', tire: [344, 1384, 42, 120], badge: [462, 1398], side: 'right' },
+    V: { kind: 'wheel', tire: [386, 1384, 42, 120], badge: [462, 1452], side: 'right' },
 };
 
 const TRAILER_SLOTS = {
-    A: { kind: 'wheel', tire: [90, 110, 40, 120], badge: [36, 103], side: 'left' },
-    B: { kind: 'wheel', tire: [130, 110, 40, 120], badge: [36, 157], side: 'left' },
-    C: { kind: 'wheel', tire: [350, 110, 40, 120], badge: [444, 103], side: 'right' },
-    D: { kind: 'wheel', tire: [390, 110, 40, 120], badge: [444, 157], side: 'right' },
-    E: { kind: 'wheel', tire: [90, 300, 40, 120], badge: [36, 293], side: 'left' },
-    F: { kind: 'wheel', tire: [130, 300, 40, 120], badge: [36, 347], side: 'left' },
-    G: { kind: 'wheel', tire: [350, 300, 40, 120], badge: [444, 293], side: 'right' },
-    H: { kind: 'wheel', tire: [390, 300, 40, 120], badge: [444, 347], side: 'right' },
-    I: { kind: 'wheel', tire: [90, 490, 40, 120], badge: [36, 483], side: 'left' },
-    J: { kind: 'wheel', tire: [130, 490, 40, 120], badge: [36, 537], side: 'left' },
-    K: { kind: 'wheel', tire: [350, 490, 40, 120], badge: [444, 483], side: 'right' },
-    L: { kind: 'wheel', tire: [390, 490, 40, 120], badge: [444, 537], side: 'right' },
-    X: { kind: 'spare', wheel: [223, 627, 74], box: [198, 605, 124, 118], badge: [240, 644] },
+    A: { kind: 'wheel', tire: [90, 150, 42, 120], badge: [48, 164], side: 'left' },
+    B: { kind: 'wheel', tire: [132, 150, 42, 120], badge: [48, 218], side: 'left' },
+    C: { kind: 'wheel', tire: [344, 150, 42, 120], badge: [462, 164], side: 'right' },
+    D: { kind: 'wheel', tire: [386, 150, 42, 120], badge: [462, 218], side: 'right' },
+    E: { kind: 'wheel', tire: [90, 340, 42, 120], badge: [48, 354], side: 'left' },
+    F: { kind: 'wheel', tire: [132, 340, 42, 120], badge: [48, 408], side: 'left' },
+    G: { kind: 'wheel', tire: [344, 340, 42, 120], badge: [462, 354], side: 'right' },
+    H: { kind: 'wheel', tire: [386, 340, 42, 120], badge: [462, 408], side: 'right' },
+    I: { kind: 'wheel', tire: [90, 530, 42, 120], badge: [48, 544], side: 'left' },
+    J: { kind: 'wheel', tire: [132, 530, 42, 120], badge: [48, 598], side: 'left' },
+    K: { kind: 'wheel', tire: [344, 530, 42, 120], badge: [462, 544], side: 'right' },
+    L: { kind: 'wheel', tire: [386, 530, 42, 120], badge: [462, 598], side: 'right' },
+    X: { kind: 'spare', wheel: [223, 664, 74], box: [198, 637, 124, 118], badge: [235, 730] },
 };
 
 const STATUS = {
@@ -123,8 +123,8 @@ function layoutFor(slot, mode) {
     const y = 190 + (axle - 1) * 170;
     return {
         kind: 'wheel',
-        tire: side === 'right' ? [366, y, 48, 112] : [106, y, 48, 112],
-        badge: side === 'right' ? [444, y + 36] : [36, y + 36],
+        tire: side === 'right' ? [364, y, 50, 112] : [106, y, 50, 112],
+        badge: side === 'right' ? [462, y + 28] : [48, y + 28],
         side,
     };
 }
@@ -365,10 +365,10 @@ function drawSpareWheel(layer, x, y, size, p, empty) {
     }
 }
 
-function drawAxle(layer, y, p, hasDiff = false) {
+function drawAxle(layer, y, p) {
     layer.add(
         new Konva.Line({
-            points: [130, y, 390, y],
+            points: [122, y, 398, y],
             stroke: p.axle,
             strokeWidth: 9,
             lineCap: 'round',
@@ -376,74 +376,32 @@ function drawAxle(layer, y, p, hasDiff = false) {
         }),
     );
 
-    [130, 390].forEach((x) => {
+    layer.add(
+        new Konva.Circle({
+            x: 260,
+            y,
+            radius: 28,
+            fillRadialGradientStartPoint: { x: 260, y },
+            fillRadialGradientStartRadius: 4,
+            fillRadialGradientEndPoint: { x: 260, y },
+            fillRadialGradientEndRadius: 28,
+            fillRadialGradientColorStops: [0, p.axleHi, 0.4, p.axle, 1, '#111827'],
+            stroke: '#0f172a',
+            strokeWidth: 2,
+            listening: false,
+        }),
+    );
+
+    [160, 190, 330, 360].forEach((x) => {
         layer.add(
             new Konva.Rect({
-                x: x - 6,
-                y: y - 16,
-                width: 12,
-                height: 32,
-                fill: p.axleHi,
-                stroke: '#111827',
-                strokeWidth: 1.5,
-                cornerRadius: 2,
-                listening: false,
-            }),
-        );
-    });
-
-    if (hasDiff) {
-        layer.add(
-            new Konva.Circle({
-                x: 260,
-                y,
-                radius: 26,
-                fillRadialGradientStartPoint: { x: 260, y },
-                fillRadialGradientStartRadius: 3,
-                fillRadialGradientEndPoint: { x: 260, y },
-                fillRadialGradientEndRadius: 26,
-                fillRadialGradientColorStops: [0, p.axleHi, 0.4, p.axle, 1, '#111827'],
-                stroke: '#0f172a',
-                strokeWidth: 2.5,
-                listening: false,
-            }),
-        );
-
-        layer.add(
-            new Konva.Circle({
-                x: 260,
-                y,
-                radius: 12,
-                fill: p.axle,
-                stroke: '#111827',
-                strokeWidth: 1.5,
-                listening: false,
-            }),
-        );
-    } else {
-        layer.add(
-            new Konva.Circle({
-                x: 260,
-                y,
-                radius: 10,
-                fill: p.axle,
-                stroke: '#111827',
-                strokeWidth: 1.5,
-                listening: false,
-            }),
-        );
-    }
-
-    [220, 300].forEach((x) => {
-        layer.add(
-            new Konva.Rect({
-                x: x - 8,
+                x,
                 y: y - 12,
-                width: 16,
+                width: 13,
                 height: 24,
                 fill: p.axle,
                 stroke: '#111827',
-                strokeWidth: 1.5,
+                strokeWidth: 1,
                 cornerRadius: 3,
                 listening: false,
             }),
@@ -506,8 +464,8 @@ function drawTrailerBody(layer, p) {
     );
 
     [
-        [BODY_X - 24, 710],
-        [BODY_X + BODY_W, 710],
+        [BODY_X - 26, 710],
+        [BODY_X + BODY_W + 8, 710],
     ].forEach(([x, y]) => {
         layer.add(
             new Konva.Rect({
@@ -533,7 +491,6 @@ function drawVehicleBody(layer, p, mode, slots, design) {
     const bodyBottom = design.height - 32;
     const axleCenters = axleCentersForSlots(slots, mode);
 
-    // Cab body
     layer.add(
         new Konva.Rect({
             x: BODY_X,
@@ -548,7 +505,6 @@ function drawVehicleBody(layer, p, mode, slots, design) {
         }),
     );
 
-    // Cab roof
     layer.add(
         new Konva.Line({
             points: [
@@ -573,7 +529,6 @@ function drawVehicleBody(layer, p, mode, slots, design) {
         }),
     );
 
-    // Windshield
     layer.add(
         new Konva.Rect({
             x: BODY_X + 8,
@@ -588,23 +543,21 @@ function drawVehicleBody(layer, p, mode, slots, design) {
         }),
     );
 
-    // Grille slats
     for (let i = 0; i < 5; i += 1) {
         layer.add(
             new Konva.Line({
-                points: [BODY_X + 20 + i * 20, 48, BODY_X + 20 + i * 20, 82],
+                points: [BODY_X + 22 + i * 22, 48, BODY_X + 22 + i * 22, 82],
                 stroke: p.bodyLine,
-                strokeWidth: 1.2,
-                opacity: 0.75,
+                strokeWidth: 1,
+                opacity: 0.7,
                 listening: false,
             }),
         );
     }
 
-    // Side mirrors
     [
         [BODY_X - 44, 94],
-        [BODY_X + BODY_W + 20, 94],
+        [BODY_X + BODY_W + 24, 94],
     ].forEach(([x, y]) => {
         layer.add(
             new Konva.Rect({
@@ -621,85 +574,28 @@ function drawVehicleBody(layer, p, mode, slots, design) {
         );
     });
 
-    // Frame rails — two structural longitudinal members centered on X=220 and X=300
-    [220, 300].forEach((x) => {
+    [
+        [BODY_X + 10, 170, bodyBottom - 210],
+        [BODY_X + BODY_W - 10, 170, bodyBottom - 210],
+    ].forEach(([x, y, h]) => {
         layer.add(
             new Konva.Line({
-                points: [x, 170, x, bodyBottom - 30],
+                points: [x, y, x, y + h],
                 stroke: p.bodyLine,
-                strokeWidth: 10,
-                lineCap: 'square',
+                strokeWidth: 5,
+                lineCap: 'round',
                 listening: false,
             }),
         );
     });
 
-    // Crossmembers connecting the frame rails
-    [280, 660, 860, 990, 1190, 1450].forEach((cy) => {
-        layer.add(
-            new Konva.Line({
-                points: [220, cy, 300, cy],
-                stroke: p.bodyLine,
-                strokeWidth: 6,
-                listening: false,
-            }),
-        );
-    });
+    axleCenters.forEach((y) => drawAxle(layer, y, p));
 
-    // Driveshaft segments (between drive axle pairs)
-    layer.add(
-        new Konva.Line({
-            points: [260, 240, 260, 460],
-            stroke: p.axleHi,
-            strokeWidth: 6,
-            listening: false,
-        }),
-    );
-    layer.add(
-        new Konva.Line({
-            points: [260, 460, 260, 600],
-            stroke: p.axleHi,
-            strokeWidth: 6,
-            listening: false,
-        }),
-    );
-    layer.add(
-        new Konva.Line({
-            points: [260, 1260, 260, 1400],
-            stroke: p.axleHi,
-            strokeWidth: 6,
-            listening: false,
-        }),
-    );
-
-    // U-joint knuckles
-    [240, 436, 484, 576, 1236, 1284, 1376].forEach((uy) => {
-        layer.add(
-            new Konva.Rect({
-                x: 257,
-                y: uy,
-                width: 6,
-                height: 8,
-                fill: '#111827',
-                stroke: p.axle,
-                strokeWidth: 1,
-                listening: false,
-            }),
-        );
-    });
-
-    // Axles — drive/rear axles get differential housings
-    axleCenters.forEach((y) => {
-        const isDriveOrRear = (y === 460 || y === 600 || y === 1260 || y === 1400);
-        drawAxle(layer, y, p, isDriveOrRear);
-    });
-
-    // Rear bumper
     layer.add(
         new Konva.Rect({
-            x: BODY_X - 20,
+            x: BODY_X - 18,
             y: bodyBottom - 22,
-            width: BODY_W + 40,
+            width: BODY_W + 36,
             height: 20,
             fill: p.bodyShade,
             stroke: p.bodyLine,
@@ -708,12 +604,14 @@ function drawVehicleBody(layer, p, mode, slots, design) {
         }),
     );
 
-    // Tail lights — symmetrically placed flush with frame
-    [BODY_X - 20, BODY_X + BODY_W - 4].forEach((x) => {
+    [
+        [BODY_X - 26, bodyBottom - 22],
+        [BODY_X + BODY_W + 8, bodyBottom - 22],
+    ].forEach(([x, y]) => {
         layer.add(
             new Konva.Rect({
                 x,
-                y: bodyBottom - 22,
+                y,
                 width: 24,
                 height: 17,
                 fill: '#dc2626',

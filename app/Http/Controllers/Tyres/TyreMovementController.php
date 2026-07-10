@@ -7,7 +7,6 @@ use App\Enums\TyreStatus;
 use App\Enums\VoucherStatus;
 use App\Exceptions\TyreBusinessException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Tyres\CompleteTyreMovementRequest;
 use App\Http\Requests\Tyres\RejectVoucherRequest;
 use App\Http\Requests\Tyres\StoreTyreMovementRequest;
 use App\Http\Requests\Tyres\UpdateTyreMovementRequest;
@@ -216,25 +215,6 @@ class TyreMovementController extends Controller
             ->with('success', 'Movement completed. Tyre location updated.');
     }
 
-    public function completeWithOdometer(CompleteTyreMovementRequest $request, TyreMovement $movement): RedirectResponse
-    {
-        $this->authorize('complete', $movement);
-
-        try {
-            $this->movementService->completeWithOdometer(
-                $movement,
-                $request->validated(),
-                auth()->id()
-            );
-        } catch (TyreBusinessException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return redirect()
-            ->route('tyres.movements.show', $movement)
-            ->with('success', 'Movement completed with odometer readings. Tyre usage updated.');
-    }
-
     public function cancel(TyreMovement $movement): RedirectResponse
     {
         $this->authorize('cancel', $movement);
@@ -342,8 +322,6 @@ class TyreMovementController extends Controller
     /** @return array<string, mixed> */
     private function serializeDetail(TyreMovement $movement): array
     {
-        $odometerService = app(\App\Services\VehicleOdometerService::class);
-
         return [
             ...$this->serializeForm($movement),
             'movement_no' => $movement->movement_no,
@@ -364,17 +342,6 @@ class TyreMovementController extends Controller
             'approved_at' => $movement->approved_at?->toDateTimeString(),
             'completed_at' => $movement->completed_at?->toDateTimeString(),
             'pdf_url' => route('vouchers.movement.pdf', $movement),
-            // Odometer completion data
-            'requires_source_odometer' => $movement->requiresSourceOdometer(),
-            'requires_destination_odometer' => $movement->requiresDestinationOdometer(),
-            'source_odometer_label' => $movement->sourceOdometerLabel(),
-            'destination_odometer_label' => $movement->destinationOdometerLabel(),
-            'source_vehicle_latest_odometer' => $movement->sourceVehicle()
-                ? $odometerService->getLatestOdometer($movement->sourceVehicle())
-                : null,
-            'destination_vehicle_latest_odometer' => $movement->destinationVehicle()
-                ? $odometerService->getLatestOdometer($movement->destinationVehicle())
-                : null,
         ];
     }
 
