@@ -58,7 +58,7 @@ class TyreReadingMonitoringController extends Controller
         }
 
         $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle'])
+            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
             ->where('current_location_id', $vehicle->id)
             ->where('current_location_type', '!=', 'store')
             ->orderBy('current_position_code')
