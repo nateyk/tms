@@ -6,11 +6,15 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Fleet\StoreController;
 use App\Http\Controllers\Fleet\VehicleController;
+use App\Http\Controllers\Fleet\VehicleOdometerController;
 use App\Http\Controllers\Fleet\VehicleTypeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TyreScanController;
+use App\Http\Controllers\Tyres\TyreBaselineController;
 use App\Http\Controllers\Tyres\TyreController;
+use App\Http\Controllers\Tyres\TyreDisposalController;
 use App\Http\Controllers\Tyres\TyreMovementController;
+use App\Http\Controllers\Tyres\TyreReadingMonitoringController;
 use App\Http\Controllers\VoucherPdfController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,6 +36,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('stores', StoreController::class)->except(['show']);
         Route::resource('vehicles', VehicleController::class);
 
+        Route::get('/vehicles/{vehicle}/odometer', [VehicleOdometerController::class, 'index'])
+            ->name('vehicles.odometer');
+        Route::put('/vehicles/{vehicle}/odometer', [VehicleOdometerController::class, 'update'])
+            ->name('vehicles.odometer.update');
+
         Route::get('/trailer-transfers', fn () => Inertia::render('modules/placeholder', [
             'title' => 'Trailer Transfers',
             'description' => 'Create and approve trailer transfer vouchers.',
@@ -42,6 +51,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [TyreController::class, 'index'])->name('index');
         Route::get('/create', [TyreController::class, 'create'])->name('create');
         Route::post('/', [TyreController::class, 'store'])->name('store');
+
+        Route::get('/reading-monitoring', [TyreReadingMonitoringController::class, 'index'])
+            ->name('reading-monitoring.index');
+        Route::get('/reading-monitoring/{vehicle}', [TyreReadingMonitoringController::class, 'show'])
+            ->name('reading-monitoring.show');
+
+        Route::get('/baselines', [TyreBaselineController::class, 'index'])->name('baselines.index');
+        Route::get('/baselines/create', [TyreBaselineController::class, 'create'])->name('baselines.create');
+        Route::post('/baselines', [TyreBaselineController::class, 'store'])->name('baselines.store');
+        Route::get('/baselines/{baseline}', [TyreBaselineController::class, 'show'])->name('baselines.show');
+        Route::get('/baselines/{baseline}/edit', [TyreBaselineController::class, 'edit'])->name('baselines.edit');
+        Route::put('/baselines/{baseline}', [TyreBaselineController::class, 'update'])->name('baselines.update');
+        Route::delete('/baselines/{baseline}', [TyreBaselineController::class, 'destroy'])->name('baselines.destroy');
 
         Route::get('/movements', [TyreMovementController::class, 'index'])->name('movements.index');
         Route::get('/movements/create', [TyreMovementController::class, 'create'])->name('movements.create');
@@ -65,10 +87,19 @@ Route::middleware(['auth'])->group(function () {
             'description' => 'Track maintenance workflows from submission to completion.',
         ]))->name('maintenances.index');
 
-        Route::get('/disposals', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Tyre Disposals',
-            'description' => 'Process disposal vouchers with approval workflow.',
-        ]))->name('disposals.index');
+        Route::get('/disposals', [TyreDisposalController::class, 'index'])->name('disposals.index');
+        Route::get('/disposals/create', [TyreDisposalController::class, 'create'])->name('disposals.create');
+        Route::post('/disposals', [TyreDisposalController::class, 'store'])->name('disposals.store');
+        Route::get('/disposals/{disposal}', [TyreDisposalController::class, 'show'])->name('disposals.show');
+        Route::get('/disposals/{disposal}/edit', [TyreDisposalController::class, 'edit'])->name('disposals.edit');
+        Route::put('/disposals/{disposal}', [TyreDisposalController::class, 'update'])->name('disposals.update');
+        Route::delete('/disposals/{disposal}', [TyreDisposalController::class, 'destroy'])->name('disposals.destroy');
+        Route::post('/disposals/{disposal}/submit', [TyreDisposalController::class, 'submit'])->name('disposals.submit');
+        Route::post('/disposals/{disposal}/check', [TyreDisposalController::class, 'check'])->name('disposals.check');
+        Route::post('/disposals/{disposal}/approve', [TyreDisposalController::class, 'approve'])->name('disposals.approve');
+        Route::post('/disposals/{disposal}/reject', [TyreDisposalController::class, 'reject'])->name('disposals.reject');
+        Route::post('/disposals/{disposal}/complete', [TyreDisposalController::class, 'complete'])->name('disposals.complete');
+        Route::post('/disposals/{disposal}/cancel', [TyreDisposalController::class, 'cancel'])->name('disposals.cancel');
 
         Route::get('/{tyre}', [TyreController::class, 'show'])->name('show');
         Route::get('/{tyre}/edit', [TyreController::class, 'edit'])->name('edit');
