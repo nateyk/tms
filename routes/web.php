@@ -12,7 +12,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TyreScanController;
 use App\Http\Controllers\Tyres\TyreBaselineController;
 use App\Http\Controllers\Tyres\TyreController;
-use App\Http\Controllers\Tyres\TyreDisposalController;
 use App\Http\Controllers\Tyres\TyreMovementController;
 use App\Http\Controllers\Tyres\TyreReadingMonitoringController;
 use App\Http\Controllers\VoucherPdfController;
@@ -87,19 +86,10 @@ Route::middleware(['auth'])->group(function () {
             'description' => 'Track maintenance workflows from submission to completion.',
         ]))->name('maintenances.index');
 
-        Route::get('/disposals', [TyreDisposalController::class, 'index'])->name('disposals.index');
-        Route::get('/disposals/create', [TyreDisposalController::class, 'create'])->name('disposals.create');
-        Route::post('/disposals', [TyreDisposalController::class, 'store'])->name('disposals.store');
-        Route::get('/disposals/{disposal}', [TyreDisposalController::class, 'show'])->name('disposals.show');
-        Route::get('/disposals/{disposal}/edit', [TyreDisposalController::class, 'edit'])->name('disposals.edit');
-        Route::put('/disposals/{disposal}', [TyreDisposalController::class, 'update'])->name('disposals.update');
-        Route::delete('/disposals/{disposal}', [TyreDisposalController::class, 'destroy'])->name('disposals.destroy');
-        Route::post('/disposals/{disposal}/submit', [TyreDisposalController::class, 'submit'])->name('disposals.submit');
-        Route::post('/disposals/{disposal}/check', [TyreDisposalController::class, 'check'])->name('disposals.check');
-        Route::post('/disposals/{disposal}/approve', [TyreDisposalController::class, 'approve'])->name('disposals.approve');
-        Route::post('/disposals/{disposal}/reject', [TyreDisposalController::class, 'reject'])->name('disposals.reject');
-        Route::post('/disposals/{disposal}/complete', [TyreDisposalController::class, 'complete'])->name('disposals.complete');
-        Route::post('/disposals/{disposal}/cancel', [TyreDisposalController::class, 'cancel'])->name('disposals.cancel');
+        Route::get('/disposals', fn () => Inertia::render('modules/placeholder', [
+            'title' => 'Tyre Disposals',
+            'description' => 'Coming in next phase.',
+        ]))->name('disposals.index');
 
         Route::get('/{tyre}', [TyreController::class, 'show'])->name('show');
         Route::get('/{tyre}/edit', [TyreController::class, 'edit'])->name('edit');
@@ -147,8 +137,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('trailer-transfer.pdf');
         Route::get('/maintenance/{maintenance}', [VoucherPdfController::class, 'maintenance'])
             ->name('maintenance.pdf');
-        Route::get('/disposal/{disposal}', [VoucherPdfController::class, 'disposal'])
-            ->name('disposal.pdf');
         Route::get('/tyre/{tyre}/registration', [VoucherPdfController::class, 'tyreRegistration'])
             ->name('tyre.registration.pdf');
         Route::get('/tyre/{tyre}/history', [VoucherPdfController::class, 'tyreHistory'])
