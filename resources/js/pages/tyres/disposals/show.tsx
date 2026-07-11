@@ -62,8 +62,6 @@ export default function DisposalsShow({
                         routePrefix="tyres.disposals"
                         can={can}
                         pdfUrl={disposal.pdf_url}
-                        entityLabel="disposal"
-                        completeDescription="This marks the tyre as disposed and removes active assignments."
                     />
                 </CardHeader>
                 <CardContent className="space-y-6">

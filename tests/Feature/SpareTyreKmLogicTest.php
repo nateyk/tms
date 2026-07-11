@@ -99,7 +99,7 @@ class SpareTyreKmLogicTest extends TestCase
             'baseline_percentage' => 100.00,
             'expected_life_km' => 100000,
             'baseline_date' => now()->subDays(100),
-            'created_by' => 1,
+            'created_by' => $user->id,
         ]);
 
         // Create active assignment for spare tyre
@@ -122,7 +122,7 @@ class SpareTyreKmLogicTest extends TestCase
             'odometer' => 150000,
             'reading_date' => now(),
             'source' => 'manual',
-            'recorded_by' => 1,
+            'recorded_by' => $user->id,
         ]);
 
         // Calculate usage
@@ -183,7 +183,7 @@ class SpareTyreKmLogicTest extends TestCase
             'baseline_percentage' => 100.00,
             'expected_life_km' => 100000,
             'baseline_date' => now()->subDays(100),
-            'created_by' => 1,
+            'created_by' => $user->id,
         ]);
 
         // Create active assignment for running tyre
@@ -206,7 +206,7 @@ class SpareTyreKmLogicTest extends TestCase
             'odometer' => 150000,
             'reading_date' => now(),
             'source' => 'manual',
-            'recorded_by' => 1,
+            'recorded_by' => $user->id,
         ]);
 
         // Calculate usage
@@ -267,7 +267,7 @@ class SpareTyreKmLogicTest extends TestCase
             'baseline_percentage' => 100.00,
             'expected_life_km' => 100000,
             'baseline_date' => now()->subDays(100),
-            'created_by' => 1,
+            'created_by' => $user->id,
         ]);
 
         // Close old assignment at W
@@ -307,7 +307,7 @@ class SpareTyreKmLogicTest extends TestCase
             'odometer' => 120000,
             'reading_date' => now(),
             'source' => 'manual',
-            'recorded_by' => 1,
+            'recorded_by' => $user->id,
         ]);
 
         // Calculate usage
