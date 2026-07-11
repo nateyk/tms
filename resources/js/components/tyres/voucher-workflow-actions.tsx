@@ -26,25 +26,26 @@ type VoucherPermissions = {
 };
 
 type VoucherWorkflowActionsProps = {
-    movementId: number;
+    recordId: number;
+    routePrefix: string;
     can: VoucherPermissions;
     pdfUrl?: string;
 };
 
-export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkflowActionsProps) {
+export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: VoucherWorkflowActionsProps) {
     const [rejectReason, setRejectReason] = useState("");
     const [processing, setProcessing] = useState(false);
 
-    const postAction = (routeName: string, payload: Record<string, string> = {}) => {
+    const postAction = (action: string, payload: Record<string, string> = {}) => {
         setProcessing(true);
-        router.post(route(routeName, movementId), payload, {
+        router.post(route(`${routePrefix}.${action}`, recordId), payload, {
             onFinish: () => setProcessing(false),
         });
     };
 
     const handleReject = (event: FormEvent) => {
         event.preventDefault();
-        postAction("tyres.movements.reject", { reason: rejectReason });
+        postAction("reject", { reason: rejectReason });
     };
 
     return (
@@ -68,14 +69,14 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Submit movement?</AlertDialogTitle>
+                            <AlertDialogTitle>Submit for review?</AlertDialogTitle>
                             <AlertDialogDescription>
                                 This sends the voucher to a checker for review.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("tyres.movements.submit")}>
+                            <AlertDialogAction onClick={() => postAction("submit")}>
                                 Submit
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -94,10 +95,13 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Mark as checked?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This confirms the voucher details are correct.
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("tyres.movements.check")}>
+                            <AlertDialogAction onClick={() => postAction("check")}>
                                 Check
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -112,11 +116,14 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Approve movement?</AlertDialogTitle>
+                            <AlertDialogTitle>Approve voucher?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This approves the voucher for completion.
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("tyres.movements.approve")}>
+                            <AlertDialogAction onClick={() => postAction("approve")}>
                                 Approve
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -134,14 +141,14 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Complete movement?</AlertDialogTitle>
+                            <AlertDialogTitle>Complete voucher?</AlertDialogTitle>
                             <AlertDialogDescription>
                                 This applies changes to tyre inventory. This cannot be undone.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("tyres.movements.complete")}>
+                            <AlertDialogAction onClick={() => postAction("complete")}>
                                 Complete
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -160,7 +167,7 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                     <AlertDialogContent>
                         <form onSubmit={handleReject}>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Reject movement</AlertDialogTitle>
+                                <AlertDialogTitle>Reject voucher</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     Provide a reason for rejection.
                                 </AlertDialogDescription>
@@ -198,7 +205,7 @@ export function VoucherWorkflowActions({ movementId, can, pdfUrl }: VoucherWorkf
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Keep draft</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("tyres.movements.cancel")}>
+                            <AlertDialogAction onClick={() => postAction("cancel")}>
                                 Cancel draft
                             </AlertDialogAction>
                         </AlertDialogFooter>

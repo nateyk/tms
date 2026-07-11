@@ -89,7 +89,8 @@ export default function MovementsShow({
                             </p>
                         </div>
                         <VoucherWorkflowActions
-                            movementId={movement.id}
+                            recordId={movement.id}
+                            routePrefix="tyres.movements"
                             can={can}
                             pdfUrl={movement.pdf_url}
                         />
