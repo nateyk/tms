@@ -46,7 +46,7 @@ class TyreReadingMonitoringController extends Controller
         ]);
     }
 
-    public function vehicle(Request $request, Vehicle $vehicle): Response
+    public function show(Request $request, Vehicle $vehicle): Response
     {
         $this->authorize('tyre.view');
 
