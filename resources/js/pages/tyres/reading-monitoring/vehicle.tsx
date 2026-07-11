@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Head, Link } from "@inertiajs/react";
-import { ArrowLeft, Truck, AlertTriangle, CheckCircle, AlertCircle, Clock, Gauge } from "lucide-react";
+import { ArrowLeft, Truck, AlertTriangle, CheckCircle, AlertCircle, Clock, Gauge, Plus, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
 import { cn } from "@/lib/utils";
@@ -144,13 +144,23 @@ export default function ReadingMonitoringVehicle({
 
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route('tyres.reading-monitoring.index')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Vehicles
-                        </Link>
-                    </Button>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={route('tyres.reading-monitoring.index')}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Vehicles
+                            </Link>
+                        </Button>
+                    </div>
+                    {summary.baseline_required > 0 && (
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('tyres.baselines.create')}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Set Missing Baselines ({summary.baseline_required})
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Summary Cards */}
@@ -440,6 +450,39 @@ function TyreDetailPanel({ tyre }: { tyre: Tyre }) {
                 </div>
             </div>
 
+            {/* Baseline Status */}
+            <div className="space-y-2">
+                <h4 className="text-sm font-semibold">Baseline Status</h4>
+                {tyre.has_baseline ? (
+                    <div className="space-y-2">
+                        <Badge variant="outline" className="w-full justify-center bg-green-50 text-green-700 border-green-200">
+                            <CheckCircle className="mr-2 h-3 w-3" />
+                            Baseline Set
+                        </Badge>
+                        <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Baseline %:</span>
+                                <span className="font-medium">{tyre.baseline_percentage}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Expected Life:</span>
+                                <span>{tyre.expected_life_km?.toLocaleString()} KM</span>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        <Badge variant="outline" className="w-full justify-center bg-yellow-50 text-yellow-700 border-yellow-200">
+                            <AlertTriangle className="mr-2 h-3 w-3" />
+                            Baseline Required
+                        </Badge>
+                        <p className="text-xs text-muted-foreground">
+                            Set baseline to track tyre usage
+                        </p>
+                    </div>
+                )}
+            </div>
+
             {/* Usage Status */}
             <div className="space-y-2">
                 <h4 className="text-sm font-semibold">Usage Status</h4>
@@ -489,18 +532,27 @@ function TyreDetailPanel({ tyre }: { tyre: Tyre }) {
 
             {/* Actions */}
             <div className="space-y-2 pt-2">
+                {!tyre.has_baseline && (
+                    <Button asChild className="w-full" size="sm">
+                        <Link href={tyre.create_baseline_url}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Set Baseline KM
+                        </Link>
+                    </Button>
+                )}
+                {tyre.has_baseline && (
+                    <Button asChild className="w-full" size="sm" variant="outline">
+                        <Link href={route('tyres.baselines.show', tyre.id)}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            View/Edit Baseline
+                        </Link>
+                    </Button>
+                )}
                 <Button asChild className="w-full" variant="outline" size="sm">
                     <Link href={tyre.view_url}>
                         View Tyre Details
                     </Link>
                 </Button>
-                {!tyre.has_baseline && (
-                    <Button asChild className="w-full" size="sm">
-                        <Link href={tyre.create_baseline_url}>
-                            Create Baseline
-                        </Link>
-                    </Button>
-                )}
                 <Button asChild className="w-full" size="sm" variant="outline">
                     <Link href={tyre.create_movement_url}>
                         Create Movement
