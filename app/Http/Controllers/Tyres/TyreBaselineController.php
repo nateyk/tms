@@ -23,7 +23,7 @@ class TyreBaselineController extends Controller
 
     public function index(Request $request): Response
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $baselines = TyreBaseline::query()
             ->with(['tyre.brand', 'tyre.size', 'createdBy'])
@@ -43,7 +43,7 @@ class TyreBaselineController extends Controller
 
     public function create(Request $request): Response
     {
-        $this->authorize('tyre-reading.baseline.create');
+        $this->authorize('tyre.create');
 
         $tyreId = $request->query('tyre_id');
         $tyre = $tyreId ? Tyre::query()->findOrFail($tyreId) : null;
@@ -68,7 +68,7 @@ class TyreBaselineController extends Controller
 
     public function show(TyreBaseline $baseline): Response
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $baseline->load(['tyre.brand', 'tyre.size', 'createdBy']);
 
@@ -79,7 +79,7 @@ class TyreBaselineController extends Controller
 
     public function edit(TyreBaseline $baseline): Response
     {
-        $this->authorize('tyre-reading.baseline.update');
+        $this->authorize('tyre.update');
 
         $baseline->load('tyre');
 
@@ -99,7 +99,7 @@ class TyreBaselineController extends Controller
 
     public function destroy(TyreBaseline $baseline): RedirectResponse
     {
-        $this->authorize('tyre-reading.baseline.delete');
+        $this->authorize('tyre.delete');
 
         $this->baselineService->deleteBaseline($baseline);
 

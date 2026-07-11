@@ -20,7 +20,7 @@ class TyreReadingMonitoringController extends Controller
 
     public function index(Request $request): Response
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $vehicles = Vehicle::query()
             ->with(['vehicleType', 'activeCombinationAsPower.trailer'])
@@ -48,7 +48,7 @@ class TyreReadingMonitoringController extends Controller
 
     public function vehicle(Request $request, Vehicle $vehicle): Response
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $vehicle->load(['vehicleType', 'activeCombinationAsPower.trailer']);
         $attachedTrailer = $vehicle->attachedTrailer();
@@ -95,7 +95,7 @@ class TyreReadingMonitoringController extends Controller
 
     public function getVehicleTyreMapData(Request $request, Vehicle $vehicle): JsonResponse
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $tyres = Tyre::query()
             ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
@@ -113,7 +113,7 @@ class TyreReadingMonitoringController extends Controller
 
     public function getTrailerTyreMapData(Request $request, Vehicle $trailer): JsonResponse
     {
-        $this->authorize('tyre-reading.view');
+        $this->authorize('tyre.view');
 
         $tyres = Tyre::query()
             ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
