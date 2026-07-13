@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             SystemSettingsSeeder::class,
             TmsSampleDataSeeder::class,
-            ExistingFleetTyreFitmentSeeder::class,
         ]);
     }
 }

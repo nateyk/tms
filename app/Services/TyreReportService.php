@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\MaintenanceStatus;
 use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
 use App\Enums\TyreStatus;
@@ -12,7 +11,6 @@ use App\Models\TrailerTransfer;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreDisposal;
-use App\Models\TyreMaintenance;
 use App\Models\TyreMovement;
 use App\Models\Vehicle;
 use App\Models\VehicleCombination;
@@ -73,15 +71,6 @@ class TyreReportService
                 ->with('tyre')
                 ->latest()
                 ->get(),
-            'maintenance' => TyreMaintenance::query()
-                ->whereIn('status', [
-                    MaintenanceStatus::Submitted,
-                    MaintenanceStatus::Approved,
-                    MaintenanceStatus::InProgress,
-                ])
-                ->with('tyre')
-                ->latest()
-                ->get(),
         ];
     }
 
@@ -92,15 +81,6 @@ class TyreReportService
             ->when($from, fn ($q) => $q->whereDate('movement_date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('movement_date', '<=', $to))
             ->latest('movement_date');
-    }
-
-    public function maintenanceCostReport(?string $from = null, ?string $to = null): Builder
-    {
-        return TyreMaintenance::query()
-            ->with('tyre')
-            ->when($from, fn ($q) => $q->whereDate('maintenance_date', '>=', $from))
-            ->when($to, fn ($q) => $q->whereDate('maintenance_date', '<=', $to))
-            ->latest('maintenance_date');
     }
 
     public function disposalReport(?string $from = null, ?string $to = null): Builder
@@ -150,7 +130,7 @@ class TyreReportService
     public function tyreLifecycleReport(): Collection
     {
         return Tyre::query()
-            ->with(['brand', 'size', 'assignments', 'movements', 'maintenanceRecords', 'disposals'])
+            ->with(['brand', 'size', 'assignments', 'movements', 'disposals'])
             ->orderBy('tyre_code')
             ->get()
             ->map(fn (Tyre $tyre) => [
@@ -159,7 +139,6 @@ class TyreReportService
                 'location' => $tyre->current_location_type->label(),
                 'assignments_count' => $tyre->assignments->count(),
                 'movements_count' => $tyre->movements->count(),
-                'maintenance_count' => $tyre->maintenanceRecords->count(),
                 'disposed' => $tyre->disposals->where('status', VoucherStatus::Completed)->isNotEmpty() ? 'yes' : 'no',
                 'total_km' => $tyre->totalKmUsed(),
             ]);
@@ -171,7 +150,6 @@ class TyreReportService
             'total_tyres' => Tyre::query()->count(),
             'active_tyres' => Tyre::query()->where('status', TyreStatus::Active)->count(),
             'in_store' => Tyre::query()->where('status', TyreStatus::Available)->count(),
-            'in_maintenance' => Tyre::query()->where('status', TyreStatus::Maintenance)->count(),
             'disposed' => Tyre::query()->where('status', TyreStatus::Disposed)->count(),
             'pending_registration' => Tyre::query()->where('status', TyreStatus::PendingApproval)->count(),
             'power_vehicles' => Vehicle::query()->where('asset_type', 'power_vehicle')->where('status', 'active')->count(),
@@ -181,12 +159,6 @@ class TyreReportService
                 VoucherStatus::Submitted,
                 VoucherStatus::Checked,
                 VoucherStatus::Approved,
-            ])->count(),
-            'pending_maintenance' => TyreMaintenance::query()->whereIn('status', [
-                MaintenanceStatus::Draft,
-                MaintenanceStatus::Submitted,
-                MaintenanceStatus::Approved,
-                MaintenanceStatus::InProgress,
             ])->count(),
         ];
     }
@@ -237,7 +209,6 @@ class TyreReportService
                 TyreLocationType::Store => '#2563eb',
                 TyreLocationType::PowerVehicle => '#16a34a',
                 TyreLocationType::Trailer => '#0891b2',
-                TyreLocationType::MaintenanceCenter => '#ea580c',
                 TyreLocationType::DisposalYard => '#1f2937',
             };
         }

@@ -73,7 +73,6 @@ class TyreController extends Controller
             'brand',
             'size',
             'movements' => fn ($q) => $q->latest()->limit(10),
-            'maintenanceRecords' => fn ($q) => $q->latest()->limit(10),
             'activeAssignment.vehicle',
         ]);
 

@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Tyre;
+use App\Models\TyreBaseline;
 use App\Models\TyreMovement;
 use App\Models\Vehicle;
+use App\Policies\TyreBaselinePolicy;
 use App\Policies\TyreMovementPolicy;
 use App\Policies\TyrePolicy;
 use App\Policies\VehiclePolicy;
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         JsonResource::withoutWrapping();
 
         Gate::policy(Tyre::class, TyrePolicy::class);
+        Gate::policy(TyreBaseline::class, TyreBaselinePolicy::class);
         Gate::policy(Vehicle::class, VehiclePolicy::class);
         Gate::policy(TyreMovement::class, TyreMovementPolicy::class);
     }

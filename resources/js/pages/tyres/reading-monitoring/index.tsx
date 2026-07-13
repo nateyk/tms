@@ -5,18 +5,28 @@ import { Head, Link } from "@inertiajs/react";
 import { Eye } from "lucide-react";
 
 type Vehicle = {
+    type: 'combination' | 'standalone_power' | 'standalone_trailer';
     id: number;
     vehicle_code: string;
     plate_number: string;
     display_code: string;
-    asset_type: string | null;
     vehicle_type_name: string | null;
-    odometer: number | null;
-    attached_trailer: {
+    odometer?: number | null;
+    power_vehicle?: {
         id: number;
         vehicle_code: string;
+        plate_number: string;
         display_code: string;
-    } | null;
+        vehicle_type_name: string | null;
+        odometer: number | null;
+    };
+    trailer?: {
+        id: number;
+        vehicle_code: string;
+        plate_number: string;
+        display_code: string;
+        vehicle_type_name: string | null;
+    };
 };
 
 export default function ReadingMonitoringIndex({
@@ -42,31 +52,58 @@ export default function ReadingMonitoringIndex({
                         {vehicles.map((vehicle) => (
                             <Card key={vehicle.id} className="hover:bg-accent/50 transition-colors">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-lg">{vehicle.display_code}</CardTitle>
-                                    <CardDescription>
-                                        {vehicle.vehicle_type_name || "Unknown Type"}
-                                    </CardDescription>
+                                    {vehicle.type === 'combination' ? (
+                                        <>
+                                            <CardTitle className="text-lg">{vehicle.power_vehicle?.display_code}</CardTitle>
+                                            <CardDescription>
+                                                {vehicle.power_vehicle?.vehicle_type_name || "Unknown Type"}
+                                            </CardDescription>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CardTitle className="text-lg">{vehicle.display_code}</CardTitle>
+                                            <CardDescription>
+                                                {vehicle.vehicle_type_name || "Unknown Type"}
+                                            </CardDescription>
+                                        </>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Odometer:</span>
-                                            <span className="font-medium">
-                                                {vehicle.odometer ? vehicle.odometer.toLocaleString() : "—"}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Asset Type:</span>
-                                            <span className="font-medium capitalize">
-                                                {vehicle.asset_type?.replace("_", " ") || "—"}
-                                            </span>
-                                        </div>
-                                        {vehicle.attached_trailer && (
+                                        {vehicle.type === 'combination' && vehicle.power_vehicle && (
+                                            <>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Odometer:</span>
+                                                    <span className="font-medium">
+                                                        {vehicle.power_vehicle.odometer ? vehicle.power_vehicle.odometer.toLocaleString() : "—"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Trailer:</span>
+                                                    <span className="font-medium">
+                                                        {vehicle.trailer?.display_code || "—"}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                        {vehicle.type === 'standalone_power' && (
+                                            <>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Odometer:</span>
+                                                    <span className="font-medium">
+                                                        {vehicle.odometer ? vehicle.odometer.toLocaleString() : "—"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Type:</span>
+                                                    <span className="font-medium">Power Vehicle</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        {vehicle.type === 'standalone_trailer' && (
                                             <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Trailer:</span>
-                                                <span className="font-medium">
-                                                    {vehicle.attached_trailer.display_code}
-                                                </span>
+                                                <span className="text-muted-foreground">Type:</span>
+                                                <span className="font-medium">Trailer</span>
                                             </div>
                                         )}
                                     </div>

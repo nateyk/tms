@@ -22,27 +22,74 @@ class TyreReadingMonitoringController extends Controller
     {
         $this->authorize('tyre.view');
 
-        $vehicles = Vehicle::query()
-            ->with(['vehicleType', 'activeCombinationAsPower.trailer'])
+        // Get active vehicle combinations (power vehicles with trailers)
+        $combinations = \App\Models\VehicleCombination::query()
+            ->with(['powerVehicle.vehicleType', 'trailer.vehicleType'])
             ->where('status', 'active')
+            ->orderBy('power_vehicle_id')
+            ->get();
+
+        // Get standalone power vehicles (not in combinations)
+        $standalonePowerVehicles = Vehicle::query()
+            ->with(['vehicleType'])
+            ->where('status', 'active')
+            ->where('asset_type', 'power_vehicle')
+            ->whereDoesntHave('activeCombinationAsPower')
             ->orderBy('vehicle_code')
             ->get();
 
+        // Get standalone trailers (not in combinations)
+        $standaloneTrailers = Vehicle::query()
+            ->with(['vehicleType'])
+            ->where('status', 'active')
+            ->where('asset_type', 'trailer')
+            ->whereDoesntHave('activeCombinationAsTrailer')
+            ->orderBy('vehicle_code')
+            ->get();
+
+        $combinationsData = $combinations->map(fn ($c) => [
+            'type' => 'combination',
+            'id' => $c->powerVehicle->id,
+            'power_vehicle' => [
+                'id' => $c->powerVehicle->id,
+                'vehicle_code' => $c->powerVehicle->vehicle_code,
+                'plate_number' => $c->powerVehicle->plate_number,
+                'display_code' => $c->powerVehicle->displayCodeWithPlate(),
+                'vehicle_type_name' => $c->powerVehicle->vehicleType?->name,
+                'odometer' => $c->powerVehicle->odometer,
+            ],
+            'trailer' => $c->trailer ? [
+                'id' => $c->trailer->id,
+                'vehicle_code' => $c->trailer->vehicle_code,
+                'plate_number' => $c->trailer->plate_number,
+                'display_code' => $c->trailer->displayCodeWithPlate(),
+                'vehicle_type_name' => $c->trailer->vehicleType?->name,
+            ] : null,
+        ]);
+
+        $standalonePowerData = $standalonePowerVehicles->map(fn ($v) => [
+            'type' => 'standalone_power',
+            'id' => $v->id,
+            'vehicle_code' => $v->vehicle_code,
+            'plate_number' => $v->plate_number,
+            'display_code' => $v->displayCodeWithPlate(),
+            'vehicle_type_name' => $v->vehicleType?->name,
+            'odometer' => $v->odometer,
+        ]);
+
+        $standaloneTrailerData = $standaloneTrailers->map(fn ($v) => [
+            'type' => 'standalone_trailer',
+            'id' => $v->id,
+            'vehicle_code' => $v->vehicle_code,
+            'plate_number' => $v->plate_number,
+            'display_code' => $v->displayCodeWithPlate(),
+            'vehicle_type_name' => $v->vehicleType?->name,
+        ]);
+
+        $allVehicles = $combinationsData->concat($standalonePowerData)->concat($standaloneTrailerData);
+
         return Inertia::render('tyres/reading-monitoring/index', [
-            'vehicles' => $vehicles->map(fn ($v) => [
-                'id' => $v->id,
-                'vehicle_code' => $v->vehicle_code,
-                'plate_number' => $v->plate_number,
-                'display_code' => $v->displayCodeWithPlate(),
-                'asset_type' => $v->asset_type?->value,
-                'vehicle_type_name' => $v->vehicleType?->name,
-                'odometer' => $v->odometer,
-                'attached_trailer' => $v->attachedTrailer() ? [
-                    'id' => $v->attachedTrailer()->id,
-                    'vehicle_code' => $v->attachedTrailer()->vehicle_code,
-                    'display_code' => $v->attachedTrailer()->displayCodeWithPlate(),
-                ] : null,
-            ]),
+            'vehicles' => $allVehicles,
         ]);
     }
 
@@ -165,7 +212,7 @@ class TyreReadingMonitoringController extends Controller
                 'inspector' => $latestInspection->inspector,
             ] : null,
             'view_url' => route('tyres.show', $tyre->id),
-            'create_baseline_url' => route('tyres.baselines.create', $tyre->id),
+            'create_baseline_url' => route('tyres.baselines.create', ['tyre_id' => $tyre->id]),
             'create_movement_url' => route('tyres.movements.create', ['tyre_id' => $tyre->id]),
         ];
     }

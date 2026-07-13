@@ -37,14 +37,14 @@ export function VehicleOdometerForm({
                 {errors.odometer && (
                     <p className="text-sm text-destructive">{errors.odometer}</p>
                 )}
-                {currentOdometer !== null && (
+                {currentOdometer !== null && currentOdometer !== undefined && (
                     <p className="text-xs text-muted-foreground">
                         Latest known odometer: {currentOdometer.toLocaleString()} KM
                     </p>
                 )}
             </div>
 
-            {currentOdometer !== null && data.odometer && Number(data.odometer) < currentOdometer && (
+            {currentOdometer !== null && currentOdometer !== undefined && data.odometer && Number(data.odometer) < currentOdometer && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>

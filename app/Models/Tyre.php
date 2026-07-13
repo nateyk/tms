@@ -86,11 +86,6 @@ class Tyre extends Model implements HasMedia
         return $this->hasMany(TyreMovement::class);
     }
 
-    public function maintenanceRecords(): HasMany
-    {
-        return $this->hasMany(TyreMaintenance::class);
-    }
-
     public function disposals(): HasMany
     {
         return $this->hasMany(TyreDisposal::class);
@@ -99,6 +94,11 @@ class Tyre extends Model implements HasMedia
     public function inspections(): HasMany
     {
         return $this->hasMany(TyreInspection::class);
+    }
+
+    public function baseline(): HasOne
+    {
+        return $this->hasOne(TyreBaseline::class);
     }
 
     public function isDisposed(): bool

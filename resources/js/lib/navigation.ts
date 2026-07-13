@@ -4,6 +4,7 @@ import {
     CircleDot,
     ClipboardCheck,
     FileBarChart,
+    Gauge,
     History,
     LayoutDashboard,
     Recycle,
@@ -71,16 +72,22 @@ export const tmsNavigation: NavGroup[] = [
                 permission: "tyre.view",
             },
             {
+                title: "Tyre Reading Monitoring",
+                url: "/tyres/reading-monitoring",
+                icon: ClipboardCheck,
+                permission: "tyre.view",
+            },
+            {
+                title: "Tyre Baselines",
+                url: "/tyres/baselines",
+                icon: Gauge,
+                permission: "tyre.view",
+            },
+            {
                 title: "Tyre Movements",
                 url: "/tyres/movements",
                 icon: History,
                 permission: "movement.create",
-            },
-            {
-                title: "Tyre Maintenances",
-                url: "/tyres/maintenances",
-                icon: Wrench,
-                permission: "maintenance.create",
             },
             {
                 title: "Tyre Disposals",
@@ -100,13 +107,13 @@ export const tmsNavigation: NavGroup[] = [
             },
             {
                 title: "Reports",
-                url: "/approvals/reports",
+                url: "/reports",
                 icon: FileBarChart,
                 permission: "report.view",
             },
             {
                 title: "Audit Logs",
-                url: "/approvals/audit-logs",
+                url: "/audit-logs",
                 icon: History,
                 permission: "audit.view",
             },

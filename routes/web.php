@@ -3,12 +3,15 @@
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ApprovalsController;
+use App\Http\Controllers\AuditLogsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Fleet\StoreController;
 use App\Http\Controllers\Fleet\VehicleController;
 use App\Http\Controllers\Fleet\VehicleOdometerController;
 use App\Http\Controllers\Fleet\VehicleTypeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\TyreScanController;
 use App\Http\Controllers\Tyres\TyreBaselineController;
 use App\Http\Controllers\Tyres\TyreController;
@@ -35,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('stores', StoreController::class)->except(['show']);
         Route::resource('vehicles', VehicleController::class);
 
-        Route::get('/vehicles/{vehicle}/odometer', [VehicleOdometerController::class, 'index'])
+        Route::get('/vehicles/{vehicle}/odometer', [VehicleOdometerController::class, 'edit'])
             ->name('vehicles.odometer');
         Route::put('/vehicles/{vehicle}/odometer', [VehicleOdometerController::class, 'update'])
             ->name('vehicles.odometer.update');
@@ -81,11 +84,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/movements/{movement}/complete', [TyreMovementController::class, 'complete'])->name('movements.complete');
         Route::post('/movements/{movement}/cancel', [TyreMovementController::class, 'cancel'])->name('movements.cancel');
 
-        Route::get('/maintenances', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Tyre Maintenances',
-            'description' => 'Track maintenance workflows from submission to completion.',
-        ]))->name('maintenances.index');
-
         Route::get('/disposals', fn () => Inertia::render('modules/placeholder', [
             'title' => 'Tyre Disposals',
             'description' => 'Coming in next phase.',
@@ -100,20 +98,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('approvals')->name('approvals.')->group(function () {
-        Route::get('/pending', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Pending Approvals',
-            'description' => 'Review submitted movements, transfers, disposals, and maintenance.',
-        ]))->name('pending');
+        Route::get('/pending', [ApprovalsController::class, 'pending'])->name('pending');
+    });
 
-        Route::get('/reports', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Reports',
-            'description' => 'Export CSV reports for stock, lifecycle, movements, and audit data.',
-        ]))->middleware('permission:report.view')->name('reports');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportsController::class, 'index'])
+            ->middleware('permission:report.view')
+            ->name('index');
+    });
 
-        Route::get('/audit-logs', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Audit Logs',
-            'description' => 'Browse system activity and change history.',
-        ]))->middleware('permission:audit.view')->name('audit-logs');
+    Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
+        Route::get('/', [AuditLogsController::class, 'index'])
+            ->middleware('permission:audit.view')
+            ->name('index');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -135,8 +132,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('movement.pdf');
         Route::get('/trailer-transfer/{transfer}', [VoucherPdfController::class, 'trailerTransfer'])
             ->name('trailer-transfer.pdf');
-        Route::get('/maintenance/{maintenance}', [VoucherPdfController::class, 'maintenance'])
-            ->name('maintenance.pdf');
         Route::get('/tyre/{tyre}/registration', [VoucherPdfController::class, 'tyreRegistration'])
             ->name('tyre.registration.pdf');
         Route::get('/tyre/{tyre}/history', [VoucherPdfController::class, 'tyreHistory'])

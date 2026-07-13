@@ -2,8 +2,9 @@ import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Head, Link } from "@inertiajs/react";
-import { ArrowLeft, Truck, AlertTriangle, CheckCircle, AlertCircle, Clock, Gauge, Plus, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, Truck, AlertTriangle, CheckCircle, AlertCircle, Clock, Gauge, Plus, Settings, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
 import { cn } from "@/lib/utils";
@@ -112,6 +113,22 @@ export default function ReadingMonitoringVehicle({
     const [selectedTyre, setSelectedTyre] = useState<Tyre | null>(null);
     const [trailerTyres, setTrailerTyres] = useState<Tyre[]>([]);
     const [loadingTrailer, setLoadingTrailer] = useState(false);
+    const [editingOdometer, setEditingOdometer] = useState(false);
+    const [odometerValue, setOdometerValue] = useState(vehicle.odometer?.toString() || '');
+
+    const odometerForm = useForm({
+        odometer: vehicle.odometer || 0,
+    });
+
+    const handleOdometerUpdate = (e: React.FormEvent) => {
+        e.preventDefault();
+        odometerForm.put(route('vehicles.odometer.update', vehicle.id), {
+            onSuccess: () => {
+                setEditingOdometer(false);
+                window.location.reload();
+            },
+        });
+    };
 
     useEffect(() => {
         if (attached_trailer) {
@@ -153,14 +170,22 @@ export default function ReadingMonitoringVehicle({
                             </Link>
                         </Button>
                     </div>
-                    {summary.baseline_required > 0 && (
+                    <div className="flex gap-2">
                         <Button variant="outline" size="sm" asChild>
-                            <Link href={route('tyres.baselines.create')}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Set Missing Baselines ({summary.baseline_required})
+                            <Link href={route('fleet.vehicles.odometer', vehicle.id)}>
+                                <Gauge className="mr-2 h-4 w-4" />
+                                Update Odometer
                             </Link>
                         </Button>
-                    )}
+                        {summary.baseline_required > 0 && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={route('tyres.baselines.create')}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Set Missing Baselines ({summary.baseline_required})
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Summary Cards */}
@@ -211,7 +236,32 @@ export default function ReadingMonitoringVehicle({
                             <CardHeader>
                                 <CardTitle>Vehicle Tyre Map - {vehicle.display_code}</CardTitle>
                                 <CardDescription>
-                                    {vehicle.vehicle_type_name} • Odometer: {vehicle.odometer ? `${vehicle.odometer.toLocaleString()} km` : 'Not set'}
+                                    {vehicle.vehicle_type_name} • 
+                                    {editingOdometer ? (
+                                        <form onSubmit={handleOdometerUpdate} className="inline-flex items-center gap-2 ml-2">
+                                            <Input
+                                                type="number"
+                                                value={odometerForm.data.odometer}
+                                                onChange={(e) => odometerForm.setData('odometer', parseInt(e.target.value) || 0)}
+                                                className="w-32 h-8"
+                                                placeholder="Enter KM"
+                                            />
+                                            <Button type="submit" size="sm" disabled={odometerForm.processing}>
+                                                <Save className="h-3 w-3 mr-1" />
+                                                Save
+                                            </Button>
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => setEditingOdometer(false)}>
+                                                Cancel
+                                            </Button>
+                                        </form>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-2">
+                                            Odometer: {vehicle.odometer ? `${vehicle.odometer.toLocaleString()} km` : 'Not set'}
+                                            <Button variant="ghost" size="sm" onClick={() => setEditingOdometer(true)} className="h-6 px-2">
+                                                <Settings className="h-3 w-3" />
+                                            </Button>
+                                        </span>
+                                    )}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>

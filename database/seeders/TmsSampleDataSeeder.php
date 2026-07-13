@@ -13,6 +13,7 @@ use App\Enums\VehicleStatus;
 use App\Models\Store;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
+use App\Models\TyreBaseline;
 use App\Models\TyreBrand;
 use App\Models\TyreSize;
 use App\Models\User;
@@ -26,7 +27,13 @@ class TmsSampleDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::query()->where('email', 'admin@menkem.com')->first();
+        $admin = User::query()->firstOrCreate(
+            ['email' => 'admin@menkem.com'],
+            [
+                'name' => 'TMS Super Admin',
+                'password' => bcrypt('password'),
+            ]
+        );
 
         $store = Store::query()->firstOrCreate(
             ['code' => 'MAIN-STORE'],
@@ -43,32 +50,7 @@ class TmsSampleDataSeeder extends Seeder
         TyreSize::query()->firstOrCreate(['size_label' => '315/80R22.5'], ['code' => '315-80-225', 'status' => 'active']);
 
         $layoutBuilder = app(VehicleTyreLayoutBuilder::class);
-        $powerLayout = $layoutBuilder->buildLayout(10, 3, 'P');
         $heavyTruckLayout = $layoutBuilder->buildLayout(24, 6, 'P');
-        $trailerLayout = $layoutBuilder->buildLayout(12, 3, 'T');
-        $rigidLayout = $layoutBuilder->buildLayout(6, 2, 'R');
-
-        $powerType = VehicleType::query()->updateOrCreate(
-            ['name' => 'Power Unit 10 Tyres'],
-            [
-                'asset_type' => AssetType::PowerVehicle->value,
-                'axle_count' => 3,
-                'tyre_count' => 10,
-                'layout_json' => $powerLayout,
-                'status' => 'active',
-            ]
-        );
-
-        $trailerType = VehicleType::query()->updateOrCreate(
-            ['name' => 'Trailer 12 Tyres'],
-            [
-                'asset_type' => AssetType::Trailer->value,
-                'axle_count' => 3,
-                'tyre_count' => 12,
-                'layout_json' => $trailerLayout,
-                'status' => 'active',
-            ]
-        );
 
         $heavyTruckType = VehicleType::query()->updateOrCreate(
             ['name' => 'Heavy Truck 24 Tyres + 2 Spares'],
@@ -78,45 +60,6 @@ class TmsSampleDataSeeder extends Seeder
                 'tyre_count' => 24,
                 'layout_json' => $heavyTruckLayout,
                 'status' => 'active',
-            ]
-        );
-
-        VehicleType::query()->updateOrCreate(
-            ['name' => 'Rigid Truck 6 Tyres'],
-            [
-                'asset_type' => AssetType::RigidTruck->value,
-                'axle_count' => 2,
-                'tyre_count' => 6,
-                'layout_json' => $rigidLayout,
-                'status' => 'active',
-            ]
-        );
-
-        $trk001 = Vehicle::query()->firstOrCreate(
-            ['vehicle_code' => 'TRK-001'],
-            [
-                'plate_number' => 'AA-001-TRK',
-                'chassis_number' => 'CH-TRK-001',
-                'engine_number' => 'EN-TRK-001',
-                'manufacture_year' => 2020,
-                'asset_type' => AssetType::PowerVehicle,
-                'vehicle_type_id' => $powerType->id,
-                'status' => VehicleStatus::Active,
-                'odometer' => 125000,
-            ]
-        );
-
-        $trk008 = Vehicle::query()->firstOrCreate(
-            ['vehicle_code' => 'TRK-008'],
-            [
-                'plate_number' => 'AA-008-TRK',
-                'chassis_number' => 'CH-TRK-008',
-                'engine_number' => 'EN-TRK-008',
-                'manufacture_year' => 2020,
-                'asset_type' => AssetType::PowerVehicle,
-                'vehicle_type_id' => $powerType->id,
-                'status' => VehicleStatus::Active,
-                'odometer' => 98000,
             ]
         );
 
@@ -134,32 +77,7 @@ class TmsSampleDataSeeder extends Seeder
             ]
         );
 
-        $trl045 = Vehicle::query()->firstOrCreate(
-            ['vehicle_code' => 'TRL-045'],
-            [
-                'plate_number' => 'AA-045-TRL',
-                'chassis_number' => 'CH-TRL-045',
-                'manufacture_year' => 2021,
-                'asset_type' => AssetType::Trailer,
-                'vehicle_type_id' => $trailerType->id,
-                'status' => VehicleStatus::Active,
-            ]
-        );
-
-        $this->seedExistingFleetAssets($powerType, $trailerType, $admin?->id);
-
-        VehicleCombination::query()->firstOrCreate(
-            [
-                'power_vehicle_id' => $trk001->id,
-                'trailer_vehicle_id' => $trl045->id,
-                'status' => CombinationStatus::Active,
-            ],
-            [
-                'attached_date' => now()->subMonths(2)->toDateString(),
-                'odometer_at_attach' => 120000,
-                'attached_by' => $admin->id,
-            ]
-        );
+        $this->seedExistingFleetAssets($heavyTruckType, $admin->id);
 
         $brand = TyreBrand::query()->first();
         $size = TyreSize::query()->first();
@@ -184,9 +102,13 @@ class TmsSampleDataSeeder extends Seeder
             );
         }
 
-        $this->assignTyresToVehicle($trk001, AssignmentAssetType::PowerVehicle, 6, $admin?->id);
-        $this->assignTyresToVehicle($trl045, AssignmentAssetType::Trailer, 8, $admin?->id, 7);
-        $this->assignTyresToVehicle($trk024, AssignmentAssetType::PowerVehicle, 24, $admin?->id, 21);
+        $this->assignTyresToVehicle($trk024, AssignmentAssetType::PowerVehicle, 24, $admin->id);
+
+        // Assign tyres to existing fleet vehicles
+        $this->assignTyresToExistingFleet($admin->id);
+
+        // Create baselines for realistic demo data
+        $this->createBaselinesForTyres($store, $admin->id);
     }
 
     private function assignTyresToVehicle(
@@ -236,7 +158,7 @@ class TmsSampleDataSeeder extends Seeder
         }
     }
 
-    private function seedExistingFleetAssets(VehicleType $powerType, VehicleType $trailerType, ?int $userId): void
+    private function seedExistingFleetAssets(VehicleType $vehicleType, int $userId): void
     {
         foreach ($this->existingFleetRows() as $row) {
             $power = Vehicle::query()->updateOrCreate(
@@ -247,7 +169,7 @@ class TmsSampleDataSeeder extends Seeder
                     'chassis_number' => $row['power_chassis'],
                     'manufacture_year' => $row['power_year'],
                     'asset_type' => AssetType::PowerVehicle,
-                    'vehicle_type_id' => $powerType->id,
+                    'vehicle_type_id' => $vehicleType->id,
                     'status' => VehicleStatus::Active,
                     'notes' => trim("Existing fleet import. Driver: {$row['driver']}. Power capacity: {$row['power_capacity_quintal']} quintal. Total capacity: {$row['total_capacity_quintal']} quintal."),
                 ]
@@ -261,7 +183,7 @@ class TmsSampleDataSeeder extends Seeder
                     'engine_number' => null,
                     'manufacture_year' => $row['trailer_year'],
                     'asset_type' => AssetType::Trailer,
-                    'vehicle_type_id' => $trailerType->id,
+                    'vehicle_type_id' => $vehicleType->id,
                     'status' => VehicleStatus::Active,
                     'notes' => trim("Existing fleet import. Driver: {$row['driver']}. Trailer capacity: {$row['trailer_capacity_quintal']} quintal. Total capacity: {$row['total_capacity_quintal']} quintal."),
                 ]
@@ -320,5 +242,136 @@ class TmsSampleDataSeeder extends Seeder
             ['power_plate' => 'ኢት-3-A27037', 'engine_number' => 'WP125400E201142G048918', 'power_chassis' => 'LZZ5BLSF3PN044977', 'trailer_plate' => 'ኢት-3-34951', 'trailer_chassis' => 'LA99FRA33N0LFY031', 'power_year' => 2023, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ዳንኤል መንገሻ'],
             ['power_plate' => 'ኢት-3-A27049', 'engine_number' => 'WP125400E2011423G048923', 'power_chassis' => 'LZZ5BSF1PN044976', 'trailer_plate' => 'ኢት-3-35766', 'trailer_chassis' => 'LA99FRA38NOLFY963', 'power_year' => 2023, 'trailer_year' => 2022, 'power_capacity_quintal' => 157, 'trailer_capacity_quintal' => 226, 'total_capacity_quintal' => 383, 'driver' => 'ረዲኢ ገብረመድህን'],
         ];
+    }
+
+    private function assignTyresToExistingFleet(int $userId): void
+    {
+        $tyresInStore = Tyre::query()
+            ->where('status', TyreStatus::Available)
+            ->where('current_location_type', TyreLocationType::Store)
+            ->get();
+
+        $tyreIndex = 0;
+
+        foreach ($this->existingFleetRows() as $row) {
+            $powerVehicle = Vehicle::query()->where('vehicle_code', $row['power_plate'])->first();
+            $trailer = Vehicle::query()->where('vehicle_code', $row['trailer_plate'])->first();
+
+            if ($powerVehicle && $tyreIndex + 24 <= $tyresInStore->count()) {
+                for ($i = 0; $i < 24; $i++) {
+                    $tyre = $tyresInStore[$tyreIndex + $i];
+                    $position = $this->getPositionForIndex($i, 'power_vehicle');
+                    
+                    TyreAssignment::query()->create([
+                        'tyre_id' => $tyre->id,
+                        'asset_id' => $powerVehicle->id,
+                        'asset_type' => AssignmentAssetType::PowerVehicle,
+                        'position_code' => $position,
+                        'status' => TyreAssignmentStatus::Active,
+                        'installed_date' => now()->subMonths(rand(1, 6))->toDateString(),
+                        'installed_odometer' => 0,
+                        'installed_by' => $userId,
+                    ]);
+
+                    $tyre->update([
+                        'current_location_type' => TyreLocationType::PowerVehicle,
+                        'current_location_id' => $powerVehicle->id,
+                        'current_position_code' => $position,
+                        'status' => TyreStatus::Active,
+                    ]);
+                }
+                $tyreIndex += 24;
+            }
+
+            if ($trailer && $tyreIndex + 12 <= $tyresInStore->count()) {
+                for ($i = 0; $i < 12; $i++) {
+                    $tyre = $tyresInStore[$tyreIndex + $i];
+                    $position = $this->getPositionForIndex($i, 'trailer');
+                    
+                    TyreAssignment::query()->create([
+                        'tyre_id' => $tyre->id,
+                        'asset_id' => $trailer->id,
+                        'asset_type' => AssignmentAssetType::Trailer,
+                        'position_code' => $position,
+                        'status' => TyreAssignmentStatus::Active,
+                        'installed_date' => now()->subMonths(rand(1, 6))->toDateString(),
+                        'installed_odometer' => 0,
+                        'installed_by' => $userId,
+                    ]);
+
+                    $tyre->update([
+                        'current_location_type' => TyreLocationType::Trailer,
+                        'current_location_id' => $trailer->id,
+                        'current_position_code' => $position,
+                        'status' => TyreStatus::Active,
+                    ]);
+                }
+                $tyreIndex += 12;
+            }
+        }
+    }
+
+    private function getPositionForIndex(int $index, string $assetType): string
+    {
+        $powerPositions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'W', 'K', 'L', 'M', 'N', 'X', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'];
+        $trailerPositions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'X'];
+
+        return $assetType === 'power_vehicle' 
+            ? $powerPositions[$index] 
+            : $trailerPositions[$index];
+    }
+
+    private function createBaselinesForTyres(Store $store, int $userId): void
+    {
+        // Create baselines for tyres that are currently on vehicles
+        $tyresOnVehicles = Tyre::query()
+            ->where('status', TyreStatus::Active)
+            ->where('current_location_type', '!=', TyreLocationType::Store)
+            ->get();
+
+        foreach ($tyresOnVehicles as $tyre) {
+            TyreBaseline::query()->firstOrCreate(
+                [
+                    'tyre_id' => $tyre->id,
+                ],
+                [
+                    'baseline_location_type' => $tyre->current_location_type,
+                    'baseline_location_id' => $tyre->current_location_id,
+                    'baseline_position_code' => $tyre->current_position_code,
+                    'baseline_odometer' => $tyre->current_location_type === TyreLocationType::PowerVehicle
+                        ? Vehicle::query()->find($tyre->current_location_id)?->odometer ?? 0
+                        : null,
+                    'baseline_date' => now()->subMonths(1)->toDateString(),
+                    'expected_life_km' => 80000,
+                    'baseline_percentage' => 100,
+                    'created_by' => $userId,
+                ]
+            );
+        }
+
+        // Create baselines for some tyres in store
+        $tyresInStore = Tyre::query()
+            ->where('status', TyreStatus::Available)
+            ->where('current_location_type', TyreLocationType::Store)
+            ->limit(20)
+            ->get();
+
+        foreach ($tyresInStore as $tyre) {
+            TyreBaseline::query()->firstOrCreate(
+                [
+                    'tyre_id' => $tyre->id,
+                ],
+                [
+                    'baseline_location_type' => TyreLocationType::Store,
+                    'baseline_location_id' => $store->id,
+                    'baseline_position_code' => null,
+                    'baseline_odometer' => null,
+                    'baseline_date' => now()->subMonths(1)->toDateString(),
+                    'expected_life_km' => 80000,
+                    'baseline_percentage' => 100,
+                    'created_by' => $userId,
+                ]
+            );
+        }
     }
 }

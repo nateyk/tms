@@ -109,9 +109,13 @@ class TyreUsageTrackingService
             return 0;
         }
 
-        $installedOdometer = $activeAssignment->installed_odometer ?? 0;
+        // Use baseline_odometer if available, otherwise use installed_odometer
+        $baseline = $this->getBaselineForTyre($tyre);
+        $referenceOdometer = $baseline && $baseline->baseline_odometer !== null 
+            ? $baseline->baseline_odometer 
+            : ($activeAssignment->installed_odometer ?? 0);
 
-        return max(0, $latestOdometer - $installedOdometer);
+        return max(0, $latestOdometer - $referenceOdometer);
     }
 
     public function calculateUsagePercentage(Tyre $tyre): ?float
