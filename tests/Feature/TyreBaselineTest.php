@@ -16,6 +16,7 @@ class TyreBaselineTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+    private static int $tyreSequence = 9000;
 
     protected function setUp(): void
     {
@@ -26,7 +27,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_create_baseline_for_new_tyre()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -50,11 +51,7 @@ class TyreBaselineTest extends TestCase
     public function test_create_baseline_for_mounted_tyre_with_odometer()
     {
         $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
-        $tyre = Tyre::query()->where('status', 'active')->where('current_location_id', $vehicle->id)->first();
-
-        if (!$tyre) {
-            $this->markTestSkipped('No mounted tyre found in seeder data');
-        }
+        $tyre = $this->createMountedTyre($vehicle);
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -76,11 +73,7 @@ class TyreBaselineTest extends TestCase
     public function test_create_baseline_for_stored_tyre()
     {
         $store = Store::query()->first();
-        $tyre = Tyre::query()->where('status', 'available')->where('current_location_type', 'store')->first();
-
-        if (!$tyre) {
-            $this->markTestSkipped('No stored tyre found in seeder data');
-        }
+        $tyre = $this->createAvailableTyre();
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -100,7 +93,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_duplicate_baseline_is_blocked()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -132,7 +125,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_validate_baseline_percentage_range()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         // Test valid percentage
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
@@ -152,7 +145,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_validate_expected_life_km_positive()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -171,7 +164,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_update_baseline()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -198,7 +191,7 @@ class TyreBaselineTest extends TestCase
 
     public function test_delete_baseline()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
 
         $baseline = app(\App\Services\TyreBaselineService::class)->createBaseline([
             'tyre_id' => $tyre->id,
@@ -216,5 +209,36 @@ class TyreBaselineTest extends TestCase
 
         $this->assertTrue($result);
         $this->assertDatabaseMissing('tyre_baselines', ['id' => $baseline->id]);
+    }
+
+    private function createAvailableTyre(): Tyre
+    {
+        $store = Store::query()->firstOrFail();
+        $sequence = ++self::$tyreSequence;
+
+        return Tyre::query()->create([
+            'tyre_code' => "TEST-TYR-{$sequence}",
+            'serial_number' => "TEST-SN-{$sequence}",
+            'current_location_type' => 'store',
+            'current_location_id' => $store->id,
+            'current_position_code' => null,
+            'status' => 'available',
+            'source' => 'purchased_new_tyre',
+        ]);
+    }
+
+    private function createMountedTyre(Vehicle $vehicle): Tyre
+    {
+        $sequence = ++self::$tyreSequence;
+
+        return Tyre::query()->create([
+            'tyre_code' => "TEST-TYR-{$sequence}",
+            'serial_number' => "TEST-SN-{$sequence}",
+            'current_location_type' => $vehicle->asset_type->value,
+            'current_location_id' => $vehicle->id,
+            'current_position_code' => 'A',
+            'status' => 'active',
+            'source' => 'purchased_new_tyre',
+        ]);
     }
 }

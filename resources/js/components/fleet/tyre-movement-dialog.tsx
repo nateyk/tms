@@ -1,13 +1,12 @@
-import { useState } from "react";
-import { useForm, router } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TyreMovementFormFields } from "@/components/tyres/tyre-movement-form-fields";
 
@@ -86,14 +85,14 @@ export function TyreMovementDialog({
     };
 
     return (
-        <AlertDialog open={open} onOpenChange={handleClose}>
-            <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Tyre Movement</AlertDialogTitle>
-                    <AlertDialogDescription>
+        <Dialog open={open} onOpenChange={handleClose}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Tyre Movement</DialogTitle>
+                    <DialogDescription>
                         Record the movement of a tyre to a new location or position.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
+                    </DialogDescription>
+                </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <TyreMovementFormFields
                         data={data}
@@ -106,7 +105,7 @@ export function TyreMovementDialog({
                         destinationTypes={destinationTypes}
                         readOnlyTyre={Boolean(tyreId)}
                     />
-                    <AlertDialogFooter className="mt-6">
+                    <DialogFooter className="mt-6">
                         <Button
                             type="button"
                             variant="outline"
@@ -118,9 +117,9 @@ export function TyreMovementDialog({
                         <Button type="submit" disabled={processing}>
                             {processing ? "Saving..." : "Save Movement"}
                         </Button>
-                    </AlertDialogFooter>
+                    </DialogFooter>
                 </form>
-            </AlertDialogContent>
-        </AlertDialog>
+            </DialogContent>
+        </Dialog>
     );
 }

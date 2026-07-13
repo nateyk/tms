@@ -196,10 +196,28 @@ class TyreReadingMonitoringController extends Controller
                 : null,
             'has_baseline' => $usage['has_baseline'],
             'baseline_percentage' => $usage['baseline_percentage'],
+            'baseline_id' => $usage['baseline_id'],
+            'baseline_odometer' => $usage['baseline_odometer'],
+            'baseline_date' => $usage['baseline_date'],
             'expected_life_km' => $usage['expected_life_km'],
             'total_used_km' => $usage['total_used_km'],
+            'used_km' => $usage['used_km'],
+            'km_since_baseline' => $usage['km_since_baseline'],
+            'km_since_latest_audit' => $usage['km_since_latest_audit'],
             'usage_percentage' => $usage['usage_percentage'],
             'estimated_remaining_percentage' => $usage['estimated_remaining_percentage'],
+            'calculated_remaining_percentage' => $usage['calculated_remaining_percentage'],
+            'latest_audited_remaining_percentage' => $usage['latest_audited_remaining_percentage'],
+            'effective_remaining_percentage' => $usage['effective_remaining_percentage'],
+            'audit_variance_percentage' => $usage['audit_variance_percentage'],
+            'latest_audit_date' => $usage['latest_audit_date'],
+            'latest_audit_odometer' => $usage['latest_audit_odometer'],
+            'tread_depth_mm' => $usage['tread_depth_mm'],
+            'audit_status' => $usage['audit_status'],
+            'is_audited' => $usage['is_audited'],
+            'calculated_status' => $usage['calculated_status'],
+            'effective_status' => $usage['effective_status'],
+            'current_vehicle_odometer' => $usage['current_vehicle_odometer'],
             'status' => $usage['status'],
             'status_color' => $this->getStatusColor($usage['status']),
             'installed_odometer' => $tyre->activeAssignment?->installed_odometer,
@@ -211,9 +229,18 @@ class TyreReadingMonitoringController extends Controller
                 'inspection_date' => $latestInspection->inspection_date?->format('Y-m-d'),
                 'inspector' => $latestInspection->inspector,
             ] : null,
+            'usage_summary' => $usage,
             'view_url' => route('tyres.show', $tyre->id),
             'create_baseline_url' => route('tyres.baselines.create', ['tyre_id' => $tyre->id]),
-            'create_movement_url' => route('tyres.movements.create', ['tyre_id' => $tyre->id]),
+            'view_baseline_url' => $usage['baseline_id'] ? route('tyres.baselines.show', $usage['baseline_id']) : null,
+            'record_audit_url' => route('tyres.condition-audits.create', $tyre->id),
+            'create_movement_url' => route('tyres.movements.create', [
+                'tyre_id' => $tyre->id,
+                'source_vehicle_id' => $vehicle->id,
+                'source_position' => $tyre->current_position_code,
+                'source_location_type' => 'vehicle',
+                'movement_context' => 'vehicle_map',
+            ]),
         ];
     }
 
@@ -226,8 +253,8 @@ class TyreReadingMonitoringController extends Controller
         $baselineRequired = $tyreData->where('has_baseline', false)->count();
         
         $avgRemaining = $tyreData
-            ->where('estimated_remaining_percentage', '!==', null)
-            ->avg('estimated_remaining_percentage');
+            ->where('effective_remaining_percentage', '!==', null)
+            ->avg('effective_remaining_percentage');
 
         return [
             'total' => $total,

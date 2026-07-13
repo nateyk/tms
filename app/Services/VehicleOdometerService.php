@@ -12,9 +12,10 @@ class VehicleOdometerService
     public function updateOdometer(
         Vehicle $vehicle,
         int $odometer,
-        string $source = OdometerReadingSource::Manual->value,
-        ?int $sourceId = null,
-        int $userId
+        string $source,
+        ?int $sourceId,
+        int $userId,
+        ?string $notes = null,
     ): VehicleOdometerReading {
         $this->validateOdometerNotLower($vehicle, $odometer);
 
@@ -25,6 +26,7 @@ class VehicleOdometerService
             'source' => $source,
             'source_id' => $sourceId,
             'recorded_by' => $userId,
+            'notes' => $notes,
         ]);
 
         // Update vehicle's current odometer
@@ -51,7 +53,7 @@ class VehicleOdometerService
     {
         return VehicleOdometerReading::query()
             ->forVehicle($vehicle->id)
-            ->latest()
+            ->latestReading()
             ->first();
     }
 
@@ -59,7 +61,7 @@ class VehicleOdometerService
     {
         return VehicleOdometerReading::query()
             ->forVehicle($vehicle->id)
-            ->latest()
+            ->latestReading()
             ->limit($limit)
             ->get();
     }

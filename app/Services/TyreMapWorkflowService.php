@@ -176,13 +176,30 @@ class TyreMapWorkflowService
      */
     public function prefilledMovementFromRequest(): array
     {
-        $vehicleId = (int) request()->query('vehicle_id', 0);
-        $position = (string) request()->query('position', '');
+        $vehicleId = (int) request()->query('destination_vehicle_id', request()->query('vehicle_id', 0));
+        $position = (string) request()->query('destination_position', request()->query('position', ''));
         $tyreId = (int) request()->query('tyre_id', 0);
         $movementType = (string) request()->query('movement_type', MovementType::StoreToVehicle->value);
+        $sourceVehicleId = (int) request()->query('source_vehicle_id', 0);
+        $sourcePosition = (string) request()->query('source_position', '');
 
         if ($vehicleId <= 0 || $position === '') {
-            return [];
+            if ($tyreId <= 0) {
+                return [];
+            }
+
+            $tyre = Tyre::query()->find($tyreId);
+            if (! $tyre) {
+                return [];
+            }
+
+            return array_filter([
+                'tyre_id' => $tyreId,
+                'movement_date' => now()->toDateString(),
+                'reason' => $sourceVehicleId > 0 && $sourcePosition !== ''
+                    ? "Move tyre from {$sourcePosition}"
+                    : "Create movement for {$tyre->tyre_code}",
+            ], fn ($value) => $value !== null && $value !== '');
         }
 
         $vehicle = Vehicle::query()->find($vehicleId);

@@ -14,18 +14,19 @@ type OdometerReading = {
     odometer: number;
     reading_date: string;
     source: string;
+    source_label?: string;
     source_id: number | null;
-    recorded_by: number | null;
-    recorded_by_name: string | null;
+    recorded_by: number | string | null;
+    recorded_by_name?: string | null;
     notes: string | null;
     created_at: string;
 };
 
 type OdometerReadingHistoryProps = {
-    readings: OdometerReading[];
+    readings?: OdometerReading[];
 };
 
-export function OdometerReadingHistory({ readings }: OdometerReadingHistoryProps) {
+export function OdometerReadingHistory({ readings = [] }: OdometerReadingHistoryProps) {
     const getSourceLabel = (source: string) => {
         const labelMap: Record<string, string> = {
             manual: "Manual",
@@ -93,7 +94,7 @@ export function OdometerReadingHistory({ readings }: OdometerReadingHistoryProps
                                     </TableCell>
                                     <TableCell>
                                         <Badge className={getSourceBadgeColor(reading.source)}>
-                                            {getSourceLabel(reading.source)}
+                                            {reading.source_label || getSourceLabel(reading.source)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>

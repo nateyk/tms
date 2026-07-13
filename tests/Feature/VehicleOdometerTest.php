@@ -118,6 +118,27 @@ class VehicleOdometerTest extends TestCase
         $this->assertEquals('baseline', $reading->source->value);
     }
 
+    public function test_vehicle_baseline_odometer_can_be_saved_from_odometer_page()
+    {
+        $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
+        $baselineOdometer = $vehicle->odometer + 250;
+
+        $response = $this->actingAs($this->user)
+            ->put(route('fleet.vehicles.odometer.update', $vehicle), [
+                'odometer' => $baselineOdometer,
+                'source' => 'baseline',
+                'notes' => 'Initial truck baseline KM',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $vehicle->id,
+            'odometer' => $baselineOdometer,
+            'source' => 'baseline',
+            'notes' => 'Initial truck baseline KM',
+        ]);
+    }
+
     public function test_get_reading_history()
     {
         $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();

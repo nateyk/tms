@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -77,9 +78,13 @@ class RolesAndPermissionsSeeder extends Seeder
             ['email' => 'admin@menkem.com'],
             [
                 'name' => 'TMS Super Admin',
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ]
         );
+        $admin->forceFill([
+            'name' => 'TMS Super Admin',
+            'password' => Hash::make('password'),
+        ])->save();
 
         $admin->syncRoles(['Super Admin']);
 
@@ -87,9 +92,13 @@ class RolesAndPermissionsSeeder extends Seeder
             ['email' => 'store@menkem.com'],
             [
                 'name' => 'Store Manager',
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ]
         );
+        $storeManager->forceFill([
+            'name' => 'Store Manager',
+            'password' => Hash::make('password'),
+        ])->save();
 
         $storeManager->syncRoles(['Store Manager']);
 
@@ -97,9 +106,13 @@ class RolesAndPermissionsSeeder extends Seeder
             ['email' => 'manager@menkem.com'],
             [
                 'name' => 'Company Manager',
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ]
         );
+        $companyManager->forceFill([
+            'name' => 'Company Manager',
+            'password' => Hash::make('password'),
+        ])->save();
 
         $companyManager->syncRoles(['Company Manager']);
     }

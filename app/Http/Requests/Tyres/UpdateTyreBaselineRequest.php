@@ -8,7 +8,7 @@ class UpdateTyreBaselineRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('tyre-reading.baseline.update') ?? false;
+        return $this->user()?->can('tyre.update') ?? false;
     }
 
     public function rules(): array

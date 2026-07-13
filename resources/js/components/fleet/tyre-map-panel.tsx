@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
-import { Info } from "lucide-react";
-import { TyreMapCanvas, KonvaSlot } from "@/components/fleet/tyre-map-canvas";
+import { ChevronDown, Info } from "lucide-react";
+import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
     Card,
     CardContent,
@@ -12,8 +13,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 export type MapSlot = {
@@ -122,23 +121,6 @@ function buildGuideGroups(mapData: MapSlot[], assetType: string): GuideGroup[] {
     })).filter((group) => group.slots.length > 0);
 }
 
-function mergeCounts(primary: TyreMapPayload, secondary?: TyreMapPayload | null) {
-    if (!secondary) {
-        return primary.counts;
-    }
-
-    return {
-        mounted: primary.counts.mounted + secondary.counts.mounted,
-        total: primary.counts.total + secondary.counts.total,
-        empty: primary.counts.empty + secondary.counts.empty,
-        spares_filled: primary.counts.spares_filled + secondary.counts.spares_filled,
-    };
-}
-
-function mergeSpareCapacity(primary: TyreMapPayload, secondary?: TyreMapPayload | null) {
-    return primary.spareCapacity + (secondary?.spareCapacity ?? 0);
-}
-
 function findSelectedSlot(
     payload: TyreMapPayload,
     code: string,
@@ -147,15 +129,6 @@ function findSelectedSlot(
         payload.mapData.find((slot) => slot.code === code) ??
         payload.spareTyres.find((spare) => spare.position === code) ??
         null
-    );
-}
-
-function CountStat({ label, value }: { label: string; value: string | number }) {
-    return (
-        <div className="rounded-lg border bg-muted/40 px-3 py-2 text-center min-w-[4.5rem]">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-lg font-semibold tabular-nums">{value}</p>
-        </div>
     );
 }
 
@@ -306,7 +279,7 @@ function GuideSection({
                                         <span className="block truncate text-sm font-medium">
                                             {slot.label}
                                         </span>
-                                        <span className="block truncate text-xs text-muted-foreground">
+                                        <span className="hidden">
                                             {slot.tyre_code
                                                 ? slot.tyre_code
                                                 : slot.install_url
@@ -326,22 +299,16 @@ function GuideSection({
 
 function TyreDiagramBlock({
     unit,
-    sectionLabel,
-    vehicleCode,
     mapId,
     payload,
     selection,
     onSelect,
-    diagramHeight,
 }: {
     unit: MapUnit;
-    sectionLabel: string;
-    vehicleCode: string;
     mapId: string;
     payload: TyreMapPayload;
     selection: MapSelection;
     onSelect: (code: string) => void;
-    diagramHeight: number;
 }) {
     if (payload.mapData.length === 0) {
         return null;
@@ -349,28 +316,14 @@ function TyreDiagramBlock({
 
     return (
         <div className="flex flex-col">
-            <div className="flex items-center justify-between border-b px-4 py-2.5">
-                <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {sectionLabel}
-                    </p>
-                    <p className="text-sm font-semibold">{vehicleCode}</p>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                    {payload.counts.mounted}/{payload.counts.total} mounted
-                </Badge>
-            </div>
-            <div
-                className="w-full overflow-y-auto overflow-x-hidden px-3 py-3"
-                style={{ height: diagramHeight }}
-            >
-                <TyreMapCanvas
+            <div className="w-full px-3 py-4">
+                <ModernTyreMap
                     mapId={mapId}
                     assetType={payload.konvaConfig.assetType}
                     slots={payload.konvaConfig.slots}
                     selectedPosition={selection?.unit === unit ? selection.code : null}
                     onSelect={onSelect}
-                    fitMode="width"
+                    className="mx-auto max-w-[560px] border-0 shadow-none"
                 />
             </div>
         </div>
@@ -384,12 +337,7 @@ export function VehicleTyreMapPanel({
     trailerTyreMap,
 }: VehicleTyreMapPanelProps) {
     const [selection, setSelection] = useState<MapSelection>(null);
-
-    const counts = useMemo(() => mergeCounts(tyreMap, trailerTyreMap), [tyreMap, trailerTyreMap]);
-    const spareCapacity = useMemo(
-        () => mergeSpareCapacity(tyreMap, trailerTyreMap),
-        [tyreMap, trailerTyreMap],
-    );
+    const [guideOpen, setGuideOpen] = useState(false);
 
     const powerGuide = useMemo(
         () => buildGuideGroups(tyreMap.mapData, tyreMap.konvaConfig.assetType),
@@ -407,11 +355,6 @@ export function VehicleTyreMapPanel({
         [trailerTyreMap],
     );
 
-    const allSpares = useMemo(
-        () => [...tyreMap.spareTyres, ...(trailerTyreMap?.spareTyres ?? [])],
-        [tyreMap.spareTyres, trailerTyreMap?.spareTyres],
-    );
-
     const selectedSlot = useMemo(() => {
         if (!selection) {
             return null;
@@ -424,15 +367,6 @@ export function VehicleTyreMapPanel({
 
         return findSelectedSlot(payload, selection.code);
     }, [selection, tyreMap, trailerTyreMap]);
-
-    const headerMeta = [
-        vehicle.vehicle_type_name,
-        vehicle.plate_number,
-        vehicle.odometer ? `${vehicle.odometer.toLocaleString()} km` : null,
-        trailer ? `Trailer: ${trailer.vehicle_code}` : null,
-    ]
-        .filter(Boolean)
-        .join(" · ");
 
     const handleSelect = (unit: MapUnit, code: string) => {
         setSelection({ unit, code });
@@ -449,67 +383,31 @@ export function VehicleTyreMapPanel({
     }
 
     const hasTrailer = Boolean(trailer && trailerTyreMap);
-    const powerDiagramHeight = hasTrailer ? 520 : 680;
-    const trailerDiagramHeight = 320;
-    const rightPanelHeight = hasTrailer
-        ? powerDiagramHeight + trailerDiagramHeight + 80
-        : powerDiagramHeight + 40;
-
     return (
         <Card>
-            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-4">
-                <div>
-                    <CardDescription>Vehicle tyre map</CardDescription>
-                    <CardTitle>{vehicle.display_code ?? vehicle.vehicle_code}</CardTitle>
-                    {headerMeta && <CardDescription className="mt-1">{headerMeta}</CardDescription>}
-                </div>
-                <div className="flex gap-2">
-                    <CountStat label="Mounted" value={`${counts.mounted}/${counts.total}`} />
-                    <CountStat label="Open" value={counts.empty} />
-                    {spareCapacity > 0 && (
-                        <CountStat
-                            label="Spares"
-                            value={`${counts.spares_filled}/${spareCapacity}`}
-                        />
-                    )}
-                </div>
-            </CardHeader>
-
             <CardContent className="p-0">
-                <div className="grid lg:grid-cols-[13fr_7fr] lg:divide-x">
-                    <div className="min-w-0 bg-muted/10 lg:min-h-0">
+                <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] lg:divide-x">
+                    <div className="min-w-0 bg-white lg:min-h-0 dark:bg-background">
                         <TyreDiagramBlock
                             unit="power"
-                            sectionLabel="Power unit"
-                            vehicleCode={vehicle.vehicle_code}
                             mapId={`power-${vehicle.id}`}
                             payload={tyreMap}
                             selection={selection}
                             onSelect={(code) => handleSelect("power", code)}
-                            diagramHeight={powerDiagramHeight}
                         />
 
                         {hasTrailer && (
-                            <>
-                                <Separator />
-                                <TyreDiagramBlock
-                                    unit="trailer"
-                                    sectionLabel="Attached trailer"
-                                    vehicleCode={trailer!.vehicle_code}
-                                    mapId={`trailer-${trailer!.id}`}
-                                    payload={trailerTyreMap!}
-                                    selection={selection}
-                                    onSelect={(code) => handleSelect("trailer", code)}
-                                    diagramHeight={trailerDiagramHeight}
-                                />
-                            </>
+                            <TyreDiagramBlock
+                                unit="trailer"
+                                mapId={`trailer-${trailer!.id}`}
+                                payload={trailerTyreMap!}
+                                selection={selection}
+                                onSelect={(code) => handleSelect("trailer", code)}
+                            />
                         )}
                     </div>
 
-                    <div
-                        className="flex flex-col gap-2.5 p-3 lg:overflow-y-auto"
-                        style={{ minHeight: rightPanelHeight }}
-                    >
+                    <div className="flex flex-col gap-2.5 p-3 lg:overflow-y-auto">
                         <Card className="shadow-none shrink-0">
                             <CardHeader className="pb-2 pt-0">
                                 <CardTitle className="text-sm font-medium">Selected position</CardTitle>
@@ -529,47 +427,28 @@ export function VehicleTyreMapPanel({
                             </CardContent>
                         </Card>
 
-                        {allSpares.length > 0 && (
-                            <Card className="shadow-none shrink-0">
-                                <CardHeader className="flex flex-row items-center justify-between pb-2 pt-0">
-                                    <CardTitle className="text-sm font-medium">Spare tyres</CardTitle>
-                                    <Badge variant="secondary">
-                                        {counts.spares_filled}/{spareCapacity}
-                                    </Badge>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    {allSpares.map((spare) => (
-                                        <div
-                                            key={spare.position}
-                                            className="flex items-center gap-3 rounded-lg border border-dashed p-3"
-                                        >
-                                            <PositionBadge
-                                                code={spare.display_code || "?"}
-                                                empty={!spare.tyre_code}
-                                            />
-                                            <div className="min-w-0">
-                                                <p className="truncate text-sm font-medium">
-                                                    {spare.tyre_code || "No spare assigned"}
-                                                </p>
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {spare.owner_label}
-                                                    {spare.serial_number
-                                                        ? ` · ${spare.serial_number}`
-                                                        : " · Open pocket"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        <Card className="shadow-none min-h-0 flex-1 flex flex-col">
-                            <CardHeader className="pb-2 pt-0 shrink-0">
-                                <CardTitle className="text-sm font-medium">Tyre position guide</CardTitle>
+                        <Collapsible open={guideOpen} onOpenChange={setGuideOpen}>
+                            <Card className="shadow-none">
+                            <CardHeader className="pb-2 pt-0">
+                                <CollapsibleTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        className="h-auto w-full justify-between p-0 text-left hover:bg-transparent"
+                                    >
+                                        <CardTitle className="text-sm font-medium">Tyre position guide</CardTitle>
+                                        <ChevronDown
+                                            className={cn(
+                                                "h-4 w-4 text-muted-foreground transition-transform",
+                                                guideOpen && "rotate-180",
+                                            )}
+                                        />
+                                    </Button>
+                                </CollapsibleTrigger>
                             </CardHeader>
-                            <CardContent className="min-h-0 flex-1 p-0 pb-3">
-                                <ScrollArea className="h-full max-h-[280px] px-4 lg:max-h-none">
+                            <CollapsibleContent>
+                                <CardContent className="p-0 pb-3">
+                                    <div className="px-4">
                                     <div className="space-y-4 pb-2">
                                         <GuideSection
                                             unit="power"
@@ -598,9 +477,11 @@ export function VehicleTyreMapPanel({
                                             </AlertDescription>
                                         </Alert>
                                     </div>
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                </CardContent>
+                            </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
                     </div>
                 </div>
             </CardContent>
@@ -609,3 +490,4 @@ export function VehicleTyreMapPanel({
 }
 
 export { VehicleTyreMapPanel as TyreMapPanel };
+

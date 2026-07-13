@@ -17,6 +17,7 @@ class ApprovalsReportsAuditTest extends TestCase
 
     protected User $adminUser;
     protected User $userWithoutPermissions;
+    private static int $tyreSequence = 11000;
 
     protected function setUp(): void
     {
@@ -45,7 +46,7 @@ class ApprovalsReportsAuditTest extends TestCase
     public function test_pending_approvals_contains_movement_data()
     {
         // Create a submitted movement
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
         $store = Store::query()->firstOrFail();
 
         $movement = TyreMovement::query()->create([
@@ -126,7 +127,7 @@ class ApprovalsReportsAuditTest extends TestCase
 
     public function test_submitted_movement_can_be_checked()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
         $store = Store::query()->firstOrFail();
         
         $movement = TyreMovement::query()->create([
@@ -160,7 +161,7 @@ class ApprovalsReportsAuditTest extends TestCase
 
     public function test_checked_movement_can_be_approved()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
         $store = Store::query()->firstOrFail();
         
         $movement = TyreMovement::query()->create([
@@ -196,7 +197,7 @@ class ApprovalsReportsAuditTest extends TestCase
 
     public function test_checked_movement_can_be_rejected()
     {
-        $tyre = Tyre::query()->where('status', 'available')->firstOrFail();
+        $tyre = $this->createAvailableTyre();
         $store = Store::query()->firstOrFail();
         
         $movement = TyreMovement::query()->create([
@@ -229,6 +230,22 @@ class ApprovalsReportsAuditTest extends TestCase
         $this->assertDatabaseHas('tyre_movements', [
             'id' => $movement->id,
             'status' => 'rejected',
+        ]);
+    }
+
+    private function createAvailableTyre(): Tyre
+    {
+        $store = Store::query()->firstOrFail();
+        $sequence = ++self::$tyreSequence;
+
+        return Tyre::query()->create([
+            'tyre_code' => "APPROVAL-TYR-{$sequence}",
+            'serial_number' => "APPROVAL-SN-{$sequence}",
+            'current_location_type' => 'store',
+            'current_location_id' => $store->id,
+            'current_position_code' => null,
+            'status' => 'available',
+            'source' => 'purchased_new_tyre',
         ]);
     }
 }

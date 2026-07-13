@@ -22,6 +22,7 @@ use App\Models\VehicleCombination;
 use App\Models\VehicleType;
 use App\Services\VehicleTyreLayoutBuilder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class TmsSampleDataSeeder extends Seeder
 {
@@ -31,9 +32,13 @@ class TmsSampleDataSeeder extends Seeder
             ['email' => 'admin@menkem.com'],
             [
                 'name' => 'TMS Super Admin',
-                'password' => bcrypt('password'),
+                'password' => Hash::make('password'),
             ]
         );
+        $admin->forceFill([
+            'name' => 'TMS Super Admin',
+            'password' => Hash::make('password'),
+        ])->save();
 
         $store = Store::query()->firstOrCreate(
             ['code' => 'MAIN-STORE'],

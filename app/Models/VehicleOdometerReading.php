@@ -47,6 +47,11 @@ class VehicleOdometerReading extends Model
         return $query->orderByDesc('reading_date')->orderByDesc('odometer')->orderByDesc('created_at');
     }
 
+    public function scopeLatestReading($query)
+    {
+        return $query->orderByDesc('reading_date')->orderByDesc('odometer')->orderByDesc('created_at');
+    }
+
     public function scopeBySource($query, $source)
     {
         return $query->where('source', $source);

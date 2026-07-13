@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\OdometerReadingSource;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreBaseline;
@@ -20,10 +21,28 @@ class TyreUsageTrackingService
                 'has_baseline' => false,
                 'status' => 'Baseline Required',
                 'total_used_km' => null,
+                'used_km' => null,
+                'km_since_baseline' => null,
+                'km_since_latest_audit' => null,
                 'usage_percentage' => null,
                 'estimated_remaining_percentage' => null,
+                'calculated_remaining_percentage' => null,
+                'latest_audited_remaining_percentage' => null,
+                'effective_remaining_percentage' => null,
+                'audit_variance_percentage' => null,
                 'baseline_percentage' => null,
+                'baseline_id' => null,
+                'baseline_odometer' => null,
+                'baseline_date' => null,
                 'expected_life_km' => null,
+                'current_vehicle_odometer' => null,
+                'latest_audit_date' => null,
+                'latest_audit_odometer' => null,
+                'tread_depth_mm' => null,
+                'audit_status' => null,
+                'is_audited' => false,
+                'calculated_status' => 'Baseline Required',
+                'effective_status' => 'Baseline Required',
             ];
         }
 
@@ -31,15 +50,67 @@ class TyreUsageTrackingService
         $usagePercentage = $this->calculateUsagePercentage($tyre);
         $estimatedRemaining = $this->calculateEstimatedRemainingPercentage($tyre);
         $status = $this->getUsageStatus($estimatedRemaining, true);
+        $latestInspection = $tyre->relationLoaded('inspections')
+            ? $tyre->inspections->sortByDesc('inspection_date')->first()
+            : $tyre->inspections()->latest('inspection_date')->first();
+        $currentVehicle = $tyre->activeAssignment?->vehicle
+            ?? ($tyre->current_location_id ? Vehicle::query()->find($tyre->current_location_id) : null);
+        $currentOdometer = $currentVehicle instanceof Vehicle
+            ? $this->getLatestVehicleOdometer($currentVehicle)
+            : null;
+        $latestAuditedRemaining = $latestInspection?->audited_remaining_percentage !== null
+            ? (float) $latestInspection->audited_remaining_percentage
+            : null;
+        $auditOdometer = $latestInspection?->audit_odometer;
+        $kmSinceLatestAudit = null;
+
+        if ($latestAuditedRemaining !== null && $auditOdometer !== null && $currentOdometer !== null && ! TyrePositionHelper::isSparePosition($tyre->current_position_code)) {
+            $kmSinceLatestAudit = max(0, $currentOdometer - $auditOdometer);
+        }
+
+        $effectiveRemaining = $estimatedRemaining;
+
+        if ($latestAuditedRemaining !== null) {
+            $auditUsagePercentage = ($kmSinceLatestAudit !== null && $baseline->expected_life_km > 0)
+                ? ($kmSinceLatestAudit / $baseline->expected_life_km) * 100
+                : 0;
+            $effectiveRemaining = round(max(0, min((float) $baseline->baseline_percentage, $latestAuditedRemaining - $auditUsagePercentage)), 2);
+        }
+
+        $calculatedAtAudit = $latestInspection?->calculated_remaining_percentage_at_audit !== null
+            ? (float) $latestInspection->calculated_remaining_percentage_at_audit
+            : $estimatedRemaining;
+        $auditVariance = $latestAuditedRemaining !== null && $calculatedAtAudit !== null
+            ? round($latestAuditedRemaining - $calculatedAtAudit, 2)
+            : null;
+        $effectiveStatus = $this->getUsageStatus($effectiveRemaining, true);
 
         return [
             'has_baseline' => true,
-            'status' => $status,
+            'status' => $effectiveStatus,
             'total_used_km' => $totalUsedKm,
+            'used_km' => $totalUsedKm,
+            'km_since_baseline' => $totalUsedKm,
+            'km_since_latest_audit' => $kmSinceLatestAudit,
             'usage_percentage' => $usagePercentage,
             'estimated_remaining_percentage' => $estimatedRemaining,
+            'calculated_remaining_percentage' => $estimatedRemaining,
+            'latest_audited_remaining_percentage' => $latestAuditedRemaining,
+            'effective_remaining_percentage' => $effectiveRemaining,
+            'audit_variance_percentage' => $auditVariance,
             'baseline_percentage' => (float) $baseline->baseline_percentage,
+            'baseline_id' => $baseline->id,
+            'baseline_odometer' => $baseline->baseline_odometer,
+            'baseline_date' => $baseline->baseline_date?->format('Y-m-d'),
             'expected_life_km' => $baseline->expected_life_km,
+            'current_vehicle_odometer' => $currentOdometer,
+            'latest_audit_date' => $latestInspection?->inspection_date?->format('Y-m-d'),
+            'latest_audit_odometer' => $auditOdometer,
+            'tread_depth_mm' => $latestInspection?->tread_depth !== null ? (float) $latestInspection->tread_depth : null,
+            'audit_status' => $latestInspection?->condition,
+            'is_audited' => $latestAuditedRemaining !== null,
+            'calculated_status' => $status,
+            'effective_status' => $effectiveStatus,
         ];
     }
 
@@ -109,11 +180,17 @@ class TyreUsageTrackingService
             return 0;
         }
 
-        // Use baseline_odometer if available, otherwise use installed_odometer
+        // Use the later odometer so a tyre that was baselined as a spare only
+        // starts accumulating running KM from its mounted running assignment.
         $baseline = $this->getBaselineForTyre($tyre);
-        $referenceOdometer = $baseline && $baseline->baseline_odometer !== null 
-            ? $baseline->baseline_odometer 
-            : ($activeAssignment->installed_odometer ?? 0);
+        $referenceOdometers = array_filter([
+            $baseline?->baseline_odometer,
+            $activeAssignment->installed_odometer,
+            $this->getVehicleBaselineOdometer($vehicle),
+        ], static fn ($odometer) => $odometer !== null);
+        $referenceOdometer = $referenceOdometers === []
+            ? 0
+            : max($referenceOdometers);
 
         return max(0, $latestOdometer - $referenceOdometer);
     }
@@ -194,7 +271,7 @@ class TyreUsageTrackingService
         // Prefer latest reading from vehicle_odometer_readings
         $latestReading = VehicleOdometerReading::query()
             ->forVehicle($vehicle->id)
-            ->latest()
+            ->latestReading()
             ->first();
 
         if ($latestReading) {
@@ -203,6 +280,15 @@ class TyreUsageTrackingService
 
         // Fallback to vehicles.odometer
         return $vehicle->odometer;
+    }
+
+    public function getVehicleBaselineOdometer(Vehicle $vehicle): ?int
+    {
+        return VehicleOdometerReading::query()
+            ->forVehicle($vehicle->id)
+            ->where('source', OdometerReadingSource::Baseline->value)
+            ->latestReading()
+            ->value('odometer');
     }
 
     public function getUsageHistory(Tyre $tyre): \Illuminate\Support\Collection

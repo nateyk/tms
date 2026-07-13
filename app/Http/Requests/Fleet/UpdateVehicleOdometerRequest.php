@@ -15,6 +15,7 @@ class UpdateVehicleOdometerRequest extends FormRequest
     {
         return [
             'odometer' => ['required', 'integer', 'min:0'],
+            'source' => ['nullable', 'string', 'in:manual,baseline'],
             'notes' => ['nullable', 'string'],
         ];
     }

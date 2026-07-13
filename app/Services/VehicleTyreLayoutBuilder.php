@@ -5,7 +5,7 @@ namespace App\Services;
 /**
  * Axle-grouped tyre layouts for the Konva top-down vehicle map.
  *
- * @see resources/js/tyre-map-konva.js
+ * @see resources/js/components/fleet/modern-tyre-map.tsx
  */
 class VehicleTyreLayoutBuilder
 {

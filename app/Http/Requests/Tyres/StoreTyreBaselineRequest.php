@@ -9,7 +9,7 @@ class StoreTyreBaselineRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('tyre-reading.baseline.create') ?? false;
+        return $this->user()?->can('tyre.create') ?? false;
     }
 
     public function rules(): array

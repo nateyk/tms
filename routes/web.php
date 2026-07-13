@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\TyreScanController;
 use App\Http\Controllers\Tyres\TyreBaselineController;
+use App\Http\Controllers\Tyres\TyreConditionAuditController;
 use App\Http\Controllers\Tyres\TyreController;
 use App\Http\Controllers\Tyres\TyreMovementController;
 use App\Http\Controllers\Tyres\TyreReadingMonitoringController;
@@ -88,6 +89,11 @@ Route::middleware(['auth'])->group(function () {
             'title' => 'Tyre Disposals',
             'description' => 'Coming in next phase.',
         ]))->name('disposals.index');
+
+        Route::get('/{tyre}/condition-audits/create', [TyreConditionAuditController::class, 'create'])
+            ->name('condition-audits.create');
+        Route::post('/{tyre}/condition-audits', [TyreConditionAuditController::class, 'store'])
+            ->name('condition-audits.store');
 
         Route::get('/{tyre}', [TyreController::class, 'show'])->name('show');
         Route::get('/{tyre}/edit', [TyreController::class, 'edit'])->name('edit');

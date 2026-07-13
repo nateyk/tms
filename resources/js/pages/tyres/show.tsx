@@ -12,6 +12,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -30,6 +31,8 @@ import {
     Pencil,
     QrCode,
     RefreshCw,
+    Activity,
+    Gauge,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -71,6 +74,60 @@ type TyreDetail = {
         problem_type: string;
         status: string;
     }[];
+    usage_summary: {
+        has_baseline: boolean;
+        baseline_percentage: number | null;
+        baseline_odometer: number | null;
+        baseline_date: string | null;
+        expected_life_km: number | null;
+        used_km: number | null;
+        km_since_baseline: number | null;
+        calculated_remaining_percentage: number | null;
+        latest_audited_remaining_percentage: number | null;
+        effective_remaining_percentage: number | null;
+        audit_variance_percentage: number | null;
+        current_vehicle_odometer: number | null;
+        calculated_status: string;
+        effective_status: string;
+    };
+    baseline: {
+        id: number;
+        baseline_percentage: number;
+        baseline_odometer: number | null;
+        expected_life_km: number | null;
+        baseline_date: string | null;
+        edit_url: string;
+        view_url: string;
+    } | null;
+    latest_audit: {
+        audited_remaining_percentage: number | null;
+        calculated_remaining_percentage: number | null;
+        variance_percentage: number | null;
+        tread_depth_mm: number | null;
+        condition_status: string | null;
+        audit_odometer: number | null;
+        audited_by: string | null;
+        audit_date: string | null;
+        notes: string | null;
+    } | null;
+    audit_history: {
+        id: number;
+        date: string | null;
+        odometer: number | null;
+        calculated_remaining_percentage: number | null;
+        audited_remaining_percentage: number | null;
+        variance_percentage: number | null;
+        tread_depth_mm: number | null;
+        status: string | null;
+        audited_by: string | null;
+        notes: string | null;
+    }[];
+    action_urls: {
+        record_audit: string | null;
+        create_movement: string;
+        set_baseline: string;
+        view_baseline: string | null;
+    };
 };
 
 type Permissions = {
@@ -84,6 +141,32 @@ function DetailItem({ label, value }: { label: string; value: ReactNode }) {
         <div>
             <dt className="text-sm text-muted-foreground">{label}</dt>
             <dd className="mt-1 text-sm font-medium">{value || "—"}</dd>
+        </div>
+    );
+}
+
+function formatPercent(value: number | null | undefined): string {
+    return typeof value === "number" ? `${value.toFixed(1)}%` : "-";
+}
+
+function formatKm(value: number | null | undefined): string {
+    return typeof value === "number" ? `${value.toLocaleString()} KM` : "-";
+}
+
+function HealthMetric({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+    return (
+        <div className={strong ? "rounded-lg border border-primary bg-primary/5 p-4" : "rounded-lg border p-4"}>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className={strong ? "mt-1 text-2xl font-semibold text-primary" : "mt-1 text-xl font-semibold"}>{value}</p>
+        </div>
+    );
+}
+
+function DetailLine({ label, value }: { label: string; value: ReactNode }) {
+    return (
+        <div className="flex items-center justify-between gap-3">
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd className="text-right font-medium">{value}</dd>
         </div>
     );
 }
@@ -278,6 +361,151 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 </div>
                             </>
                         )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                        <div>
+                            <CardTitle>Tyre Health</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                Baseline, calculated usage, manual audit checkpoint, and effective status.
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            {tyre.action_urls.record_audit && (
+                                <Button asChild size="sm">
+                                    <Link href={tyre.action_urls.record_audit}>
+                                        <Activity className="mr-2 h-4 w-4" />
+                                        Record Audit
+                                    </Link>
+                                </Button>
+                            )}
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={tyre.action_urls.create_movement}>Create Movement</Link>
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid gap-3 md:grid-cols-4">
+                            <HealthMetric label="Effective Remaining" value={formatPercent(tyre.usage_summary.effective_remaining_percentage)} strong />
+                            <HealthMetric label="Calculated Remaining" value={formatPercent(tyre.usage_summary.calculated_remaining_percentage)} />
+                            <HealthMetric label="Latest Audited" value={formatPercent(tyre.usage_summary.latest_audited_remaining_percentage)} />
+                            <HealthMetric label="Used KM" value={formatKm(tyre.usage_summary.used_km)} />
+                        </div>
+
+                        <div className="grid gap-4 lg:grid-cols-3">
+                            <section className="space-y-3">
+                                <h3 className="text-sm font-semibold">Tyre Identity</h3>
+                                <dl className="grid gap-2 text-sm">
+                                    <DetailLine label="Code" value={tyre.tyre_code} />
+                                    <DetailLine label="Serial" value={tyre.serial_number} />
+                                    <DetailLine label="Brand" value={tyre.brand_name || "-"} />
+                                    <DetailLine label="Size" value={tyre.size_label || "-"} />
+                                    <DetailLine label="Status" value={tyre.status_label} />
+                                    <DetailLine label="Location" value={tyre.vehicle_plate} />
+                                    <DetailLine label="Position" value={tyre.current_position_code} />
+                                </dl>
+                            </section>
+
+                            <section className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold">Baseline</h3>
+                                    {tyre.baseline ? (
+                                        <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">Baseline Set</Badge>
+                                    ) : (
+                                        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Required</Badge>
+                                    )}
+                                </div>
+                                {tyre.baseline ? (
+                                    <dl className="grid gap-2 text-sm">
+                                        <DetailLine label="Baseline %" value={formatPercent(tyre.baseline.baseline_percentage)} />
+                                        <DetailLine label="Baseline odometer" value={formatKm(tyre.baseline.baseline_odometer)} />
+                                        <DetailLine label="Expected life" value={formatKm(tyre.baseline.expected_life_km)} />
+                                        <DetailLine label="Baseline date" value={tyre.baseline.baseline_date || "-"} />
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link href={tyre.baseline.edit_url}>Edit baseline</Link>
+                                        </Button>
+                                    </dl>
+                                ) : (
+                                    <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                                        Baseline is required before calculated remaining can be trusted.
+                                        <Button asChild size="sm">
+                                            <Link href={tyre.action_urls.set_baseline}>Set Baseline</Link>
+                                        </Button>
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="space-y-3">
+                                <h3 className="text-sm font-semibold">Usage Calculation</h3>
+                                <dl className="grid gap-2 text-sm">
+                                    <DetailLine label="Baseline %" value={formatPercent(tyre.usage_summary.baseline_percentage)} />
+                                    <DetailLine label="Expected life" value={formatKm(tyre.usage_summary.expected_life_km)} />
+                                    <DetailLine label="Used KM" value={formatKm(tyre.usage_summary.used_km)} />
+                                    <DetailLine label="Calculated remaining" value={formatPercent(tyre.usage_summary.calculated_remaining_percentage)} />
+                                </dl>
+                                <p className="text-xs text-muted-foreground">
+                                    Calculated remaining is estimated from odometer usage and expected tyre life.
+                                </p>
+                            </section>
+                        </div>
+
+                        <div className="grid gap-4 lg:grid-cols-2">
+                            <section className="space-y-3">
+                                <h3 className="text-sm font-semibold">Latest Condition Audit</h3>
+                                {tyre.latest_audit ? (
+                                    <dl className="grid gap-2 text-sm">
+                                        <DetailLine label="Audited remaining" value={formatPercent(tyre.latest_audit.audited_remaining_percentage)} />
+                                        <DetailLine label="Calculated at audit" value={formatPercent(tyre.latest_audit.calculated_remaining_percentage)} />
+                                        <DetailLine label="Variance" value={formatPercent(tyre.latest_audit.variance_percentage)} />
+                                        <DetailLine label="Tread depth" value={tyre.latest_audit.tread_depth_mm !== null ? `${tyre.latest_audit.tread_depth_mm} mm` : "-"} />
+                                        <DetailLine label="Condition" value={tyre.latest_audit.condition_status || "-"} />
+                                        <DetailLine label="Audit odometer" value={formatKm(tyre.latest_audit.audit_odometer)} />
+                                        <DetailLine label="Audited by" value={tyre.latest_audit.audited_by || "-"} />
+                                        <DetailLine label="Audit date" value={tyre.latest_audit.audit_date || "-"} />
+                                    </dl>
+                                ) : (
+                                    <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+                                        No condition audit recorded yet.
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="space-y-3">
+                                <h3 className="text-sm font-semibold">Audit History</h3>
+                                <div className="max-h-72 overflow-auto rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Calc %</TableHead>
+                                                <TableHead>Audit %</TableHead>
+                                                <TableHead>Tread</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {tyre.audit_history.length > 0 ? tyre.audit_history.map((audit) => (
+                                                <TableRow key={audit.id}>
+                                                    <TableCell>{audit.date || "-"}</TableCell>
+                                                    <TableCell>{formatPercent(audit.calculated_remaining_percentage)}</TableCell>
+                                                    <TableCell>{formatPercent(audit.audited_remaining_percentage)}</TableCell>
+                                                    <TableCell>{audit.tread_depth_mm !== null ? `${audit.tread_depth_mm} mm` : "-"}</TableCell>
+                                                    <TableCell>{audit.status || "-"}</TableCell>
+                                                </TableRow>
+                                            )) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                                                        No audit history recorded.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </section>
+                        </div>
                     </CardContent>
                 </Card>
 

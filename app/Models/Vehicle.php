@@ -39,6 +39,7 @@ class Vehicle extends Model
             'status' => VehicleStatus::class,
             'odometer' => 'integer',
             'manufacture_year' => 'integer',
+            'odometer_last_updated_at' => 'datetime',
         ];
     }
 

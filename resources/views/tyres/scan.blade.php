@@ -48,16 +48,18 @@
                 </ul>
             </section>
 
+            @if(false)
             <section>
                 <h3 class="font-semibold mb-2">Maintenance History</h3>
                 <ul class="text-sm space-y-1">
-                    @forelse ($tyre->maintenanceRecords as $record)
+                    @forelse (collect() as $record)
                         <li>{{ $record->maintenance_no }} — {{ $record->problem_type->label() }}</li>
                     @empty
                         <li class="text-gray-500">No maintenance records.</li>
                     @endforelse
                 </ul>
             </section>
+            @endif
         </div>
     </div>
 </body>

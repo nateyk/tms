@@ -13,6 +13,7 @@ use App\Models\TyreBrand;
 use App\Models\TyreSize;
 use App\Services\TyreQrCodeService;
 use App\Services\TyreRegistrationService;
+use App\Services\TyreUsageTrackingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,6 +24,7 @@ class TyreController extends Controller
     public function __construct(
         private readonly TyreRegistrationService $registrationService,
         private readonly TyreQrCodeService $qrCodeService,
+        private readonly TyreUsageTrackingService $usageTrackingService,
     ) {}
 
     public function index(Request $request): Response
@@ -74,6 +76,8 @@ class TyreController extends Controller
             'size',
             'movements' => fn ($q) => $q->latest()->limit(10),
             'activeAssignment.vehicle',
+            'baseline',
+            'inspections' => fn ($q) => $q->latest('inspection_date')->limit(10),
         ]);
 
         return Inertia::render('tyres/show', [
@@ -199,6 +203,10 @@ class TyreController extends Controller
     /** @return array<string, mixed> */
     private function serializeDetail(Tyre $tyre): array
     {
+        $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+        $baseline = $tyre->baseline;
+        $latestAudit = $tyre->inspections->first();
+
         return [
             ...$this->serializeForm($tyre),
             'brand_name' => $tyre->brand?->name,
@@ -222,11 +230,55 @@ class TyreController extends Controller
                 'movement_type' => $m->movement_type->label(),
                 'status' => $m->status->label(),
             ]),
-            'recent_maintenance' => $tyre->maintenanceRecords->map(fn ($m) => [
-                'maintenance_no' => $m->maintenance_no,
-                'problem_type' => $m->problem_type->label(),
-                'status' => $m->status->label(),
-            ]),
+            'recent_maintenance' => [],
+            'usage_summary' => $usage,
+            'baseline' => $baseline ? [
+                'id' => $baseline->id,
+                'baseline_percentage' => (float) $baseline->baseline_percentage,
+                'baseline_odometer' => $baseline->baseline_odometer,
+                'expected_life_km' => $baseline->expected_life_km,
+                'baseline_date' => $baseline->baseline_date?->format('Y-m-d'),
+                'edit_url' => route('tyres.baselines.edit', $baseline->id),
+                'view_url' => route('tyres.baselines.show', $baseline->id),
+            ] : null,
+            'latest_audit' => $latestAudit ? [
+                'audited_remaining_percentage' => $latestAudit->audited_remaining_percentage !== null ? (float) $latestAudit->audited_remaining_percentage : null,
+                'calculated_remaining_percentage' => $latestAudit->calculated_remaining_percentage_at_audit !== null ? (float) $latestAudit->calculated_remaining_percentage_at_audit : $usage['calculated_remaining_percentage'],
+                'variance_percentage' => $latestAudit->audited_remaining_percentage !== null
+                    ? round((float) $latestAudit->audited_remaining_percentage - (float) ($latestAudit->calculated_remaining_percentage_at_audit ?? $usage['calculated_remaining_percentage']), 2)
+                    : null,
+                'tread_depth_mm' => $latestAudit->tread_depth !== null ? (float) $latestAudit->tread_depth : null,
+                'condition_status' => $latestAudit->condition,
+                'audit_odometer' => $latestAudit->audit_odometer,
+                'audited_by' => $latestAudit->inspector,
+                'audit_date' => $latestAudit->inspection_date?->format('Y-m-d'),
+                'notes' => $latestAudit->notes,
+            ] : null,
+            'audit_history' => $tyre->inspections->map(fn ($inspection) => [
+                'id' => $inspection->id,
+                'date' => $inspection->inspection_date?->format('Y-m-d'),
+                'odometer' => $inspection->audit_odometer,
+                'calculated_remaining_percentage' => $inspection->calculated_remaining_percentage_at_audit !== null ? (float) $inspection->calculated_remaining_percentage_at_audit : null,
+                'audited_remaining_percentage' => $inspection->audited_remaining_percentage !== null ? (float) $inspection->audited_remaining_percentage : null,
+                'variance_percentage' => $inspection->audited_remaining_percentage !== null && $inspection->calculated_remaining_percentage_at_audit !== null
+                    ? round((float) $inspection->audited_remaining_percentage - (float) $inspection->calculated_remaining_percentage_at_audit, 2)
+                    : null,
+                'tread_depth_mm' => $inspection->tread_depth !== null ? (float) $inspection->tread_depth : null,
+                'status' => $inspection->condition,
+                'audited_by' => $inspection->inspector,
+                'notes' => $inspection->notes,
+            ])->values(),
+            'action_urls' => [
+                'record_audit' => route('tyres.condition-audits.create', $tyre->id),
+                'create_movement' => route('tyres.movements.create', [
+                    'tyre_id' => $tyre->id,
+                    'source_location_type' => $tyre->current_location_type?->value,
+                    'source_vehicle_id' => $tyre->current_location_id,
+                    'source_position' => $tyre->current_position_code,
+                ]),
+                'set_baseline' => route('tyres.baselines.create', ['tyre_id' => $tyre->id]),
+                'view_baseline' => $baseline ? route('tyres.baselines.show', $baseline->id) : null,
+            ],
         ];
     }
 }

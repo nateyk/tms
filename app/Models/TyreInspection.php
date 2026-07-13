@@ -12,6 +12,9 @@ class TyreInspection extends Model
         'inspection_date',
         'tread_depth',
         'pressure',
+        'audited_remaining_percentage',
+        'calculated_remaining_percentage_at_audit',
+        'audit_odometer',
         'condition',
         'inspector',
         'inspected_by',
@@ -24,6 +27,9 @@ class TyreInspection extends Model
             'inspection_date' => 'date',
             'tread_depth' => 'decimal:2',
             'pressure' => 'decimal:2',
+            'audited_remaining_percentage' => 'decimal:2',
+            'calculated_remaining_percentage_at_audit' => 'decimal:2',
+            'audit_odometer' => 'integer',
         ];
     }
 
