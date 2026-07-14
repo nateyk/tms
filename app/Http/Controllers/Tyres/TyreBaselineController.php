@@ -177,7 +177,7 @@ class TyreBaselineController extends Controller
             'baseline_location_id' => $baseline->baseline_location_id,
             'baseline_position_code' => $baseline->baseline_position_code,
             'baseline_odometer' => $baseline->baseline_odometer,
-            'current_vehicle_odometer' => $this->currentVehicleOdometer($baseline->tyre),
+            'current_vehicle_odometer' => $this->baselineVehicleOdometer($baseline),
             'baseline_percentage' => (float) $baseline->baseline_percentage,
             'expected_life_km' => $baseline->expected_life_km,
             'baseline_date' => $baseline->baseline_date?->format('Y-m-d'),
@@ -222,6 +222,17 @@ class TyreBaselineController extends Controller
         }
 
         $vehicle = Vehicle::query()->find($tyre->current_location_id);
+
+        return $vehicle ? $this->odometerService->getLatestOdometer($vehicle) : null;
+    }
+
+    private function baselineVehicleOdometer(TyreBaseline $baseline): ?int
+    {
+        if (! $baseline->baseline_location_id || ! in_array($baseline->baseline_location_type, ['power_vehicle', 'trailer'], true)) {
+            return null;
+        }
+
+        $vehicle = Vehicle::query()->find($baseline->baseline_location_id);
 
         return $vehicle ? $this->odometerService->getLatestOdometer($vehicle) : null;
     }

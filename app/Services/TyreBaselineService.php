@@ -6,9 +6,15 @@ use App\Enums\TyreLocationType;
 use App\Exceptions\TyreBusinessException;
 use App\Models\Tyre;
 use App\Models\TyreBaseline;
+use App\Models\Vehicle;
+use App\Support\TyrePositionHelper;
 
 class TyreBaselineService
 {
+    public function __construct(
+        private readonly VehicleOdometerService $odometerService,
+    ) {}
+
     public function createBaseline(array $data, int $userId): TyreBaseline
     {
         $tyre = Tyre::query()->findOrFail($data['tyre_id']);
@@ -51,11 +57,36 @@ class TyreBaselineService
         $locationType = $data['baseline_location_type']
             ?? $tyre->current_location_type?->value
             ?? TyreLocationType::Store->value;
+        $locationId = $data['baseline_location_id'] ?? $tyre->current_location_id;
+        $positionCode = $data['baseline_position_code'] ?? $tyre->current_position_code;
+        $baselineOdometer = $data['baseline_odometer'] ?? null;
+
+        if ($baselineOdometer === null && $this->needsRunningOdometer($locationType, $positionCode)) {
+            $baselineOdometer = $this->latestVehicleOdometer($locationId);
+        }
 
         return array_merge($data, [
             'baseline_location_type' => $locationType,
-            'baseline_location_id' => $data['baseline_location_id'] ?? $tyre->current_location_id,
-            'baseline_position_code' => $data['baseline_position_code'] ?? $tyre->current_position_code,
+            'baseline_location_id' => $locationId,
+            'baseline_position_code' => $positionCode,
+            'baseline_odometer' => $baselineOdometer,
         ]);
+    }
+
+    private function needsRunningOdometer(?string $locationType, ?string $positionCode): bool
+    {
+        return in_array($locationType, [TyreLocationType::PowerVehicle->value, TyreLocationType::Trailer->value], true)
+            && TyrePositionHelper::isRunningPosition($positionCode);
+    }
+
+    private function latestVehicleOdometer(null|int|string $vehicleId): ?int
+    {
+        if (! $vehicleId) {
+            return null;
+        }
+
+        $vehicle = Vehicle::query()->find((int) $vehicleId);
+
+        return $vehicle ? $this->odometerService->getLatestOdometer($vehicle) : null;
     }
 }

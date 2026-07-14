@@ -119,16 +119,16 @@ export function TyreBaselineFormFields({
                         type="number"
                         min="0"
                         step="1"
-                        value={data.baseline_odometer || ""}
+                        value={data.baseline_odometer ?? ""}
                         onChange={(e) => onDataChange("baseline_odometer", e.target.value === "" ? null : Number(e.target.value))}
-                        placeholder="Enter current odometer reading"
+                        placeholder="Uses latest vehicle KM when available"
                         className={errors.baseline_odometer ? "border-destructive" : ""}
                     />
                     {errors.baseline_odometer && (
                         <p className="text-sm text-destructive">{errors.baseline_odometer}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                        Required for tyres mounted on running vehicle positions. Spare positions can be baselined without accumulating running KM.
+                        Auto-filled from the vehicle KM when available. Type it only when this tyre is mounted on a running position and no vehicle KM is recorded.
                     </p>
                 </div>
             )}

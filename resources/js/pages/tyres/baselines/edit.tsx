@@ -40,7 +40,7 @@ export default function BaselineEdit({ baseline }: { baseline: Baseline }) {
         baseline_position_code: baseline.baseline_position_code,
         baseline_percentage: baseline.baseline_percentage,
         expected_life_km: baseline.expected_life_km,
-        baseline_odometer: baseline.baseline_odometer || "",
+        baseline_odometer: baseline.baseline_odometer ?? baseline.current_vehicle_odometer ?? "",
         baseline_date: baseline.baseline_date,
         notes: baseline.notes || "",
     });

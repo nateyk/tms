@@ -73,6 +73,8 @@ class TyreBaselineTest extends TestCase
     public function test_store_baseline_for_mounted_running_tyre_requires_odometer()
     {
         $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
+        \DB::table('vehicle_odometer_readings')->where('vehicle_id', $vehicle->id)->delete();
+        $vehicle->forceFill(['odometer' => null])->save();
         $tyre = $this->createMountedTyre($vehicle);
 
         $response = $this->actingAs($this->user)->post(route('tyres.baselines.store'), [
@@ -84,6 +86,28 @@ class TyreBaselineTest extends TestCase
 
         $response->assertSessionHasErrors('baseline_odometer');
         $this->assertDatabaseMissing('tyre_baselines', ['tyre_id' => $tyre->id]);
+    }
+
+    public function test_store_baseline_for_mounted_running_tyre_uses_vehicle_odometer_fallback()
+    {
+        $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
+        $vehicle->forceFill(['odometer' => 146783])->save();
+        $tyre = $this->createMountedTyre($vehicle);
+
+        $this->actingAs($this->user)->post(route('tyres.baselines.store'), [
+            'tyre_id' => $tyre->id,
+            'baseline_percentage' => 100,
+            'expected_life_km' => 100000,
+            'baseline_date' => now()->toDateString(),
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('tyre_baselines', [
+            'tyre_id' => $tyre->id,
+            'baseline_location_type' => 'power_vehicle',
+            'baseline_location_id' => $vehicle->id,
+            'baseline_position_code' => 'A',
+            'baseline_odometer' => 146783,
+        ]);
     }
 
     public function test_store_baseline_for_mounted_tyre_saves_location_position_and_odometer()
@@ -285,6 +309,42 @@ class TyreBaselineTest extends TestCase
         $this->assertEquals(85000, $baseline->expected_life_km);
         $this->assertEquals($newDate, $baseline->baseline_date->format('Y-m-d'));
         $this->assertEquals('Updated route baseline', $baseline->notes);
+    }
+
+    public function test_update_baseline_route_uses_vehicle_odometer_fallback()
+    {
+        $vehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
+        $vehicle->forceFill(['odometer' => 171742])->save();
+        $tyre = $this->createMountedTyre($vehicle);
+
+        $baseline = TyreBaseline::query()->create([
+            'tyre_id' => $tyre->id,
+            'baseline_location_type' => 'power_vehicle',
+            'baseline_location_id' => $vehicle->id,
+            'baseline_position_code' => 'A',
+            'baseline_odometer' => null,
+            'baseline_percentage' => 100.00,
+            'expected_life_km' => 100000,
+            'baseline_date' => now()->subDay()->toDateString(),
+            'created_by' => $this->user->id,
+            'notes' => null,
+        ]);
+
+        $this->actingAs($this->user)->put(route('tyres.baselines.update', $baseline), [
+            'baseline_location_type' => 'power_vehicle',
+            'baseline_location_id' => $vehicle->id,
+            'baseline_position_code' => 'A',
+            'baseline_odometer' => null,
+            'baseline_percentage' => 95,
+            'expected_life_km' => 90000,
+            'baseline_date' => now()->toDateString(),
+            'notes' => 'Use truck KM',
+        ])->assertRedirect(route('tyres.baselines.show', $baseline));
+
+        $baseline->refresh();
+        $this->assertEquals(171742, $baseline->baseline_odometer);
+        $this->assertEquals(95.00, (float) $baseline->baseline_percentage);
+        $this->assertEquals('Use truck KM', $baseline->notes);
     }
 
     public function test_delete_baseline()

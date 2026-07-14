@@ -4,6 +4,8 @@ namespace App\Http\Requests\Tyres;
 
 use App\Enums\TyreLocationType;
 use App\Models\TyreBaseline;
+use App\Models\Vehicle;
+use App\Services\VehicleOdometerService;
 use App\Support\TyrePositionHelper;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -40,18 +42,36 @@ class UpdateTyreBaselineRequest extends FormRequest
             }
 
             $locationType = $this->input('baseline_location_type') ?: $baseline->baseline_location_type;
+            $locationId = $this->input('baseline_location_id') ?: $baseline->baseline_location_id;
             $positionCode = $this->input('baseline_position_code') ?: $baseline->baseline_position_code;
 
             if (
-                in_array($locationType, [TyreLocationType::PowerVehicle->value, TyreLocationType::Trailer->value], true)
-                && TyrePositionHelper::isRunningPosition($positionCode)
+                $this->needsRunningOdometer($locationType, $positionCode)
                 && ! $this->filled('baseline_odometer')
+                && ! $this->hasVehicleOdometerFallback($locationType, $locationId)
             ) {
                 $validator->errors()->add(
                     'baseline_odometer',
-                    'Baseline odometer is required when the tyre is mounted on a running vehicle position.'
+                    'Baseline odometer is required because this tyre is mounted on a running vehicle position and no vehicle KM is available.'
                 );
             }
         });
+    }
+
+    private function needsRunningOdometer(?string $locationType, ?string $positionCode): bool
+    {
+        return in_array($locationType, [TyreLocationType::PowerVehicle->value, TyreLocationType::Trailer->value], true)
+            && TyrePositionHelper::isRunningPosition($positionCode);
+    }
+
+    private function hasVehicleOdometerFallback(?string $locationType, null|int|string $vehicleId): bool
+    {
+        if (! $vehicleId || ! in_array($locationType, [TyreLocationType::PowerVehicle->value, TyreLocationType::Trailer->value], true)) {
+            return false;
+        }
+
+        $vehicle = Vehicle::query()->find((int) $vehicleId);
+
+        return $vehicle && app(VehicleOdometerService::class)->getLatestOdometer($vehicle) !== null;
     }
 }
