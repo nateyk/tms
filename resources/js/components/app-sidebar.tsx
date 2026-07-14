@@ -20,7 +20,9 @@ import { PageProps } from "@/types"
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { auth, url } = usePage<PageProps>().props
     const permissions = auth.user?.permissions ?? []
-    const navigation = filterNavigationByPermissions(tmsNavigation, permissions)
+    const roles = auth.user?.roles ?? []
+    const hasFullAccess = roles.some((role) => ["Super Admin", "Admin"].includes(role))
+    const navigation = hasFullAccess ? tmsNavigation : filterNavigationByPermissions(tmsNavigation, permissions)
 
     return (
     <Sidebar variant="inset" {...props}>

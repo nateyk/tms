@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Spatie\Permission\Models\Permission;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -27,7 +28,9 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'roles' => $user->getRoleNames()->values()->all(),
-                    'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+                    'permissions' => $user->hasAnyRole(['Super Admin', 'Admin'])
+                        ? Permission::query()->pluck('name')->values()->all()
+                        : $user->getAllPermissions()->pluck('name')->values()->all(),
                 ] : null,
             ],
             'flash' => [

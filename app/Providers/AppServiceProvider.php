@@ -25,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
     {
         JsonResource::withoutWrapping();
 
+        Gate::before(function ($user) {
+            return $user->hasAnyRole(['Super Admin', 'Admin']) ? true : null;
+        });
+
         Gate::policy(Tyre::class, TyrePolicy::class);
         Gate::policy(TyreBaseline::class, TyreBaselinePolicy::class);
         Gate::policy(Vehicle::class, VehiclePolicy::class);
