@@ -7,6 +7,9 @@ import { ArrowLeft } from "lucide-react";
 
 type BaselineFormData = {
     tyre_id?: number | string;
+    baseline_location_type?: string | null;
+    baseline_location_id?: number | string | null;
+    baseline_position_code?: string | null;
     baseline_percentage?: number | string;
     expected_life_km?: number | string;
     baseline_odometer?: number | string;
@@ -22,6 +25,7 @@ type TyreOption = {
     current_location_id: number | null;
     current_position_code: string | null;
     location_display: string;
+    current_vehicle_odometer?: number | null;
 };
 
 export default function BaselineCreate({
@@ -36,13 +40,17 @@ export default function BaselineCreate({
         current_location_id: number | null;
         current_position_code: string | null;
         location_display: string;
+        current_vehicle_odometer?: number | null;
     } | null;
 }) {
     const { data, setData, post, processing, errors } = useForm<BaselineFormData>({
         tyre_id: prefilled?.id,
+        baseline_location_type: prefilled?.current_location_type ?? null,
+        baseline_location_id: prefilled?.current_location_id ?? null,
+        baseline_position_code: prefilled?.current_position_code ?? null,
         baseline_percentage: 100,
         expected_life_km: 100000,
-        baseline_odometer: "",
+        baseline_odometer: prefilled?.current_vehicle_odometer ?? "",
         baseline_date: new Date().toISOString().split('T')[0],
         notes: "",
     });
@@ -52,7 +60,7 @@ export default function BaselineCreate({
         post(route("tyres.baselines.store"));
     };
 
-    const handleChange = (field: string, value: string | number) => {
+    const handleChange = (field: string, value: string | number | null) => {
         setData(prev => ({ ...prev, [field]: value }));
     };
 

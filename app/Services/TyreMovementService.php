@@ -18,6 +18,7 @@ class TyreMovementService
     public function __construct(
         protected TyreAssignmentService $assignmentService,
         protected VoucherNumberGenerator $numberGenerator,
+        protected VehicleOdometerService $odometerService,
     ) {}
 
     public function assertCanCreateMovement(Tyre $tyre): void
@@ -90,6 +91,7 @@ class TyreMovementService
             $this->validateDestinationAtApproval($movement);
 
             $removedOdometer = $movement->from_odometer ?? $movement->to_odometer;
+            $sourceVehicle = $this->movementVehicle($movement->from_location_type, $movement->from_location_id);
 
             $this->assignmentService->closeActiveAssignment(
                 $tyre,
@@ -98,10 +100,21 @@ class TyreMovementService
                 $movement->id
             );
 
+            if ($sourceVehicle && $movement->from_odometer !== null) {
+                $this->odometerService->recordMovementOdometer($sourceVehicle, $movement->from_odometer, $movement->id, $approvedBy);
+            }
+
             [$locationType, $locationId, $position, $status, $assetType] = $this->resolveDestination($movement);
 
             if ($assetType && $locationId && $position) {
                 $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($locationId);
+                if ($movement->to_odometer !== null && ! (
+                    $sourceVehicle?->id === $vehicle->id
+                    && $movement->from_odometer === $movement->to_odometer
+                )) {
+                    $this->odometerService->recordMovementOdometer($vehicle, $movement->to_odometer, $movement->id, $approvedBy);
+                }
+
                 $this->assignmentService->createActiveAssignment(
                     $tyre,
                     $assetType,
@@ -230,5 +243,14 @@ class TyreMovementService
     protected function isVehicleLocation(?TyreLocationType $locationType): bool
     {
         return in_array($locationType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true);
+    }
+
+    private function movementVehicle(?TyreLocationType $locationType, ?int $locationId): ?Vehicle
+    {
+        if (! $locationId || ! $this->isVehicleLocation($locationType)) {
+            return null;
+        }
+
+        return Vehicle::query()->find($locationId);
     }
 }

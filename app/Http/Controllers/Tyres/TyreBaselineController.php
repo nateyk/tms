@@ -10,6 +10,7 @@ use App\Models\Tyre;
 use App\Models\TyreBaseline;
 use App\Models\Vehicle;
 use App\Services\TyreBaselineService;
+use App\Services\VehicleOdometerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,6 +20,7 @@ class TyreBaselineController extends Controller
 {
     public function __construct(
         private readonly TyreBaselineService $baselineService,
+        private readonly VehicleOdometerService $odometerService,
     ) {}
 
     public function index(Request $request): Response
@@ -124,6 +126,7 @@ class TyreBaselineController extends Controller
                     'current_location_id' => $tyre->current_location_id,
                     'current_position_code' => $tyre->current_position_code,
                     'location_display' => $this->locationDisplay($tyre),
+                    'current_vehicle_odometer' => $this->currentVehicleOdometer($tyre),
                 ]),
             'stores' => Store::query()->orderBy('name')->get(['id', 'code', 'name'])->map(fn (Store $s) => [
                 'id' => $s->id,
@@ -145,6 +148,7 @@ class TyreBaselineController extends Controller
             'current_location_id' => $tyre->current_location_id,
             'current_position_code' => $tyre->current_position_code,
             'location_display' => $this->locationDisplay($tyre),
+            'current_vehicle_odometer' => $this->currentVehicleOdometer($tyre),
         ];
     }
 
@@ -173,6 +177,7 @@ class TyreBaselineController extends Controller
             'baseline_location_id' => $baseline->baseline_location_id,
             'baseline_position_code' => $baseline->baseline_position_code,
             'baseline_odometer' => $baseline->baseline_odometer,
+            'current_vehicle_odometer' => $this->currentVehicleOdometer($baseline->tyre),
             'baseline_percentage' => (float) $baseline->baseline_percentage,
             'expected_life_km' => $baseline->expected_life_km,
             'baseline_date' => $baseline->baseline_date?->format('Y-m-d'),
@@ -208,5 +213,16 @@ class TyreBaselineController extends Controller
             'power_vehicle', 'trailer' => Vehicle::query()->find($tyre->current_location_id)?->displayCodeWithPlate() ?? "Vehicle #{$tyre->current_location_id}",
             default => (string) $tyre->current_location_type->label(),
         };
+    }
+
+    private function currentVehicleOdometer(Tyre $tyre): ?int
+    {
+        if (! $tyre->current_location_id || ! in_array($tyre->current_location_type?->value, ['power_vehicle', 'trailer'], true)) {
+            return null;
+        }
+
+        $vehicle = Vehicle::query()->find($tyre->current_location_id);
+
+        return $vehicle ? $this->odometerService->getLatestOdometer($vehicle) : null;
     }
 }

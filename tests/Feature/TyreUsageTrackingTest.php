@@ -6,6 +6,7 @@ use App\Models\Store;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreBaseline;
+use App\Models\TyreMovement;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleOdometerReading;
@@ -254,6 +255,109 @@ class TyreUsageTrackingTest extends TestCase
         $latestOdometer = app(\App\Services\TyreUsageTrackingService::class)->getLatestVehicleOdometer($vehicle);
 
         $this->assertEquals(7000, $latestOdometer);
+    }
+
+    public function test_movement_completion_saves_destination_odometer_and_assignment_km()
+    {
+        $tyre = $this->createAvailableTyre();
+        $store = Store::query()->firstOrFail();
+        $vehicleType = VehicleType::query()->create([
+            'name' => 'Movement Completion Test Truck',
+            'asset_type' => 'power_vehicle',
+            'axle_count' => 2,
+            'tyre_count' => 6,
+            'status' => 'active',
+        ]);
+        $vehicle = Vehicle::query()->create([
+            'vehicle_code' => 'MOVE-COMPLETE-TRUCK',
+            'plate_number' => 'MOVE-COMPLETE-TRUCK',
+            'asset_type' => 'power_vehicle',
+            'vehicle_type_id' => $vehicleType->id,
+            'odometer' => 10000,
+            'status' => 'active',
+        ]);
+
+        $movement = TyreMovement::query()->create([
+            'movement_no' => 'MOV-TEST-COMPLETE',
+            'movement_type' => 'store_to_vehicle',
+            'tyre_id' => $tyre->id,
+            'from_location_type' => 'store',
+            'from_location_id' => $store->id,
+            'from_position_code' => null,
+            'to_location_type' => 'power_vehicle',
+            'to_location_id' => $vehicle->id,
+            'to_position_code' => 'A',
+            'movement_date' => now()->toDateString(),
+            'reason' => 'Fit tyre',
+            'status' => 'approved',
+            'prepared_by' => $this->user->id,
+            'approved_by' => $this->user->id,
+            'approved_at' => now(),
+        ]);
+
+        $this->actingAs($this->user)->post(route('tyres.movements.complete', $movement), [
+            'to_odometer' => 12500,
+        ])->assertRedirect(route('tyres.movements.show', $movement));
+
+        $movement->refresh();
+        $tyre->refresh();
+        $this->assertEquals('completed', $movement->status->value);
+        $this->assertEquals(12500, $movement->to_odometer);
+        $this->assertEquals('power_vehicle', $tyre->current_location_type->value);
+        $this->assertEquals($vehicle->id, $tyre->current_location_id);
+        $this->assertEquals('A', $tyre->current_position_code);
+
+        $this->assertDatabaseHas('tyre_assignments', [
+            'tyre_id' => $tyre->id,
+            'asset_id' => $vehicle->id,
+            'position_code' => 'A',
+            'installed_odometer' => 12500,
+            'status' => 'active',
+        ]);
+
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $vehicle->id,
+            'odometer' => 12500,
+            'source' => 'movement',
+            'source_id' => $movement->id,
+        ]);
+    }
+
+    public function test_reading_monitoring_exposes_baseline_action_for_tyre_without_baseline()
+    {
+        $vehicleType = VehicleType::query()->create([
+            'name' => 'Reading Monitoring Baseline Truck',
+            'asset_type' => 'power_vehicle',
+            'axle_count' => 2,
+            'tyre_count' => 6,
+            'status' => 'active',
+        ]);
+        $vehicle = Vehicle::query()->create([
+            'vehicle_code' => 'READING-BASELINE-TRUCK',
+            'plate_number' => 'READING-BASELINE-TRUCK',
+            'asset_type' => 'power_vehicle',
+            'vehicle_type_id' => $vehicleType->id,
+            'odometer' => 43210,
+            'status' => 'active',
+        ]);
+        $tyre = $this->createAvailableTyre();
+        $tyre->update([
+            'current_location_type' => 'power_vehicle',
+            'current_location_id' => $vehicle->id,
+            'current_position_code' => 'A',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('tyres.reading-monitoring.show', $vehicle))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('tyres/reading-monitoring/vehicle')
+                ->where('tyres.0.id', $tyre->id)
+                ->where('tyres.0.has_baseline', false)
+                ->where('tyres.0.current_vehicle_odometer', 43210)
+                ->where('tyres.0.create_baseline_url', route('tyres.baselines.create', ['tyre_id' => $tyre->id]))
+            );
     }
 
     public function test_vehicles_odometer_is_used_as_fallback()

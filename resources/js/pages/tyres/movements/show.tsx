@@ -1,4 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
+import { MovementCompletionDialog } from "@/components/tyres/movement-completion-dialog";
 import { VoucherStatusBadge } from "@/components/tyres/voucher-status-badge";
 import { VoucherWorkflowActions } from "@/components/tyres/voucher-workflow-actions";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Head, Link } from "@inertiajs/react";
 import { Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -45,6 +47,12 @@ type MovementDetail = {
     approved_at: string | null;
     completed_at: string | null;
     pdf_url: string;
+    requires_source_odometer: boolean;
+    requires_destination_odometer: boolean;
+    source_odometer_label: string;
+    destination_odometer_label: string;
+    source_vehicle_latest_odometer: number | null;
+    destination_vehicle_latest_odometer: number | null;
 };
 
 type Permissions = {
@@ -68,6 +76,8 @@ export default function MovementsShow({
     const deleteMovement = () => {
         router.delete(route("tyres.movements.destroy", movement.id));
     };
+    const [completionOpen, setCompletionOpen] = useState(false);
+    const workflowCan = { ...can, complete: false };
 
     return (
         <AuthenticatedLayout header={`Movement ${movement.display_number}`}>
@@ -91,9 +101,21 @@ export default function MovementsShow({
                         <VoucherWorkflowActions
                             recordId={movement.id}
                             routePrefix="tyres.movements"
-                            can={can}
+                            can={workflowCan}
                             pdfUrl={movement.pdf_url}
                         />
+                        {can.complete && (
+                            <>
+                                <Button onClick={() => setCompletionOpen(true)}>
+                                    Complete Movement
+                                </Button>
+                                <MovementCompletionDialog
+                                    open={completionOpen}
+                                    onOpenChange={setCompletionOpen}
+                                    movement={movement}
+                                />
+                            </>
+                        )}
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <dl className="grid gap-4 sm:grid-cols-2">

@@ -7,6 +7,7 @@ use App\Enums\TyreStatus;
 use App\Enums\VoucherStatus;
 use App\Exceptions\TyreBusinessException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tyres\CompleteTyreMovementRequest;
 use App\Http\Requests\Tyres\RejectVoucherRequest;
 use App\Http\Requests\Tyres\StoreTyreMovementRequest;
 use App\Http\Requests\Tyres\UpdateTyreMovementRequest;
@@ -17,6 +18,7 @@ use App\Models\Vehicle;
 use App\Services\ApprovalService;
 use App\Services\TyreMapWorkflowService;
 use App\Services\TyreMovementService;
+use App\Services\VehicleOdometerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +31,7 @@ class TyreMovementController extends Controller
         private readonly TyreMovementService $movementService,
         private readonly ApprovalService $approvalService,
         private readonly TyreMapWorkflowService $mapWorkflow,
+        private readonly VehicleOdometerService $odometerService,
     ) {}
 
     public function index(Request $request): Response
@@ -200,11 +203,12 @@ class TyreMovementController extends Controller
             ->with('success', 'Movement rejected.');
     }
 
-    public function complete(TyreMovement $movement): RedirectResponse
+    public function complete(CompleteTyreMovementRequest $request, TyreMovement $movement): RedirectResponse
     {
         $this->authorize('complete', $movement);
 
         try {
+            $movement->update($request->validated());
             $this->approvalService->completeMovement($movement);
         } catch (TyreBusinessException $e) {
             return back()->with('error', $e->getMessage());
@@ -322,6 +326,9 @@ class TyreMovementController extends Controller
     /** @return array<string, mixed> */
     private function serializeDetail(TyreMovement $movement): array
     {
+        $sourceVehicle = $this->movementVehicle($movement->from_location_type, $movement->from_location_id);
+        $destinationVehicle = $this->movementVehicle($movement->to_location_type, $movement->to_location_id);
+
         return [
             ...$this->serializeForm($movement),
             'movement_no' => $movement->movement_no,
@@ -342,6 +349,12 @@ class TyreMovementController extends Controller
             'approved_at' => $movement->approved_at?->toDateTimeString(),
             'completed_at' => $movement->completed_at?->toDateTimeString(),
             'pdf_url' => route('vouchers.movement.pdf', $movement),
+            'requires_source_odometer' => $sourceVehicle !== null,
+            'requires_destination_odometer' => $destinationVehicle !== null,
+            'source_odometer_label' => $movement->fromLocationDisplay(),
+            'destination_odometer_label' => $movement->toLocationDisplay(),
+            'source_vehicle_latest_odometer' => $sourceVehicle ? $this->odometerService->getLatestOdometer($sourceVehicle) : null,
+            'destination_vehicle_latest_odometer' => $destinationVehicle ? $this->odometerService->getLatestOdometer($destinationVehicle) : null,
         ];
     }
 
@@ -374,5 +387,14 @@ class TyreMovementController extends Controller
             TyreLocationType::MaintenanceCenter => "Maintenance center #{$tyre->current_location_id}",
             TyreLocationType::DisposalYard => "Disposal yard #{$tyre->current_location_id}",
         };
+    }
+
+    private function movementVehicle(?TyreLocationType $locationType, ?int $locationId): ?Vehicle
+    {
+        if (! $locationId || ! in_array($locationType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {
+            return null;
+        }
+
+        return Vehicle::query()->find($locationId);
     }
 }

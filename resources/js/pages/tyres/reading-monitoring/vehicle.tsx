@@ -2,10 +2,13 @@ import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
 import { cn } from "@/lib/utils";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import {
     Activity,
     AlertCircle,
@@ -242,7 +245,7 @@ export default function ReadingMonitoringVehicle({
                         </CardHeader>
                         <CardContent className="p-4">
                             {selectedTyre ? (
-                                <TyreHealthPanel tyre={selectedTyre} vehicle={vehicle} recordKmUrl={selectedRecordKmUrl} />
+                                <TyreHealthPanel key={selectedTyre.id} tyre={selectedTyre} vehicle={vehicle} recordKmUrl={selectedRecordKmUrl} />
                             ) : selectedPosition ? (
                                 <EmptyPositionPanel position={selectedPosition} movementUrl={selectedEmptyMovementUrl} recordKmUrl={selectedRecordKmUrl} />
                             ) : (
@@ -474,9 +477,7 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
                         <InfoRow label="Date" value={tyre.baseline_date || "-"} />
                     </div>
                 ) : (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                        Set a baseline before relying on calculated usage.
-                    </div>
+                    <QuickBaselineForm tyre={tyre} vehicle={vehicle} />
                 )}
             </PanelSection>
 
@@ -551,6 +552,134 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
                 </div>
             </div>
         </div>
+    );
+}
+
+function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) {
+    const isMounted = Boolean(tyre.current_position_code);
+    const requiresOdometer = isMounted && !isSparePosition(tyre.current_position_code || "");
+    const { data, setData, post, processing, errors } = useForm({
+        tyre_id: tyre.id,
+        baseline_location_type: vehicle.asset_type === "trailer" ? "trailer" : "power_vehicle",
+        baseline_location_id: vehicle.id,
+        baseline_position_code: tyre.current_position_code,
+        baseline_odometer: requiresOdometer ? tyre.current_vehicle_odometer ?? vehicle.odometer ?? "" : "",
+        baseline_percentage: 100,
+        expected_life_km: 100000,
+        baseline_date: new Date().toISOString().split("T")[0],
+        notes: "",
+    });
+
+    const submit = (event: React.FormEvent) => {
+        event.preventDefault();
+        post(route("tyres.baselines.store"), { preserveScroll: true });
+    };
+
+    return (
+        <form onSubmit={submit} className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+            <div>
+                <p className="text-sm font-semibold text-amber-900">Baseline required</p>
+                <p className="text-xs text-amber-800">
+                    Save the starting point for this tyre before relying on calculated usage.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs text-amber-900">
+                <InfoRow label="Tyre" value={tyre.tyre_code} />
+                <InfoRow label="Position" value={tyre.position_display} />
+                <InfoRow label="Vehicle" value={vehicle.display_code} />
+                <InfoRow label="Latest KM" value={formatKm(tyre.current_vehicle_odometer ?? vehicle.odometer)} />
+            </div>
+
+            {requiresOdometer && (
+                <div className="space-y-1">
+                    <Label htmlFor={`baseline_odometer_${tyre.id}`} className="text-xs">
+                        Baseline Odometer (KM)
+                    </Label>
+                    <Input
+                        id={`baseline_odometer_${tyre.id}`}
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={data.baseline_odometer}
+                        onChange={(event) => setData("baseline_odometer", event.target.value === "" ? "" : Number(event.target.value))}
+                        className={errors.baseline_odometer ? "border-destructive bg-white" : "bg-white"}
+                    />
+                    {errors.baseline_odometer && <p className="text-xs text-destructive">{errors.baseline_odometer}</p>}
+                </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                    <Label htmlFor={`baseline_percentage_${tyre.id}`} className="text-xs">
+                        Baseline %
+                    </Label>
+                    <Input
+                        id={`baseline_percentage_${tyre.id}`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.01"
+                        value={data.baseline_percentage}
+                        onChange={(event) => setData("baseline_percentage", Number(event.target.value))}
+                        className={errors.baseline_percentage ? "border-destructive bg-white" : "bg-white"}
+                    />
+                    {errors.baseline_percentage && <p className="text-xs text-destructive">{errors.baseline_percentage}</p>}
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor={`expected_life_km_${tyre.id}`} className="text-xs">
+                        Expected Life KM
+                    </Label>
+                    <Input
+                        id={`expected_life_km_${tyre.id}`}
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={data.expected_life_km}
+                        onChange={(event) => setData("expected_life_km", Number(event.target.value))}
+                        className={errors.expected_life_km ? "border-destructive bg-white" : "bg-white"}
+                    />
+                    {errors.expected_life_km && <p className="text-xs text-destructive">{errors.expected_life_km}</p>}
+                </div>
+            </div>
+
+            <div className="space-y-1">
+                <Label htmlFor={`baseline_date_${tyre.id}`} className="text-xs">
+                    Baseline Date
+                </Label>
+                <Input
+                    id={`baseline_date_${tyre.id}`}
+                    type="date"
+                    value={data.baseline_date}
+                    onChange={(event) => setData("baseline_date", event.target.value)}
+                    className={errors.baseline_date ? "border-destructive bg-white" : "bg-white"}
+                />
+                {errors.baseline_date && <p className="text-xs text-destructive">{errors.baseline_date}</p>}
+            </div>
+
+            <div className="space-y-1">
+                <Label htmlFor={`baseline_notes_${tyre.id}`} className="text-xs">
+                    Notes
+                </Label>
+                <Textarea
+                    id={`baseline_notes_${tyre.id}`}
+                    rows={2}
+                    value={data.notes}
+                    onChange={(event) => setData("notes", event.target.value)}
+                    className="bg-white"
+                    placeholder="Optional baseline note"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+                <Button type="submit" size="sm" disabled={processing}>
+                    {processing ? "Saving..." : "Save Baseline"}
+                </Button>
+                <Button asChild type="button" variant="outline" size="sm">
+                    <Link href={tyre.create_baseline_url}>Full Form</Link>
+                </Button>
+            </div>
+        </form>
     );
 }
 

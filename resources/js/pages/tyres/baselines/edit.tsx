@@ -7,6 +7,9 @@ import { ArrowLeft } from "lucide-react";
 
 type BaselineFormData = {
     tyre_id?: number | string;
+    baseline_location_type?: string | null;
+    baseline_location_id?: number | string | null;
+    baseline_position_code?: string | null;
     baseline_percentage?: number | string;
     expected_life_km?: number | string;
     baseline_odometer?: number | string;
@@ -22,6 +25,7 @@ type Baseline = {
     baseline_location_id: number;
     baseline_position_code: string | null;
     baseline_odometer: number | null;
+    current_vehicle_odometer?: number | null;
     baseline_percentage: number;
     expected_life_km: number;
     baseline_date: string;
@@ -31,6 +35,9 @@ type Baseline = {
 export default function BaselineEdit({ baseline }: { baseline: Baseline }) {
     const { data, setData, put, processing, errors } = useForm<BaselineFormData>({
         tyre_id: baseline.tyre_id,
+        baseline_location_type: baseline.baseline_location_type,
+        baseline_location_id: baseline.baseline_location_id,
+        baseline_position_code: baseline.baseline_position_code,
         baseline_percentage: baseline.baseline_percentage,
         expected_life_km: baseline.expected_life_km,
         baseline_odometer: baseline.baseline_odometer || "",
@@ -43,7 +50,7 @@ export default function BaselineEdit({ baseline }: { baseline: Baseline }) {
         put(route("tyres.baselines.update", baseline.id));
     };
 
-    const handleChange = (field: string, value: string | number) => {
+    const handleChange = (field: string, value: string | number | null) => {
         setData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -81,6 +88,7 @@ export default function BaselineEdit({ baseline }: { baseline: Baseline }) {
                                     current_location_id: baseline.baseline_location_id,
                                     current_position_code: baseline.baseline_position_code,
                                     location_display: `${baseline.baseline_location_type} - ${baseline.baseline_position_code || 'N/A'}`,
+                                    current_vehicle_odometer: baseline.current_vehicle_odometer,
                                 }}
                                 onDataChange={handleChange}
                             />

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\OdometerReadingSource;
+use App\Enums\TyreLocationType;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
 use App\Models\TyreBaseline;
@@ -15,6 +16,11 @@ class TyreUsageTrackingService
     public function calculateTyreUsage(Tyre $tyre): array
     {
         $baseline = $this->getBaselineForTyre($tyre);
+        $currentVehicle = $tyre->activeAssignment?->vehicle
+            ?? ($this->isVehicleLocation($tyre) ? Vehicle::query()->find($tyre->current_location_id) : null);
+        $currentOdometer = $currentVehicle instanceof Vehicle
+            ? $this->getLatestVehicleOdometer($currentVehicle)
+            : null;
 
         if (!$baseline) {
             return [
@@ -35,7 +41,7 @@ class TyreUsageTrackingService
                 'baseline_odometer' => null,
                 'baseline_date' => null,
                 'expected_life_km' => null,
-                'current_vehicle_odometer' => null,
+                'current_vehicle_odometer' => $currentOdometer,
                 'latest_audit_date' => null,
                 'latest_audit_odometer' => null,
                 'tread_depth_mm' => null,
@@ -53,11 +59,6 @@ class TyreUsageTrackingService
         $latestInspection = $tyre->relationLoaded('inspections')
             ? $tyre->inspections->sortByDesc('inspection_date')->first()
             : $tyre->inspections()->latest('inspection_date')->first();
-        $currentVehicle = $tyre->activeAssignment?->vehicle
-            ?? ($tyre->current_location_id ? Vehicle::query()->find($tyre->current_location_id) : null);
-        $currentOdometer = $currentVehicle instanceof Vehicle
-            ? $this->getLatestVehicleOdometer($currentVehicle)
-            : null;
         $latestAuditedRemaining = $latestInspection?->audited_remaining_percentage !== null
             ? (float) $latestInspection->audited_remaining_percentage
             : null;
@@ -319,5 +320,11 @@ class TyreUsageTrackingService
     public function getBaselineForTyre(Tyre $tyre): ?TyreBaseline
     {
         return TyreBaseline::query()->forTyre($tyre->id)->first();
+    }
+
+    private function isVehicleLocation(Tyre $tyre): bool
+    {
+        return $tyre->current_location_id !== null
+            && in_array($tyre->current_location_type, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true);
     }
 }

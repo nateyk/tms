@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "@inertiajs/react";
 import { Info } from "lucide-react";
+import { useEffect } from "react";
 
 type MovementCompletionDialogProps = {
     open: boolean;
@@ -21,7 +22,7 @@ type MovementCompletionDialogProps = {
     movement: {
         id: number;
         movement_no: string;
-        tyre_code: string;
+        tyre_code: string | null;
         from_location_display: string;
         to_location_display: string;
         requires_source_odometer: boolean;
@@ -43,13 +44,24 @@ export function MovementCompletionDialog({
         to_odometer: "",
     });
 
+    useEffect(() => {
+        if (!open || !movement) {
+            return;
+        }
+
+        setData({
+            from_odometer: movement.source_vehicle_latest_odometer?.toString() ?? "",
+            to_odometer: movement.destination_vehicle_latest_odometer?.toString() ?? "",
+        });
+    }, [open, movement]);
+
     if (!movement) {
         return null;
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route("tyres.movements.complete-with-odometer", movement!.id), {
+        post(route("tyres.movements.complete", movement!.id), {
             onSuccess: () => {
                 onOpenChange(false);
                 reset();

@@ -78,8 +78,8 @@ class CompleteTyreMovementRequest extends FormRequest
         }
 
         // Validate from_odometer against source vehicle latest odometer
-        if ($fromOdometer !== null && $movement->sourceVehicle()) {
-            $sourceVehicle = $movement->sourceVehicle();
+        $sourceVehicle = $this->movementVehicle($movement->from_location_type, $movement->from_location_id);
+        if ($fromOdometer !== null && $sourceVehicle) {
             $latestSourceOdometer = $odometerService->getLatestOdometer($sourceVehicle);
             if ($latestSourceOdometer !== null && $fromOdometer < $latestSourceOdometer) {
                 $validator->errors()->add(
@@ -90,8 +90,8 @@ class CompleteTyreMovementRequest extends FormRequest
         }
 
         // Validate to_odometer against destination vehicle latest odometer
-        if ($toOdometer !== null && $movement->destinationVehicle()) {
-            $destinationVehicle = $movement->destinationVehicle();
+        $destinationVehicle = $this->movementVehicle($movement->to_location_type, $movement->to_location_id);
+        if ($toOdometer !== null && $destinationVehicle) {
             $latestDestinationOdometer = $odometerService->getLatestOdometer($destinationVehicle);
             if ($latestDestinationOdometer !== null && $toOdometer < $latestDestinationOdometer) {
                 $validator->errors()->add(
@@ -103,8 +103,8 @@ class CompleteTyreMovementRequest extends FormRequest
 
         // For same vehicle position change, allow same odometer value
         if ($fromOdometer !== null && $toOdometer !== null) {
-            $sourceVehicleId = $movement->sourceVehicle()?->id;
-            $destinationVehicleId = $movement->destinationVehicle()?->id;
+            $sourceVehicleId = $sourceVehicle?->id;
+            $destinationVehicleId = $destinationVehicle?->id;
 
             if ($sourceVehicleId === $destinationVehicleId && $sourceVehicleId !== null) {
                 // Same vehicle - allow equal values
@@ -114,6 +114,15 @@ class CompleteTyreMovementRequest extends FormRequest
             // Different vehicles - to_odometer should generally be >= from_odometer
             // but we don't enforce this strictly as vehicles may have different odometers
         }
+    }
+
+    private function movementVehicle(?TyreLocationType $locationType, ?int $locationId): ?Vehicle
+    {
+        if (! $locationId || ! in_array($locationType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {
+            return null;
+        }
+
+        return Vehicle::query()->find($locationId);
     }
 
     public function messages(): array
