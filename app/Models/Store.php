@@ -24,6 +24,26 @@ class Store extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (Store $store): void {
+            if (! filled($store->code)) {
+                $store->code = static::generateStoreCode();
+            }
+        });
+    }
+
+    public static function generateStoreCode(): string
+    {
+        $nextNumber = ((int) static::query()->max('id')) + 1;
+
+        do {
+            $code = sprintf('STR-%04d', $nextNumber++);
+        } while (static::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
     public function locations(): HasMany
     {
         return $this->hasMany(Location::class);

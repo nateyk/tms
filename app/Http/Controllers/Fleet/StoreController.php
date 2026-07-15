@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Fleet;
 
-use App\Enums\AssetType;
-use App\Enums\PredefinedTyreLayout;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\StoreStoreRequest;
 use App\Http\Requests\Fleet\UpdateStoreRequest;
@@ -42,8 +40,11 @@ class StoreController extends Controller
 
     public function store(StoreStoreRequest $request): RedirectResponse
     {
+        $data = $request->validated();
+        unset($data['code']);
+
         Store::query()->create([
-            ...$request->validated(),
+            ...$data,
             'status' => $request->validated('status') ?? 'active',
             'is_default' => $request->boolean('is_default'),
         ]);
@@ -71,8 +72,11 @@ class StoreController extends Controller
 
     public function update(UpdateStoreRequest $request, Store $store): RedirectResponse
     {
+        $data = $request->validated();
+        unset($data['code']);
+
         $store->update([
-            ...$request->validated(),
+            ...$data,
             'status' => $request->validated('status') ?? 'active',
             'is_default' => $request->boolean('is_default'),
         ]);

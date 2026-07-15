@@ -3,6 +3,7 @@ import { InputError } from "@/components/ui/input-error";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 export type StoreFormData = {
     code: string;
@@ -24,14 +25,17 @@ export function StoreFormFields({ errors, data, setData }: StoreFormFieldsProps)
     return (
         <>
             <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                    <Label htmlFor="code">Code</Label>
-                    <Input
-                        id="code"
-                        value={data.code}
-                        onChange={(e) => setData("code", e.target.value)}
-                        required
-                    />
+                <div className="grid gap-2 rounded-md border bg-muted/20 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <Label>Store code</Label>
+                        <Badge variant="secondary">Auto</Badge>
+                    </div>
+                    <p className="text-sm font-medium">
+                        {data.code || "Generated after save"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        The system creates a unique store code.
+                    </p>
                     <InputError message={errors.code} />
                 </div>
                 <div className="grid gap-2">
