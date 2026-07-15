@@ -2,13 +2,16 @@
 
 namespace App\Console\Commands;
 
+use Database\Seeders\FleetOperationalDefaultsSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CleanOperationalDataCommand extends Command
 {
-    protected $signature = 'tms:clean-operational-data {--force : Run without confirmation}';
+    protected $signature = 'tms:clean-operational-data
+        {--force : Run without confirmation}
+        {--seed-defaults : Seed production starter setup data after cleanup}';
 
     protected $description = 'Delete fleet, tyre, voucher, and demo operating data while keeping users, roles, permissions, and settings';
 
@@ -71,6 +74,14 @@ class CleanOperationalDataCommand extends Command
         }
 
         $this->info('Operational data cleaned. Users, roles, permissions, and settings were preserved.');
+
+        if ($this->option('seed-defaults')) {
+            $this->call('db:seed', [
+                '--class' => FleetOperationalDefaultsSeeder::class,
+                '--force' => true,
+            ]);
+            $this->info('Starter fleet defaults seeded.');
+        }
 
         return self::SUCCESS;
     }

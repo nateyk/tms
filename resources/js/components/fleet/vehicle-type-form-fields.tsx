@@ -163,8 +163,8 @@ export function defaultVehicleTypeForm(
         name: "",
         asset_type: preset?.asset_type ?? "power_vehicle",
         status: "active",
-        layout_preset: preset?.value ?? "power_10",
-        tyre_count: preset?.tyre_count ?? 10,
-        axle_count: preset?.axle_count ?? 3,
+        layout_preset: preset?.value ?? "heavy_truck_24",
+        tyre_count: preset?.tyre_count ?? 24,
+        axle_count: preset?.axle_count ?? 6,
     };
 }

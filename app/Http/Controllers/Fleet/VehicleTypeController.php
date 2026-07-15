@@ -67,7 +67,7 @@ class VehicleTypeController extends Controller
                 'name' => $vehicleType->name,
                 'asset_type' => $vehicleType->asset_type->value,
                 'status' => $vehicleType->status,
-                'layout_preset' => $preset?->value ?? PredefinedTyreLayout::PowerUnit10->value,
+                'layout_preset' => $preset?->value ?? PredefinedTyreLayout::HeavyTruck24->value,
                 'tyre_count' => $vehicleType->tyre_count,
                 'axle_count' => $vehicleType->axle_count,
             ],
@@ -113,7 +113,7 @@ class VehicleTypeController extends Controller
                 'spare_count' => $preset->spareCount(),
                 'asset_type' => $preset->suggestedAssetType()->value,
             ])->values(),
-            'defaultPreset' => PredefinedTyreLayout::PowerUnit10->value,
+            'defaultPreset' => PredefinedTyreLayout::HeavyTruck24->value,
         ];
     }
 
