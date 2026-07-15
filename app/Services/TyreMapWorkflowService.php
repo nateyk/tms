@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AssetType;
+use App\Enums\AssignmentAssetType;
 use App\Enums\MovementType;
 use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
@@ -109,6 +110,45 @@ class TyreMapWorkflowService
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function positionStatusForVehicle(Vehicle $vehicle): array
+    {
+        $vehicle->loadMissing('vehicleType');
+
+        $assignments = TyreAssignment::query()
+            ->with('tyre:id,tyre_code')
+            ->where('asset_id', $vehicle->id)
+            ->where('asset_type', $this->assignmentAssetTypeForVehicle($vehicle)?->value)
+            ->where('status', TyreAssignmentStatus::Active)
+            ->get();
+
+        return collect($this->resolveLayoutPositions($vehicle))
+            ->map(function (array $position) use ($assignments): array {
+                $aliases = $this->positionAliases($position);
+                $assignment = $assignments->first(fn (TyreAssignment $assignment): bool => in_array($assignment->position_code, $aliases, true));
+                $code = (string) $position['code'];
+                $displayCode = (string) ($position['display_code'] ?? $code);
+                $label = (string) ($position['label'] ?? $code);
+                $isSpare = $this->isSparePosition($position);
+
+                return [
+                    'code' => $code,
+                    'display_code' => $displayCode,
+                    'label' => $label,
+                    'type' => $isSpare ? 'spare' : 'running',
+                    'is_empty' => $assignment === null,
+                    'is_occupied' => $assignment !== null,
+                    'mounted_tyre_id' => $assignment?->tyre_id,
+                    'mounted_tyre_code' => $assignment?->tyre?->tyre_code,
+                    'disabled_reason' => $assignment ? 'This position already has a tyre. Create a swap movement or choose an empty position.' : null,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return list<string>
      */
     public function positionAliasesForVehicle(Vehicle $vehicle, string $positionCode): array
@@ -122,6 +162,17 @@ class TyreMapWorkflowService
         }
 
         return [$positionCode];
+    }
+
+    public function isSparePositionForVehicle(Vehicle $vehicle, string $positionCode): bool
+    {
+        foreach ($this->resolveLayoutPositions($vehicle) as $position) {
+            if (in_array($positionCode, $this->positionAliases($position), true)) {
+                return $this->isSparePosition($position);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -140,6 +191,28 @@ class TyreMapWorkflowService
             ->unique()
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $position
+     */
+    public function isSparePosition(array $position): bool
+    {
+        $displayCode = strtoupper((string) ($position['display_code'] ?? $position['code'] ?? ''));
+        $label = strtolower((string) ($position['label'] ?? ''));
+
+        return in_array($displayCode, ['W', 'X'], true)
+            || ($position['side'] ?? null) === 'center'
+            || str_contains($label, 'spare');
+    }
+
+    public function assignmentAssetTypeForVehicle(Vehicle $vehicle): ?AssignmentAssetType
+    {
+        return match ($this->assetTypeValue($vehicle)) {
+            AssetType::Trailer->value => AssignmentAssetType::Trailer,
+            AssetType::PowerVehicle->value, AssetType::RigidTruck->value => AssignmentAssetType::PowerVehicle,
+            default => null,
+        };
     }
 
     public function installMovementUrl(Vehicle $vehicle, string $positionCode, ?int $tyreId = null): string
