@@ -80,8 +80,6 @@ type VehicleSummary = {
 type VehicleTyreMapPanelProps = {
     vehicle: VehicleSummary;
     tyreMap: TyreMapPayload;
-    trailer?: VehicleSummary | null;
-    trailerTyreMap?: TyreMapPayload | null;
 };
 
 const TRUCK_GUIDE_DEFINITIONS = [
@@ -341,8 +339,6 @@ function TyreDiagramBlock({
 export function VehicleTyreMapPanel({
     vehicle,
     tyreMap,
-    trailer,
-    trailerTyreMap,
 }: VehicleTyreMapPanelProps) {
     const [selection, setSelection] = useState<MapSelection>(null);
     const [guideOpen, setGuideOpen] = useState(false);
@@ -355,29 +351,13 @@ export function VehicleTyreMapPanel({
         [tyreMap],
     );
 
-    const trailerGuide = useMemo(
-        () =>
-            trailerTyreMap
-                ? buildGuideGroups(
-                      trailerTyreMap.mapData,
-                      trailerTyreMap.konvaConfig.assetType,
-                  )
-                : [],
-        [trailerTyreMap],
-    );
-
     const selectedSlot = useMemo(() => {
         if (!selection) {
             return null;
         }
 
-        const payload = selection.unit === "trailer" ? trailerTyreMap : tyreMap;
-        if (!payload) {
-            return null;
-        }
-
-        return findSelectedSlot(payload, selection.code);
-    }, [selection, tyreMap, trailerTyreMap]);
+        return findSelectedSlot(tyreMap, selection.code);
+    }, [selection, tyreMap]);
 
     const handleSelect = (unit: MapUnit, code: string) => {
         setSelection({ unit, code });
@@ -397,7 +377,7 @@ export function VehicleTyreMapPanel({
         }
     };
 
-    if (tyreMap.mapData.length === 0 && !trailerTyreMap?.mapData.length) {
+    if (tyreMap.mapData.length === 0) {
         return (
             <Card>
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">
@@ -407,7 +387,6 @@ export function VehicleTyreMapPanel({
         );
     }
 
-    const hasTrailer = Boolean(trailer && trailerTyreMap);
     return (
         <>
         <Card>
@@ -424,17 +403,6 @@ export function VehicleTyreMapPanel({
                             onDisposalAction={handleDisposalAction}
                         />
 
-                        {hasTrailer && (
-                            <TyreDiagramBlock
-                                unit="trailer"
-                                mapId={`trailer-${trailer!.id}`}
-                                payload={trailerTyreMap!}
-                                selection={selection}
-                                onSelect={(code) => handleSelect("trailer", code)}
-                                onMovementAction={handleMovementAction}
-                                onDisposalAction={handleDisposalAction}
-                            />
-                        )}
                     </div>
 
                     <div className="flex flex-col gap-2.5 p-3 lg:overflow-y-auto">
@@ -482,21 +450,11 @@ export function VehicleTyreMapPanel({
                                     <div className="space-y-4 pb-2">
                                         <GuideSection
                                             unit="power"
-                                            unitLabel={`Power — ${vehicle.vehicle_code}`}
+                                            unitLabel={`Vehicle — ${vehicle.vehicle_code}`}
                                             groups={powerGuide}
                                             selection={selection}
                                             onSelect={handleSelect}
                                         />
-
-                                        {trailer && trailerTyreMap && (
-                                            <GuideSection
-                                                unit="trailer"
-                                                unitLabel={`Trailer — ${trailer.vehicle_code}`}
-                                                groups={trailerGuide}
-                                                selection={selection}
-                                                onSelect={handleSelect}
-                                            />
-                                        )}
 
                                         <Alert>
                                             <Info className="h-4 w-4" />
@@ -538,4 +496,3 @@ export function VehicleTyreMapPanel({
 }
 
 export { VehicleTyreMapPanel as TyreMapPanel };
-

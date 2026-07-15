@@ -24,13 +24,9 @@ type VehicleSummary = {
 export default function VehiclesShow({
     vehicle,
     tyreMap,
-    trailer,
-    trailerTyreMap,
 }: {
     vehicle: VehicleSummary;
     tyreMap: TyreMapPayload;
-    trailer?: VehicleSummary | null;
-    trailerTyreMap?: TyreMapPayload | null;
 }) {
     const counts = tyreMap.counts;
     const hasCurrentKm = vehicle.odometer !== null && vehicle.odometer !== undefined;
@@ -116,10 +112,10 @@ export default function VehiclesShow({
                         icon={Gauge}
                     />
                     <WorkflowActionCard
-                        title="Documents"
-                        description="Export tyre status and continue trailer workflow."
-                        href={route("fleet.trailer-transfers.index")}
-                        actionLabel="Trailer flow"
+                        title="Tyre Work"
+                        description="Inspect positions, mount tyres, and review status."
+                        href={route("tyres.reading-monitoring.show", vehicle.id)}
+                        actionLabel="Open tyre work"
                         tone="info"
                         icon={Route}
                     />
@@ -141,8 +137,6 @@ export default function VehiclesShow({
                 <VehicleTyreMapPanel
                     vehicle={vehicle}
                     tyreMap={tyreMap}
-                    trailer={trailer}
-                    trailerTyreMap={trailerTyreMap}
                 />
             </div>
         </AuthenticatedLayout>

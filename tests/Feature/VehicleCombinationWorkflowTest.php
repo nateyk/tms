@@ -131,6 +131,34 @@ class VehicleCombinationWorkflowTest extends TestCase
             ->assertRedirect(route('fleet.vehicles.show', $power));
     }
 
+    public function test_power_vehicle_show_keeps_single_map_when_trailer_is_attached(): void
+    {
+        $powerType = $this->vehicleType('Combination Power Single Map', 'power_vehicle');
+        $trailerType = $this->vehicleType('Combination Trailer Single Map', 'trailer');
+        $power = $this->vehicle($powerType, 'power_vehicle', 'COMBO-POWER-008');
+        $trailer = $this->vehicle($trailerType, 'trailer', 'COMBO-TRAILER-008');
+
+        $this->actingAs($this->adminUser)
+            ->put(route('fleet.vehicles.update', $power), [
+                'plate_number' => $power->plate_number,
+                'asset_type' => 'power_vehicle',
+                'vehicle_type_id' => $powerType->id,
+                'status' => 'active',
+                'attached_trailer_vehicle_id' => $trailer->id,
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.show', $power))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('fleet/vehicles/show')
+                ->where('vehicle.attached_trailer_code', $trailer->vehicle_code)
+                ->missing('trailer')
+                ->missing('trailerTyreMap')
+            );
+    }
+
     public function test_power_vehicle_edit_page_loads_with_attached_trailer(): void
     {
         $powerType = $this->vehicleType('Combination Power Edit', 'power_vehicle');

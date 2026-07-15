@@ -210,14 +210,6 @@ class VehicleMapDataService
             'tyreMap' => $map,
         ];
 
-        if ($vehicle->isPowerVehicle()) {
-            $trailer = $vehicle->attachedTrailer();
-            $payload['trailer'] = $trailer ? $this->serializeVehicle($trailer) : null;
-            $payload['trailerTyreMap'] = $trailer
-                ? $this->buildForVehicle($trailer)
-                : null;
-        }
-
         return $payload;
     }
 
