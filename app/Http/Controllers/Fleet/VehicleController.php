@@ -284,7 +284,7 @@ class VehicleController extends Controller
             ->when($vehicle, fn ($query) => $query->whereKeyNot($vehicle->id))
             ->where(function ($query) use ($currentPowerId) {
                 $query->whereDoesntHave('activeCombinationAsPower')
-                    ->when($currentPowerId, fn ($q) => $q->orWhereKey($currentPowerId));
+                    ->when($currentPowerId, fn ($q) => $q->orWhere('id', $currentPowerId));
             })
             ->orderBy('vehicle_code')
             ->get(['id', 'vehicle_code', 'plate_number'])
@@ -305,7 +305,7 @@ class VehicleController extends Controller
             ->when($vehicle, fn ($query) => $query->whereKeyNot($vehicle->id))
             ->where(function ($query) use ($currentTrailerId) {
                 $query->whereDoesntHave('activeCombinationAsTrailer')
-                    ->when($currentTrailerId, fn ($q) => $q->orWhereKey($currentTrailerId));
+                    ->when($currentTrailerId, fn ($q) => $q->orWhere('id', $currentTrailerId));
             })
             ->orderBy('vehicle_code')
             ->get(['id', 'vehicle_code', 'plate_number'])

@@ -131,6 +131,32 @@ class VehicleCombinationWorkflowTest extends TestCase
             ->assertRedirect(route('fleet.vehicles.show', $power));
     }
 
+    public function test_power_vehicle_edit_page_loads_with_attached_trailer(): void
+    {
+        $powerType = $this->vehicleType('Combination Power Edit', 'power_vehicle');
+        $trailerType = $this->vehicleType('Combination Trailer Edit', 'trailer');
+        $power = $this->vehicle($powerType, 'power_vehicle', 'COMBO-POWER-007');
+        $trailer = $this->vehicle($trailerType, 'trailer', 'COMBO-TRAILER-007');
+
+        $this->actingAs($this->adminUser)
+            ->put(route('fleet.vehicles.update', $power), [
+                'plate_number' => $power->plate_number,
+                'asset_type' => 'power_vehicle',
+                'vehicle_type_id' => $powerType->id,
+                'status' => 'active',
+                'attached_trailer_vehicle_id' => $trailer->id,
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.edit', $power))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('fleet/vehicles/edit')
+                ->where('vehicle.attached_trailer_vehicle_id', $trailer->id)
+            );
+    }
+
     public function test_vehicle_create_page_exposes_free_trailers_for_power_vehicle_attachment(): void
     {
         $powerType = $this->vehicleType('Combination Power Create', 'power_vehicle');
