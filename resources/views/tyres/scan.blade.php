@@ -9,6 +9,7 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-2xl mx-auto p-6">
         <header class="mb-6 text-center">
+            <img src="{{ asset('images/menkem-logo.svg') }}" alt="Menkem International Business PLC" class="mx-auto mb-3 h-12 w-auto">
             <h1 class="text-xl font-bold">Menkem International Business PLC</h1>
             <p class="text-sm text-gray-600">Tyre Management System</p>
         </header>

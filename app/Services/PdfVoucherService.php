@@ -101,7 +101,7 @@ class PdfVoucherService
 
     protected function companyLogoDataUri(): ?string
     {
-        $path = base_path('logo_1758018144.svg');
+        $path = public_path('images/menkem-logo.svg');
 
         if (! is_file($path)) {
             return null;

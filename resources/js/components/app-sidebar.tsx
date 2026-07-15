@@ -1,6 +1,5 @@
 
 import * as React from "react"
-import { CircleDot } from "lucide-react"
 import { Link, usePage } from "@inertiajs/react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,8 +30,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href={route('dashboard')}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <CircleDot className="size-4" />
+                <div className="flex h-10 w-28 items-center justify-center rounded-lg bg-white px-2 shadow-sm ring-1 ring-sidebar-border">
+                  <img src="/images/menkem-logo.svg" alt="Menkem" className="h-7 w-full object-contain" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Menkem TMS</span>
