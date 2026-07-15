@@ -21,7 +21,7 @@ class UpdateVehicleRequest extends FormRequest
 
         return [
             'vehicle_code' => [
-                'required', 'string', 'max:255',
+                'nullable', 'string', 'max:255',
                 Rule::unique('vehicles', 'vehicle_code')->ignore($vehicleId),
             ],
             'plate_number' => [

@@ -45,6 +45,12 @@ class Vehicle extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (Vehicle $vehicle): void {
+            if (! filled($vehicle->vehicle_code)) {
+                $vehicle->vehicle_code = static::generateVehicleCode($vehicle->asset_type);
+            }
+        });
+
         static::saving(function (Vehicle $vehicle): void {
             $identity = app(VehicleAssetIdentityService::class);
 
@@ -54,6 +60,29 @@ class Vehicle extends Model
 
             $identity->assertUnique($vehicle);
         });
+    }
+
+    public static function generateVehicleCode(AssetType|string|null $assetType = null): string
+    {
+        $assetType = $assetType instanceof AssetType
+            ? $assetType
+            : AssetType::tryFrom((string) $assetType);
+
+        $prefix = match ($assetType) {
+            AssetType::Trailer => 'TRL',
+            AssetType::RigidTruck => 'RGD',
+            AssetType::Pickup => 'PCK',
+            AssetType::Bus => 'BUS',
+            default => 'TRK',
+        };
+
+        $nextNumber = ((int) static::withTrashed()->max('id')) + 1;
+
+        do {
+            $code = sprintf('%s-%04d', $prefix, $nextNumber++);
+        } while (static::withTrashed()->where('vehicle_code', $code)->exists());
+
+        return $code;
     }
 
     public function vehicleType(): BelongsTo

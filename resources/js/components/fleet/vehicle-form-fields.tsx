@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 export type VehicleFormData = {
     vehicle_code: string;
@@ -52,14 +53,17 @@ export function VehicleFormFields({
             <div>
                 <h3 className="mb-4 text-sm font-semibold">Asset identity</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="grid gap-2">
-                        <Label htmlFor="vehicle_code">Vehicle code</Label>
-                        <Input
-                            id="vehicle_code"
-                            value={data.vehicle_code}
-                            onChange={(e) => setData("vehicle_code", e.target.value)}
-                            required
-                        />
+                    <div className="grid gap-2 rounded-md border bg-muted/20 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                            <Label>Vehicle code</Label>
+                            <Badge variant="secondary">Auto</Badge>
+                        </div>
+                        <p className="text-sm font-medium">
+                            {data.vehicle_code || "Generated after save"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            The system creates a unique code from the asset type.
+                        </p>
                         <InputError message={errors.vehicle_code} />
                     </div>
                     <div className="grid gap-2">

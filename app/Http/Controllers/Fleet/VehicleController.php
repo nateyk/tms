@@ -52,7 +52,10 @@ class VehicleController extends Controller
 
     public function store(StoreVehicleRequest $request): RedirectResponse
     {
-        $vehicle = Vehicle::query()->create($request->validated());
+        $data = $request->validated();
+        unset($data['vehicle_code']);
+
+        $vehicle = Vehicle::query()->create($data);
 
         return redirect()
             ->route('fleet.vehicles.show', $vehicle)
@@ -87,7 +90,10 @@ class VehicleController extends Controller
 
     public function update(UpdateVehicleRequest $request, Vehicle $vehicle): RedirectResponse
     {
-        $vehicle->update($request->validated());
+        $data = $request->validated();
+        unset($data['vehicle_code']);
+
+        $vehicle->update($data);
 
         return redirect()
             ->route('fleet.vehicles.show', $vehicle)

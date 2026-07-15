@@ -19,7 +19,7 @@ class StoreVehicleRequest extends FormRequest
         $currentYear = (int) date('Y');
 
         return [
-            'vehicle_code' => ['required', 'string', 'max:255', 'unique:vehicles,vehicle_code'],
+            'vehicle_code' => ['nullable', 'string', 'max:255', 'unique:vehicles,vehicle_code'],
             'plate_number' => ['nullable', 'string', 'max:255', 'unique:vehicles,plate_number'],
             'chassis_number' => ['nullable', 'string', 'max:255', 'unique:vehicles,chassis_number'],
             'engine_number' => ['nullable', 'string', 'max:255', 'unique:vehicles,engine_number'],
