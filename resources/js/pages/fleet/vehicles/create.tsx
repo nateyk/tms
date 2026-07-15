@@ -10,6 +10,8 @@ type FormOptions = {
     vehicleStatuses: { value: string; label: string }[];
     vehicleTypes: { id: number; name: string; asset_type: string }[];
     locations: { id: number; label: string }[];
+    attachablePowerVehicles: { id: number; label: string }[];
+    attachableTrailers: { id: number; label: string }[];
 };
 
 export default function VehiclesCreate({
@@ -17,6 +19,8 @@ export default function VehiclesCreate({
     vehicleStatuses,
     vehicleTypes,
     locations,
+    attachablePowerVehicles,
+    attachableTrailers,
 }: FormOptions) {
     const defaultType = vehicleTypes[0];
 
@@ -31,6 +35,8 @@ export default function VehiclesCreate({
         current_location_id: null as number | null,
         manufacture_year: null as number | null,
         odometer: null as number | null,
+        attached_power_vehicle_id: null as number | null,
+        attached_trailer_vehicle_id: null as number | null,
         notes: "",
     });
 
@@ -58,6 +64,8 @@ export default function VehiclesCreate({
                             vehicleStatuses={vehicleStatuses}
                             vehicleTypes={vehicleTypes}
                             locations={locations}
+                            attachablePowerVehicles={attachablePowerVehicles}
+                            attachableTrailers={attachableTrailers}
                         />
                         <div className="flex gap-2">
                             <Button type="submit" disabled={processing}>

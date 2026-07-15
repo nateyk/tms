@@ -22,12 +22,15 @@ export type VehicleFormData = {
     current_location_id: number | null;
     manufacture_year: number | null;
     odometer: number | null;
+    attached_power_vehicle_id: number | null;
+    attached_trailer_vehicle_id: number | null;
     notes: string;
 };
 
 type Option = { value: string; label: string };
 type VehicleTypeOption = { id: number; name: string; asset_type: string };
 type LocationOption = { id: number; label: string };
+type VehicleAttachOption = { id: number; label: string };
 
 type VehicleFormFieldsProps = {
     errors: Partial<Record<string, string>>;
@@ -37,6 +40,8 @@ type VehicleFormFieldsProps = {
     vehicleStatuses: Option[];
     vehicleTypes: VehicleTypeOption[];
     locations: LocationOption[];
+    attachablePowerVehicles: VehicleAttachOption[];
+    attachableTrailers: VehicleAttachOption[];
 };
 
 export function VehicleFormFields({
@@ -47,7 +52,25 @@ export function VehicleFormFields({
     vehicleStatuses,
     vehicleTypes,
     locations,
+    attachablePowerVehicles,
+    attachableTrailers,
 }: VehicleFormFieldsProps) {
+    const matchingVehicleTypes = vehicleTypes.filter((type) => type.asset_type === data.asset_type);
+    const attachLabel = data.asset_type === "power_vehicle" ? "Attach trailer" : "Attach to power vehicle";
+    const attachOptions = data.asset_type === "power_vehicle" ? attachableTrailers : attachablePowerVehicles;
+    const attachField: "attached_trailer_vehicle_id" | "attached_power_vehicle_id" =
+        data.asset_type === "power_vehicle" ? "attached_trailer_vehicle_id" : "attached_power_vehicle_id";
+    const canAttach = data.asset_type === "power_vehicle" || data.asset_type === "trailer";
+
+    const changeAssetType = (value: string) => {
+        setData("asset_type", value);
+        setData("attached_power_vehicle_id", null);
+        setData("attached_trailer_vehicle_id", null);
+
+        const firstMatchingType = vehicleTypes.find((type) => type.asset_type === value);
+        setData("vehicle_type_id", firstMatchingType?.id ?? null);
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -103,7 +126,7 @@ export function VehicleFormFields({
                         <Label>Asset type</Label>
                         <Select
                             value={data.asset_type}
-                            onValueChange={(value) => setData("asset_type", value)}
+                            onValueChange={changeAssetType}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select type" />
@@ -131,7 +154,7 @@ export function VehicleFormFields({
                                 <SelectValue placeholder="Select vehicle type" />
                             </SelectTrigger>
                             <SelectContent>
-                                {vehicleTypes.map((type) => (
+                                {matchingVehicleTypes.map((type) => (
                                     <SelectItem key={type.id} value={String(type.id)}>
                                         {type.name}
                                     </SelectItem>
@@ -226,6 +249,39 @@ export function VehicleFormFields({
                     </div>
                 </div>
             </div>
+
+            {canAttach && (
+                <div className="rounded-md border bg-muted/20 p-4">
+                    <div className="mb-4">
+                        <h3 className="text-sm font-semibold">Vehicle attachment</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Link a power vehicle and trailer into one active working unit.
+                        </p>
+                    </div>
+                    <div className="grid gap-2 sm:max-w-md">
+                        <Label>{attachLabel}</Label>
+                        <Select
+                            value={data[attachField] ? String(data[attachField]) : "none"}
+                            onValueChange={(value) =>
+                                setData(attachField, value === "none" ? null : Number(value))
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select vehicle" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Not attached</SelectItem>
+                                {attachOptions.map((vehicle) => (
+                                    <SelectItem key={vehicle.id} value={String(vehicle.id)}>
+                                        {vehicle.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors[attachField]} />
+                    </div>
+                </div>
+            )}
 
             <div className="grid gap-2">
                 <Label htmlFor="notes">Notes</Label>

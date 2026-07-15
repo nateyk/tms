@@ -34,6 +34,9 @@ type VehicleRow = {
     status_label: string;
     current_location_name: string | null;
     odometer: number | null;
+    attached_vehicle_id: number | null;
+    attached_vehicle_label: string | null;
+    attached_vehicle_role: string | null;
 };
 
 type PaginatedVehicles = {
@@ -79,6 +82,7 @@ export default function VehiclesIndex({ vehicles }: { vehicles: PaginatedVehicle
                                 <TableHead>Plate</TableHead>
                                 <TableHead>Asset type</TableHead>
                                 <TableHead>Vehicle type</TableHead>
+                                <TableHead>Attached vehicle</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -94,6 +98,18 @@ export default function VehiclesIndex({ vehicles }: { vehicles: PaginatedVehicle
                                         <Badge variant="outline">{vehicle.asset_type_label}</Badge>
                                     </TableCell>
                                     <TableCell>{vehicle.vehicle_type_name || "—"}</TableCell>
+                                    <TableCell>
+                                        {vehicle.attached_vehicle_id ? (
+                                            <Link
+                                                href={route("fleet.vehicles.show", vehicle.attached_vehicle_id)}
+                                                className="text-sm font-medium text-primary hover:underline"
+                                            >
+                                                {vehicle.attached_vehicle_role}: {vehicle.attached_vehicle_label}
+                                            </Link>
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground">Not attached</span>
+                                        )}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant="secondary">{vehicle.status_label}</Badge>
                                     </TableCell>

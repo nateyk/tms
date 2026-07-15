@@ -10,6 +10,8 @@ type FormOptions = {
     vehicleStatuses: { value: string; label: string }[];
     vehicleTypes: { id: number; name: string; asset_type: string }[];
     locations: { id: number; label: string }[];
+    attachablePowerVehicles: { id: number; label: string }[];
+    attachableTrailers: { id: number; label: string }[];
     vehicle: {
         id: number;
         vehicle_code: string;
@@ -22,6 +24,8 @@ type FormOptions = {
         current_location_id: number | null;
         manufacture_year: number | null;
         odometer: number | null;
+        attached_power_vehicle_id: number | null;
+        attached_trailer_vehicle_id: number | null;
         notes: string;
     };
 };
@@ -31,6 +35,8 @@ export default function VehiclesEdit({
     vehicleStatuses,
     vehicleTypes,
     locations,
+    attachablePowerVehicles,
+    attachableTrailers,
     vehicle,
 }: FormOptions) {
     const { data, setData, put, processing, errors } = useForm({
@@ -44,6 +50,8 @@ export default function VehiclesEdit({
         current_location_id: vehicle.current_location_id,
         manufacture_year: vehicle.manufacture_year,
         odometer: vehicle.odometer,
+        attached_power_vehicle_id: vehicle.attached_power_vehicle_id,
+        attached_trailer_vehicle_id: vehicle.attached_trailer_vehicle_id,
         notes: vehicle.notes,
     });
 
@@ -71,6 +79,8 @@ export default function VehiclesEdit({
                             vehicleStatuses={vehicleStatuses}
                             vehicleTypes={vehicleTypes}
                             locations={locations}
+                            attachablePowerVehicles={attachablePowerVehicles}
+                            attachableTrailers={attachableTrailers}
                         />
                         <div className="flex gap-2">
                             <Button type="submit" disabled={processing}>

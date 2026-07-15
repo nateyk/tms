@@ -42,6 +42,8 @@ class UpdateVehicleRequest extends FormRequest
             'current_location_id' => ['nullable', 'exists:locations,id'],
             'manufacture_year' => ['nullable', 'integer', 'min:1980', 'max:'.($currentYear + 1)],
             'odometer' => ['nullable', 'integer', 'min:0'],
+            'attached_power_vehicle_id' => ['nullable', 'integer', 'exists:vehicles,id'],
+            'attached_trailer_vehicle_id' => ['nullable', 'integer', 'exists:vehicles,id'],
             'notes' => ['nullable', 'string'],
         ];
     }
