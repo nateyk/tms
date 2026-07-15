@@ -11,6 +11,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+        {!! ToastMagic::styles() !!}
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
@@ -18,5 +19,6 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+        {!! ToastMagic::scripts() !!}
     </body>
 </html>
