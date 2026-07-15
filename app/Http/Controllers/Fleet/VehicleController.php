@@ -152,11 +152,13 @@ class VehicleController extends Controller
             ])->values(),
             'vehicleTypes' => VehicleType::query()
                 ->orderBy('name')
-                ->get(['id', 'name', 'asset_type'])
+                ->get(['id', 'name', 'asset_type', 'tyre_count', 'axle_count'])
                 ->map(fn (VehicleType $type) => [
                     'id' => $type->id,
                     'name' => $type->name,
                     'asset_type' => $type->asset_type->value,
+                    'tyre_count' => $type->tyre_count,
+                    'axle_count' => $type->axle_count,
                 ]),
             'locations' => Location::query()
                 ->orderBy('name')
@@ -205,7 +207,7 @@ class VehicleController extends Controller
         $currentPowerId = $vehicle?->activeCombinationAsTrailer?->power_vehicle_id;
 
         return Vehicle::query()
-            ->where('asset_type', AssetType::PowerVehicle)
+            ->where('asset_type', AssetType::PowerVehicle->value)
             ->when($vehicle, fn ($query) => $query->whereKeyNot($vehicle->id))
             ->where(function ($query) use ($currentPowerId) {
                 $query->whereDoesntHave('activeCombinationAsPower')
@@ -226,7 +228,7 @@ class VehicleController extends Controller
         $currentTrailerId = $vehicle?->activeCombinationAsPower?->trailer_vehicle_id;
 
         return Vehicle::query()
-            ->where('asset_type', AssetType::Trailer)
+            ->where('asset_type', AssetType::Trailer->value)
             ->when($vehicle, fn ($query) => $query->whereKeyNot($vehicle->id))
             ->where(function ($query) use ($currentTrailerId) {
                 $query->whereDoesntHave('activeCombinationAsTrailer')

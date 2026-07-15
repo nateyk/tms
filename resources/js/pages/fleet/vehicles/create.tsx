@@ -8,7 +8,7 @@ import { FormEventHandler } from "react";
 type FormOptions = {
     assetTypes: { value: string; label: string }[];
     vehicleStatuses: { value: string; label: string }[];
-    vehicleTypes: { id: number; name: string; asset_type: string }[];
+    vehicleTypes: { id: number; name: string; asset_type: string; tyre_count: number | null; axle_count: number | null }[];
     locations: { id: number; label: string }[];
     attachablePowerVehicles: { id: number; label: string }[];
     attachableTrailers: { id: number; label: string }[];
@@ -22,7 +22,8 @@ export default function VehiclesCreate({
     attachablePowerVehicles,
     attachableTrailers,
 }: FormOptions) {
-    const defaultType = vehicleTypes[0];
+    const defaultType =
+        vehicleTypes.find((type) => type.asset_type === "power_vehicle") ?? vehicleTypes[0];
 
     const { data, setData, post, processing, errors } = useForm({
         vehicle_code: "",

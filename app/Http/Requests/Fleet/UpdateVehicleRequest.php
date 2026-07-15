@@ -4,8 +4,11 @@ namespace App\Http\Requests\Fleet;
 
 use App\Enums\AssetType;
 use App\Enums\VehicleStatus;
+use App\Models\Vehicle;
+use App\Models\VehicleType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateVehicleRequest extends FormRequest
 {
@@ -46,5 +49,42 @@ class UpdateVehicleRequest extends FormRequest
             'attached_trailer_vehicle_id' => ['nullable', 'integer', 'exists:vehicles,id'],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $this->validateVehicleSetup($validator);
+            },
+        ];
+    }
+
+    private function validateVehicleSetup(Validator $validator): void
+    {
+        $assetType = $this->input('asset_type');
+        $vehicleType = VehicleType::query()->find($this->input('vehicle_type_id'));
+
+        if ($vehicleType && $assetType && $vehicleType->asset_type->value !== $assetType) {
+            $validator->errors()->add('vehicle_type_id', 'Choose a vehicle type that matches the selected asset type.');
+        }
+
+        if ($assetType !== AssetType::Trailer->value && $this->filled('attached_power_vehicle_id')) {
+            $validator->errors()->add('attached_power_vehicle_id', 'Only trailers can be attached to a power vehicle from this field.');
+        }
+
+        if ($assetType !== AssetType::PowerVehicle->value && $this->filled('attached_trailer_vehicle_id')) {
+            $validator->errors()->add('attached_trailer_vehicle_id', 'Only power vehicles can attach a trailer from this field.');
+        }
+
+        $powerVehicle = Vehicle::query()->find($this->input('attached_power_vehicle_id'));
+        if ($powerVehicle && $powerVehicle->asset_type !== AssetType::PowerVehicle) {
+            $validator->errors()->add('attached_power_vehicle_id', 'Select a power vehicle.');
+        }
+
+        $trailer = Vehicle::query()->find($this->input('attached_trailer_vehicle_id'));
+        if ($trailer && $trailer->asset_type !== AssetType::Trailer) {
+            $validator->errors()->add('attached_trailer_vehicle_id', 'Select a trailer.');
+        }
     }
 }

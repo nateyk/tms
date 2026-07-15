@@ -105,6 +105,42 @@ class VehicleCombinationWorkflowTest extends TestCase
             );
     }
 
+    public function test_vehicle_create_page_exposes_free_trailers_for_power_vehicle_attachment(): void
+    {
+        $powerType = $this->vehicleType('Combination Power Create', 'power_vehicle');
+        $trailerType = $this->vehicleType('Combination Trailer Create', 'trailer');
+        $trailer = $this->vehicle($trailerType, 'trailer', 'COMBO-TRAILER-005');
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('fleet/vehicles/create')
+                ->where('vehicleTypes', fn ($types) => collect($types)->contains(
+                    fn (array $type) => $type['id'] === $powerType->id
+                        && $type['asset_type'] === 'power_vehicle'
+                        && array_key_exists('tyre_count', $type)
+                ))
+                ->where('attachableTrailers', fn ($trailers) => collect($trailers)->contains(
+                    fn (array $option) => $option['id'] === $trailer->id
+                ))
+            );
+    }
+
+    public function test_vehicle_type_must_match_selected_asset_type(): void
+    {
+        $trailerType = $this->vehicleType('Mismatch Trailer Type', 'trailer');
+
+        $this->actingAs($this->adminUser)
+            ->post(route('fleet.vehicles.store'), [
+                'plate_number' => 'COMBO-MISMATCH-001',
+                'asset_type' => 'power_vehicle',
+                'vehicle_type_id' => $trailerType->id,
+                'status' => 'active',
+            ])
+            ->assertSessionHasErrors('vehicle_type_id');
+    }
+
     private function vehicleType(string $name, string $assetType): VehicleType
     {
         return VehicleType::query()->create([

@@ -28,7 +28,7 @@ export type VehicleFormData = {
 };
 
 type Option = { value: string; label: string };
-type VehicleTypeOption = { id: number; name: string; asset_type: string };
+type VehicleTypeOption = { id: number; name: string; asset_type: string; tyre_count: number | null; axle_count: number | null };
 type LocationOption = { id: number; label: string };
 type VehicleAttachOption = { id: number; label: string };
 
@@ -56,11 +56,16 @@ export function VehicleFormFields({
     attachableTrailers,
 }: VehicleFormFieldsProps) {
     const matchingVehicleTypes = vehicleTypes.filter((type) => type.asset_type === data.asset_type);
+    const selectedVehicleType = vehicleTypes.find((type) => type.id === data.vehicle_type_id);
     const attachLabel = data.asset_type === "power_vehicle" ? "Attach trailer" : "Attach to power vehicle";
     const attachOptions = data.asset_type === "power_vehicle" ? attachableTrailers : attachablePowerVehicles;
     const attachField: "attached_trailer_vehicle_id" | "attached_power_vehicle_id" =
         data.asset_type === "power_vehicle" ? "attached_trailer_vehicle_id" : "attached_power_vehicle_id";
     const canAttach = data.asset_type === "power_vehicle" || data.asset_type === "trailer";
+    const emptyAttachText =
+        data.asset_type === "power_vehicle"
+            ? "No free trailers found. Create a trailer first, or detach one from another power vehicle."
+            : "No free power vehicles found. Create a power vehicle first, or detach this trailer's power unit.";
 
     const changeAssetType = (value: string) => {
         setData("asset_type", value);
@@ -161,6 +166,17 @@ export function VehicleFormFields({
                                 ))}
                             </SelectContent>
                         </Select>
+                        {selectedVehicleType ? (
+                            <p className="text-xs text-muted-foreground">
+                                Tyre positions: {selectedVehicleType.tyre_count ?? 0}
+                                {selectedVehicleType.axle_count ? ` across ${selectedVehicleType.axle_count} axles` : ""}.
+                                This controls where tyres can be mounted on the map.
+                            </p>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Choose the matching vehicle type so tyre positions are available.
+                            </p>
+                        )}
                         <InputError message={errors.vehicle_type_id} />
                     </div>
 
@@ -278,6 +294,13 @@ export function VehicleFormFields({
                                 ))}
                             </SelectContent>
                         </Select>
+                        {attachOptions.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">{emptyAttachText}</p>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                This only lists vehicles that are not already attached.
+                            </p>
+                        )}
                         <InputError message={errors[attachField]} />
                     </div>
                 </div>
