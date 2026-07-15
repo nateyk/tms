@@ -16,7 +16,6 @@ class StoreTyreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tyre_code' => ['required', 'string', 'max:32', 'unique:tyres,tyre_code'],
             'serial_number' => ['required', 'string', 'max:255', 'unique:tyres,serial_number'],
             'brand_id' => ['nullable', 'exists:tyre_brands,id'],
             'size_id' => ['nullable', 'exists:tyre_sizes,id'],

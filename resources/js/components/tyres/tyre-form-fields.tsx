@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 export type TyreFormData = {
-    tyre_code: string;
+    tyre_code?: string;
     serial_number: string;
     brand_id: number | null;
     size_id: number | null;
@@ -53,13 +53,10 @@ export function TyreFormFields({
                 <h3 className="mb-4 text-sm font-semibold">Identity</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="tyre_code">Tyre code</Label>
-                        <Input
-                            id="tyre_code"
-                            value={data.tyre_code}
-                            onChange={(e) => setData("tyre_code", e.target.value)}
-                            required
-                        />
+                        <Label>Tyre code</Label>
+                        <div className="flex min-h-10 items-center rounded-md border bg-muted/40 px-3 text-sm font-medium">
+                            {data.tyre_code || "Auto-generated after save"}
+                        </div>
                         <InputError message={errors.tyre_code} />
                     </div>
                     <div className="grid gap-2">
