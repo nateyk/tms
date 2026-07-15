@@ -80,8 +80,16 @@ class VehicleController extends Controller
             ->with('success', 'Vehicle created successfully.');
     }
 
-    public function show(Vehicle $vehicle): Response
+    public function show(Vehicle $vehicle): Response|RedirectResponse
     {
+        $vehicle->loadMissing('activeCombinationAsTrailer.powerVehicle');
+
+        if ($vehicle->asset_type === AssetType::Trailer && $vehicle->activeCombinationAsTrailer?->powerVehicle) {
+            return redirect()
+                ->route('fleet.vehicles.show', $vehicle->activeCombinationAsTrailer->powerVehicle)
+                ->with('info', 'Trailer is attached to this power unit. Use the combined vehicle map from the power unit.');
+        }
+
         return Inertia::render('fleet/vehicles/show', $this->mapDataService->buildShowPayload($vehicle));
     }
 
