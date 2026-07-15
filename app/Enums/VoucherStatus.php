@@ -20,7 +20,7 @@ enum VoucherStatus: string
             self::Checked => 'Checked',
             self::Approved => 'Approved',
             self::Rejected => 'Rejected',
-            self::Cancelled => 'Cancelled',
+            self::Cancelled => 'Voided',
             self::Completed => 'Completed',
         };
     }

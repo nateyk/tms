@@ -86,7 +86,9 @@ class ApprovalService
 
     public function cancel(Model $voucher): Model
     {
-        $this->assertStatus($voucher, VoucherStatus::Draft);
+        if ($voucher->status->isTerminal()) {
+            throw new TyreBusinessException('Cannot void a terminal voucher.');
+        }
 
         $voucher->update([
             'status' => VoucherStatus::Cancelled,

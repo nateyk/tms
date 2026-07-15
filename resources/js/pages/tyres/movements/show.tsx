@@ -1,25 +1,13 @@
-import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { MovementCompletionDialog } from "@/components/tyres/movement-completion-dialog";
 import { VoucherStatusBadge } from "@/components/tyres/voucher-status-badge";
 import { VoucherWorkflowActions } from "@/components/tyres/voucher-workflow-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Head, Link } from "@inertiajs/react";
-import { Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, Pencil, Route, UserRound } from "lucide-react";
 import { useState } from "react";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { router } from "@inertiajs/react";
 
 type MovementDetail = {
     id: number;
@@ -73,42 +61,36 @@ export default function MovementsShow({
     movement: MovementDetail;
     can: Permissions;
 }) {
-    const deleteMovement = () => {
-        router.delete(route("tyres.movements.destroy", movement.id));
-    };
     const [completionOpen, setCompletionOpen] = useState(false);
     const workflowCan = { ...can, complete: false };
+    const hasWorkflowActions =
+        Boolean(movement.pdf_url) || can.submit || can.check || can.approve || can.reject || can.cancel;
 
     return (
         <AuthenticatedLayout header={`Movement ${movement.display_number}`}>
             <Head title={`Movement ${movement.display_number}`} />
 
-            <div className="space-y-6 max-w-4xl">
-                <Card>
-                    <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="space-y-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <CardTitle>{movement.display_number}</CardTitle>
-                                <VoucherStatusBadge
-                                    label={movement.status_label}
-                                    status={movement.status}
-                                />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {movement.movement_type_label} · {movement.movement_date}
-                            </p>
-                        </div>
-                        <VoucherWorkflowActions
-                            recordId={movement.id}
-                            routePrefix="tyres.movements"
-                            can={workflowCan}
-                            pdfUrl={movement.pdf_url}
-                        />
+            <div className="max-w-5xl space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <Button variant="ghost" size="sm" asChild className="-ml-2">
+                        <Link href={route("tyres.movements.index")}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Movements
+                        </Link>
+                    </Button>
+
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        {hasWorkflowActions && (
+                            <VoucherWorkflowActions
+                                recordId={movement.id}
+                                routePrefix="tyres.movements"
+                                can={workflowCan}
+                                pdfUrl={movement.pdf_url}
+                            />
+                        )}
                         {can.complete && (
                             <>
-                                <Button onClick={() => setCompletionOpen(true)}>
-                                    Complete Movement
-                                </Button>
+                                <Button onClick={() => setCompletionOpen(true)}>Complete Movement</Button>
                                 <MovementCompletionDialog
                                     open={completionOpen}
                                     onOpenChange={setCompletionOpen}
@@ -116,53 +98,61 @@ export default function MovementsShow({
                                 />
                             </>
                         )}
+                    </div>
+                </div>
+
+                <Card className="overflow-hidden">
+                    <CardHeader className="border-b bg-muted/30">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div className="min-w-0 space-y-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <CardTitle className="text-2xl">{movement.display_number}</CardTitle>
+                                    <VoucherStatusBadge label={movement.status_label} status={movement.status} />
+                                </div>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Route className="h-4 w-4" />
+                                        {movement.movement_type_label}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <CalendarDays className="h-4 w-4" />
+                                        {movement.movement_date}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <UserRound className="h-4 w-4" />
+                                        {movement.prepared_by ?? "Not assigned"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="rounded-lg border bg-background px-4 py-3 text-sm md:min-w-52">
+                                <p className="text-muted-foreground">Tyre</p>
+                                <Link
+                                    href={route("tyres.show", movement.tyre_id)}
+                                    className="font-semibold text-primary hover:underline"
+                                >
+                                    {movement.tyre_code}
+                                </Link>
+                            </div>
+                        </div>
                     </CardHeader>
+
                     <CardContent className="space-y-6">
-                        <dl className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <dt className="text-sm text-muted-foreground">Tyre</dt>
-                                <dd className="font-medium">
-                                    <Link
-                                        href={route("tyres.show", movement.tyre_id)}
-                                        className="text-primary hover:underline"
-                                    >
-                                        {movement.tyre_code}
-                                    </Link>
-                                </dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm text-muted-foreground">Prepared by</dt>
-                                <dd className="font-medium">{movement.prepared_by ?? "—"}</dd>
-                            </div>
-                        </dl>
-
-                        <Separator />
-
                         <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-lg border p-4 space-y-2">
-                                <p className="text-sm font-medium">Source</p>
-                                <p className="text-sm">{movement.from_location_display}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Position: {movement.from_position_display}
-                                </p>
-                                {movement.from_odometer != null && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Odometer out: {movement.from_odometer.toLocaleString()} km
-                                    </p>
-                                )}
-                            </div>
-                            <div className="rounded-lg border p-4 space-y-2">
-                                <p className="text-sm font-medium">Destination</p>
-                                <p className="text-sm">{movement.to_location_display}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Position: {movement.to_position_display}
-                                </p>
-                                {movement.to_odometer != null && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Odometer in: {movement.to_odometer.toLocaleString()} km
-                                    </p>
-                                )}
-                            </div>
+                            <MovementLocationCard
+                                title="Source"
+                                location={movement.from_location_display}
+                                position={movement.from_position_display}
+                                odometerLabel="Odometer out"
+                                odometer={movement.from_odometer}
+                            />
+                            <MovementLocationCard
+                                title="Destination"
+                                location={movement.to_location_display}
+                                position={movement.to_position_display}
+                                odometerLabel="Odometer in"
+                                odometer={movement.to_odometer}
+                            />
                         </div>
 
                         {(movement.reason || movement.notes) && (
@@ -172,7 +162,7 @@ export default function MovementsShow({
                                     {movement.reason && (
                                         <div>
                                             <p className="text-sm font-medium">Reason</p>
-                                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                                                 {movement.reason}
                                             </p>
                                         </div>
@@ -180,7 +170,7 @@ export default function MovementsShow({
                                     {movement.notes && (
                                         <div>
                                             <p className="text-sm font-medium">Notes</p>
-                                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                                                 {movement.notes}
                                             </p>
                                         </div>
@@ -191,34 +181,37 @@ export default function MovementsShow({
 
                         <Separator />
 
-                        <dl className="grid gap-3 sm:grid-cols-2 text-sm">
+                        <dl className="grid gap-3 rounded-lg border bg-muted/20 p-4 text-sm sm:grid-cols-2">
                             {movement.submitted_at && (
-                                <div>
-                                    <dt className="text-muted-foreground">Submitted</dt>
-                                    <dd>{movement.submitted_at}</dd>
-                                </div>
+                                <TimelineItem label="Submitted" value={movement.submitted_at} />
                             )}
                             {movement.checked_at && (
-                                <div>
-                                    <dt className="text-muted-foreground">Checked by {movement.checked_by}</dt>
-                                    <dd>{movement.checked_at}</dd>
-                                </div>
+                                <TimelineItem
+                                    label={`Checked by ${movement.checked_by ?? "unknown"}`}
+                                    value={movement.checked_at}
+                                />
                             )}
                             {movement.approved_at && (
-                                <div>
-                                    <dt className="text-muted-foreground">Approved by {movement.approved_by}</dt>
-                                    <dd>{movement.approved_at}</dd>
-                                </div>
+                                <TimelineItem
+                                    label={`Approved by ${movement.approved_by ?? "unknown"}`}
+                                    value={movement.approved_at}
+                                />
                             )}
                             {movement.completed_at && (
-                                <div>
-                                    <dt className="text-muted-foreground">Completed</dt>
-                                    <dd>{movement.completed_at}</dd>
-                                </div>
+                                <TimelineItem label="Completed" value={movement.completed_at} />
                             )}
+                            {!movement.submitted_at &&
+                                !movement.checked_at &&
+                                !movement.approved_at &&
+                                !movement.completed_at && (
+                                    <TimelineItem label="Workflow" value="Draft not submitted" />
+                                )}
                         </dl>
 
-                        <div className="flex flex-wrap gap-2 pt-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                            <Button variant="ghost" asChild>
+                                <Link href={route("tyres.movements.index")}>Back to list</Link>
+                            </Button>
                             {can.update && (
                                 <Button variant="outline" asChild>
                                     <Link href={route("tyres.movements.edit", movement.id)}>
@@ -227,37 +220,49 @@ export default function MovementsShow({
                                     </Link>
                                 </Button>
                             )}
-                            {can.delete && (
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive">
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Delete draft
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete draft?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This permanently removes the draft movement voucher.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={deleteMovement}>
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            )}
-                            <Button variant="ghost" asChild>
-                                <Link href={route("tyres.movements.index")}>Back to list</Link>
-                            </Button>
                         </div>
                     </CardContent>
                 </Card>
             </div>
         </AuthenticatedLayout>
+    );
+}
+
+function MovementLocationCard({
+    title,
+    location,
+    position,
+    odometerLabel,
+    odometer,
+}: {
+    title: string;
+    location: string;
+    position: string;
+    odometerLabel: string;
+    odometer: number | null;
+}) {
+    return (
+        <div className="rounded-lg border bg-background p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                {title}
+            </div>
+            <p className="font-medium">{location}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Position: {position}</p>
+            {odometer != null && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                    {odometerLabel}: {odometer.toLocaleString()} km
+                </p>
+            )}
+        </div>
+    );
+}
+
+function TimelineItem({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd>{value}</dd>
+        </div>
     );
 }

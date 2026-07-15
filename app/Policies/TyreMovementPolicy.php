@@ -30,8 +30,7 @@ class TyreMovementPolicy
 
     public function delete(User $user, TyreMovement $tyreMovement): bool
     {
-        return $user->can('movement.create')
-            && $tyreMovement->status === VoucherStatus::Draft;
+        return false;
     }
 
     public function submit(User $user, TyreMovement $tyreMovement): bool
@@ -66,7 +65,16 @@ class TyreMovementPolicy
 
     public function cancel(User $user, TyreMovement $tyreMovement): bool
     {
-        return $user->can('movement.create')
-            && $tyreMovement->status === VoucherStatus::Draft;
+        if ($tyreMovement->status->isTerminal()) {
+            return false;
+        }
+
+        if ($tyreMovement->status === VoucherStatus::Draft) {
+            return $user->can('movement.create')
+                || $user->can('movement.reject')
+                || $user->can('movement.approve');
+        }
+
+        return $user->can('movement.reject') || $user->can('movement.approve');
     }
 }

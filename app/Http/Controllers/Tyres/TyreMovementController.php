@@ -126,13 +126,7 @@ class TyreMovementController extends Controller
 
     public function destroy(TyreMovement $movement): RedirectResponse
     {
-        $this->authorize('delete', $movement);
-
-        $movement->delete();
-
-        return redirect()
-            ->route('tyres.movements.index')
-            ->with('success', 'Draft movement deleted.');
+        abort(403, 'Movement vouchers cannot be deleted. Void the voucher instead.');
     }
 
     public function positionOptions(Vehicle $vehicle): JsonResponse
@@ -231,7 +225,7 @@ class TyreMovementController extends Controller
 
         return redirect()
             ->route('tyres.movements.index')
-            ->with('success', 'Movement cancelled.');
+            ->with('success', 'Movement voucher voided.');
     }
 
     /** @return array<string, mixed> */
@@ -365,7 +359,7 @@ class TyreMovementController extends Controller
 
         return [
             'update' => $user?->can('update', $movement) ?? false,
-            'delete' => $user?->can('delete', $movement) ?? false,
+            'delete' => false,
             'submit' => $user?->can('submit', $movement) ?? false,
             'check' => $user?->can('check', $movement) ?? false,
             'approve' => $user?->can('approve', $movement) ?? false,

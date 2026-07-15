@@ -233,6 +233,74 @@ class ApprovalsReportsAuditTest extends TestCase
         ]);
     }
 
+    public function test_draft_movement_cannot_be_hard_deleted()
+    {
+        $tyre = $this->createAvailableTyre();
+        $store = Store::query()->firstOrFail();
+
+        $movement = TyreMovement::query()->create([
+            'movement_no' => 'TEST-NO-DELETE',
+            'movement_type' => 'store_to_vehicle',
+            'tyre_id' => $tyre->id,
+            'from_location_type' => 'store',
+            'from_location_id' => $store->id,
+            'from_position_code' => null,
+            'from_odometer' => null,
+            'to_location_type' => 'store',
+            'to_location_id' => $store->id,
+            'to_position_code' => 'A',
+            'to_odometer' => null,
+            'movement_date' => now(),
+            'reason' => 'Test movement',
+            'status' => 'draft',
+            'prepared_by' => $this->adminUser->id,
+        ]);
+
+        $this->actingAs($this->adminUser)
+            ->delete(route('tyres.movements.destroy', $movement->id))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('tyre_movements', [
+            'id' => $movement->id,
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_approved_movement_can_be_voided_before_completion()
+    {
+        $tyre = $this->createAvailableTyre();
+        $store = Store::query()->firstOrFail();
+
+        $movement = TyreMovement::query()->create([
+            'movement_no' => 'TEST-VOID-APPROVED',
+            'movement_type' => 'store_to_vehicle',
+            'tyre_id' => $tyre->id,
+            'from_location_type' => 'store',
+            'from_location_id' => $store->id,
+            'from_position_code' => null,
+            'from_odometer' => null,
+            'to_location_type' => 'store',
+            'to_location_id' => $store->id,
+            'to_position_code' => 'A',
+            'to_odometer' => null,
+            'movement_date' => now(),
+            'reason' => 'Test movement',
+            'status' => 'approved',
+            'prepared_by' => $this->adminUser->id,
+            'approved_by' => $this->adminUser->id,
+            'approved_at' => now(),
+        ]);
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.cancel', $movement->id))
+            ->assertRedirect(route('tyres.movements.index'));
+
+        $this->assertDatabaseHas('tyre_movements', [
+            'id' => $movement->id,
+            'status' => 'cancelled',
+        ]);
+    }
+
     private function createAvailableTyre(): Tyre
     {
         $store = Store::query()->firstOrFail();

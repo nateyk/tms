@@ -49,7 +49,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
     };
 
     return (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
             {pdfUrl && (
                 <Button variant="outline" asChild>
                     <a href={pdfUrl} target="_blank" rel="noreferrer">
@@ -196,17 +196,21 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="outline" disabled={processing}>
-                            Cancel draft
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Void
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Cancel draft?</AlertDialogTitle>
+                            <AlertDialogTitle>Void voucher?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This stops the voucher workflow. No tyre location changes will be applied.
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Keep draft</AlertDialogCancel>
+                            <AlertDialogCancel>Keep voucher</AlertDialogCancel>
                             <AlertDialogAction onClick={() => postAction("cancel")}>
-                                Cancel draft
+                                Void voucher
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
