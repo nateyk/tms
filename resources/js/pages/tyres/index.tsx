@@ -124,12 +124,7 @@ export default function TyresIndex({
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Code</TableHead>
-                                <TableHead>Serial</TableHead>
                                 <TableHead>Brand</TableHead>
-                                <TableHead>Tread (mm)</TableHead>
-                                <TableHead>Location</TableHead>
-                                <TableHead>Vehicle</TableHead>
-                                <TableHead>Position</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -138,12 +133,7 @@ export default function TyresIndex({
                             {tyres.data.map((tyre) => (
                                 <TableRow key={tyre.id}>
                                     <TableCell className="font-medium">{tyre.tyre_code}</TableCell>
-                                    <TableCell>{tyre.serial_number}</TableCell>
                                     <TableCell>{tyre.brand_name || "—"}</TableCell>
-                                    <TableCell>{tyre.current_tread_depth ?? "—"}</TableCell>
-                                    <TableCell>{tyre.current_location_type}</TableCell>
-                                    <TableCell>{tyre.vehicle_plate}</TableCell>
-                                    <TableCell>{tyre.current_position_code}</TableCell>
                                     <TableCell>
                                         <TyreStatusBadge
                                             label={tyre.status_label}

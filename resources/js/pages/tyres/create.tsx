@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreFormFields } from "@/components/tyres/tyre-form-fields";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 
@@ -39,35 +39,33 @@ export default function TyresCreate({ brands, sizes, sources }: FormOptions) {
         <AuthenticatedLayout header="Register Tyre">
             <Head title="Register Tyre" />
 
-            <Card className="max-w-3xl">
-                <CardHeader>
-                    <CardTitle>Register tyre</CardTitle>
-                    <CardDescription>
-                        New tyres are saved as pending approval until an approver confirms
-                        registration and generates a QR code.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <TyreFormFields
-                            errors={errors}
-                            data={data}
-                            setData={setData}
-                            brands={brands}
-                            sizes={sizes}
-                            sources={sources}
-                        />
-                        <div className="flex gap-2">
-                            <Button type="submit" disabled={processing}>
-                                Register tyre
-                            </Button>
+            <form onSubmit={submit}>
+                <TyreFormShell
+                    title="Register tyre"
+                    description="Capture tyre identity, purchase details, and starting tread values. Approval can happen after registration."
+                    backHref={route("tyres.index")}
+                    backLabel="Back to Tyres"
+                    footer={(
+                        <>
                             <Button variant="outline" asChild>
                                 <Link href={route("tyres.index")}>Cancel</Link>
                             </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Registering..." : "Register tyre"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <TyreFormFields
+                        errors={errors}
+                        data={data}
+                        setData={setData}
+                        brands={brands}
+                        sizes={sizes}
+                        sources={sources}
+                    />
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }

@@ -55,6 +55,9 @@ export function TyreBaselineFormFields({
 }: BaselineFormFieldsProps) {
     const selectedTyre = prefilled || tyres.find((t) => t.id === Number(data.tyre_id));
     const isMounted = selectedTyre?.current_location_type && selectedTyre.current_location_type !== "store";
+    const isRunningPosition = Boolean(isMounted && selectedTyre?.current_position_code && !isSparePosition(selectedTyre.current_position_code));
+    const hasVehicleKm = selectedTyre?.current_vehicle_odometer !== null && selectedTyre?.current_vehicle_odometer !== undefined;
+    const showOdometerInput = isRunningPosition && !hasVehicleKm;
 
     const setSelectedTyre = (tyreId: number) => {
         const tyre = tyres.find((item) => item.id === tyreId);
@@ -95,25 +98,19 @@ export function TyreBaselineFormFields({
             </div>
 
             {selectedTyre && (
-                <div className="space-y-2 p-4 bg-muted rounded-md">
-                    <p className="text-sm font-medium">Current Location</p>
-                    <p className="text-sm text-muted-foreground">{selectedTyre.location_display}</p>
+                <div className="rounded-md border bg-muted/30 p-3">
+                    <p className="text-sm font-medium">{selectedTyre.tyre_code}</p>
                     {selectedTyre.current_position_code && (
                         <p className="text-sm text-muted-foreground">
                             Position: {selectedTyre.current_position_code}
                         </p>
                     )}
-                    {selectedTyre.current_vehicle_odometer !== null && selectedTyre.current_vehicle_odometer !== undefined && (
-                        <p className="text-sm text-muted-foreground">
-                            Latest vehicle KM: {selectedTyre.current_vehicle_odometer.toLocaleString()} KM
-                        </p>
-                    )}
                 </div>
             )}
 
-            {isMounted && (
+            {showOdometerInput && (
                 <div className="space-y-2">
-                    <Label htmlFor="baseline_odometer">Baseline Odometer (KM)</Label>
+                    <Label htmlFor="baseline_odometer">Truck KM</Label>
                     <Input
                         id="baseline_odometer"
                         type="number"
@@ -121,15 +118,12 @@ export function TyreBaselineFormFields({
                         step="1"
                         value={data.baseline_odometer ?? ""}
                         onChange={(e) => onDataChange("baseline_odometer", e.target.value === "" ? null : Number(e.target.value))}
-                        placeholder="Uses latest vehicle KM when available"
+                        placeholder="Enter current truck KM"
                         className={errors.baseline_odometer ? "border-destructive" : ""}
                     />
                     {errors.baseline_odometer && (
                         <p className="text-sm text-destructive">{errors.baseline_odometer}</p>
                     )}
-                    <p className="text-xs text-muted-foreground">
-                        Auto-filled from the vehicle KM when available. Type it only when this tyre is mounted on a running position and no vehicle KM is recorded.
-                    </p>
                 </div>
             )}
 
@@ -200,4 +194,8 @@ export function TyreBaselineFormFields({
             </div>
         </div>
     );
+}
+
+function isSparePosition(code: string): boolean {
+    return code === "W" || code === "X" || code.startsWith("SPARE-");
 }

@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Head, Link } from "@inertiajs/react";
-import { Eye } from "lucide-react";
+import { Eye, Truck, ArrowRight } from "lucide-react";
 
 type Vehicle = {
     type: 'combination' | 'standalone_power' | 'standalone_trailer';
@@ -35,47 +35,54 @@ export default function ReadingMonitoringIndex({
     vehicles: Vehicle[];
 }) {
     return (
-        <AuthenticatedLayout header="Tyre Reading Monitoring">
-            <Head title="Tyre Reading Monitoring" />
+        <AuthenticatedLayout header="Reading Monitoring">
+            <Head title="Reading Monitoring" />
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Reading Monitoring</CardTitle>
-                        <CardDescription>
-                            Select a vehicle to view tyre readings, usage, and remaining life.
-                        </CardDescription>
+                        <h2 className="text-2xl font-semibold">Vehicle Selection</h2>
+                        <p className="text-muted-foreground">Select a vehicle to view tyre readings and usage</p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {vehicles.map((vehicle) => (
-                            <Card key={vehicle.id} className="hover:bg-accent/50 transition-colors">
-                                <CardHeader className="pb-3">
-                                    {vehicle.type === 'combination' ? (
-                                        <>
-                                            <CardTitle className="text-lg">{vehicle.power_vehicle?.display_code}</CardTitle>
-                                            <CardDescription>
-                                                {vehicle.power_vehicle?.vehicle_type_name || "Unknown Type"}
-                                            </CardDescription>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CardTitle className="text-lg">{vehicle.display_code}</CardTitle>
-                                            <CardDescription>
-                                                {vehicle.vehicle_type_name || "Unknown Type"}
-                                            </CardDescription>
-                                        </>
-                                    )}
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2 text-sm">
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {vehicles.map((vehicle) => (
+                        <Link
+                            key={vehicle.id}
+                            href={route("tyres.reading-monitoring.show", vehicle.id)}
+                            className="group"
+                        >
+                            <Card className="h-full transition-all hover:shadow-md hover:border-primary/50">
+                                <CardContent className="p-4">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <Truck className="h-5 w-5 text-muted-foreground" />
+                                            <div>
+                                                <h3 className="font-semibold text-sm">
+                                                    {vehicle.type === 'combination' 
+                                                        ? vehicle.power_vehicle?.display_code 
+                                                        : vehicle.display_code}
+                                                </h3>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {vehicle.type === 'combination' 
+                                                        ? vehicle.power_vehicle?.vehicle_type_name 
+                                                        : vehicle.vehicle_type_name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                    
+                                    <div className="space-y-1 text-xs">
                                         {vehicle.type === 'combination' && vehicle.power_vehicle && (
                                             <>
                                                 <div className="flex justify-between">
                                                     <span className="text-muted-foreground">Odometer:</span>
                                                     <span className="font-medium">
-                                                        {vehicle.power_vehicle.odometer ? vehicle.power_vehicle.odometer.toLocaleString() : "—"}
+                                                        {vehicle.power_vehicle.odometer 
+                                                            ? vehicle.power_vehicle.odometer.toLocaleString() + " km"
+                                                            : "—"}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between">
@@ -87,18 +94,14 @@ export default function ReadingMonitoringIndex({
                                             </>
                                         )}
                                         {vehicle.type === 'standalone_power' && (
-                                            <>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Odometer:</span>
-                                                    <span className="font-medium">
-                                                        {vehicle.odometer ? vehicle.odometer.toLocaleString() : "—"}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Type:</span>
-                                                    <span className="font-medium">Power Vehicle</span>
-                                                </div>
-                                            </>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Odometer:</span>
+                                                <span className="font-medium">
+                                                    {vehicle.odometer 
+                                                        ? vehicle.odometer.toLocaleString() + " km"
+                                                        : "—"}
+                                                </span>
+                                            </div>
                                         )}
                                         {vehicle.type === 'standalone_trailer' && (
                                             <div className="flex justify-between">
@@ -107,28 +110,21 @@ export default function ReadingMonitoringIndex({
                                             </div>
                                         )}
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full mt-4"
-                                        asChild
-                                    >
-                                        <Link href={route("tyres.reading-monitoring.show", vehicle.id)}>
-                                            <Eye className="h-4 w-4 mr-2" />
-                                            View Tyres
-                                        </Link>
-                                    </Button>
                                 </CardContent>
                             </Card>
-                        ))}
-                    </div>
-                    {vehicles.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No active vehicles found.
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        </Link>
+                    ))}
+                </div>
+
+                {vehicles.length === 0 && (
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-12">
+                            <Truck className="h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground">No active vehicles found</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
         </AuthenticatedLayout>
     );
 }

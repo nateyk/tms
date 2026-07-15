@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -7,8 +8,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 type TyreOption = {
     id: number;
@@ -96,7 +96,7 @@ export function TyreMovementFormFields({
 
     const derivedSource = sourceInfo ?? {
         location_label: selectedTyre?.source_label ?? "Select a tyre",
-        position_label: selectedTyre?.current_position_code ?? "—",
+        position_label: selectedTyre?.current_position_code ?? "-",
         movement_type_label: "Auto after source and destination",
     };
 
@@ -126,8 +126,7 @@ export function TyreMovementFormFields({
     return (
         <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="tyre_id">Tyre</Label>
+                <Field label="Tyre" error={errors.tyre_id} className="sm:col-span-2">
                     {readOnlyTyre ? (
                         <Input value={selectedTyre?.tyre_code ?? ""} disabled />
                     ) : (
@@ -135,76 +134,68 @@ export function TyreMovementFormFields({
                             value={data.tyre_id ? String(data.tyre_id) : undefined}
                             onValueChange={(value) => setData("tyre_id", Number(value))}
                         >
-                            <SelectTrigger id="tyre_id">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Select tyre" />
                             </SelectTrigger>
                             <SelectContent>
                                 {tyres.map((tyre) => (
                                     <SelectItem key={tyre.id} value={String(tyre.id)}>
-                                        {tyre.tyre_code} · {tyre.status_label}
+                                        {tyre.tyre_code} - {tyre.status_label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     )}
-                    {errors.tyre_id && (
-                        <p className="text-sm text-destructive">{errors.tyre_id}</p>
-                    )}
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                    <Label htmlFor="movement_date">Movement date</Label>
+                <Field label="Movement date" error={errors.movement_date}>
                     <Input
-                        id="movement_date"
                         type="date"
                         value={data.movement_date}
                         onChange={(e) => setData("movement_date", e.target.value)}
                     />
-                    {errors.movement_date && (
-                        <p className="text-sm text-destructive">{errors.movement_date}</p>
-                    )}
-                </div>
+                </Field>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg border p-4 space-y-3">
-                    <p className="text-sm font-medium">Source</p>
+                <section className="space-y-4 rounded-md border bg-muted/20 p-4">
+                    <div>
+                        <h3 className="text-sm font-semibold">From</h3>
+                        <p className="text-xs text-muted-foreground">Current tyre location</p>
+                    </div>
                     <dl className="grid gap-2 text-sm">
                         <div>
-                            <dt className="text-muted-foreground">Current location</dt>
+                            <dt className="text-muted-foreground">Location</dt>
                             <dd className="font-medium">{derivedSource.location_label}</dd>
                         </div>
                         <div>
-                            <dt className="text-muted-foreground">Tyre position</dt>
-                            <dd className="font-medium">{derivedSource.position_label || "—"}</dd>
+                            <dt className="text-muted-foreground">Position</dt>
+                            <dd className="font-medium">{derivedSource.position_label || "-"}</dd>
                         </div>
                     </dl>
-                    <div className="space-y-2">
-                        <Label htmlFor="from_odometer">Odometer out</Label>
+                    <Field label="Odometer out" error={errors.from_odometer}>
                         <Input
-                            id="from_odometer"
                             type="number"
                             min={0}
                             value={data.from_odometer ?? ""}
                             onChange={(e) =>
-                                setData(
-                                    "from_odometer",
-                                    e.target.value === "" ? null : Number(e.target.value),
-                                )
+                                setData("from_odometer", e.target.value === "" ? null : Number(e.target.value))
                             }
                         />
-                    </div>
-                </div>
+                    </Field>
+                </section>
 
-                <div className="rounded-lg border p-4 space-y-3">
-                    <p className="text-sm font-medium">Destination</p>
-                    <div className="space-y-2">
-                        <Label htmlFor="to_location_type">Destination type</Label>
+                <section className="space-y-4 rounded-md border bg-muted/20 p-4">
+                    <div>
+                        <h3 className="text-sm font-semibold">To</h3>
+                        <p className="text-xs text-muted-foreground">New tyre location</p>
+                    </div>
+                    <Field label="Destination type" error={errors.to_location_type}>
                         <Select
                             value={data.to_location_type || undefined}
                             onValueChange={handleDestinationTypeChange}
                         >
-                            <SelectTrigger id="to_location_type">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Select destination type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -215,14 +206,10 @@ export function TyreMovementFormFields({
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.to_location_type && (
-                            <p className="text-sm text-destructive">{errors.to_location_type}</p>
-                        )}
-                    </div>
+                    </Field>
 
                     {!fixedLocationTypes.includes(data.to_location_type) && (
-                        <div className="space-y-2">
-                            <Label htmlFor="to_location_id">Vehicle / store</Label>
+                        <Field label="Destination" error={errors.to_location_id}>
                             <Select
                                 value={data.to_location_id ? String(data.to_location_id) : undefined}
                                 onValueChange={(value) => {
@@ -230,7 +217,7 @@ export function TyreMovementFormFields({
                                     setData("to_position_code", "");
                                 }}
                             >
-                                <SelectTrigger id="to_location_id">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Select destination" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -241,28 +228,18 @@ export function TyreMovementFormFields({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.to_location_id && (
-                                <p className="text-sm text-destructive">{errors.to_location_id}</p>
-                            )}
-                        </div>
+                        </Field>
                     )}
 
                     {isVehicleType(data.to_location_type) && (
-                        <div className="space-y-2">
-                            <Label htmlFor="to_position_code">Tyre position</Label>
+                        <Field label="Position" error={errors.to_position_code}>
                             <Select
                                 value={data.to_position_code || undefined}
                                 onValueChange={(value) => setData("to_position_code", value)}
                                 disabled={loadingPositions || positionOptions.length === 0}
                             >
-                                <SelectTrigger id="to_position_code">
-                                    <SelectValue
-                                        placeholder={
-                                            loadingPositions
-                                                ? "Loading positions..."
-                                                : "Select position"
-                                        }
-                                    />
+                                <SelectTrigger>
+                                    <SelectValue placeholder={loadingPositions ? "Loading positions..." : "Select position"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {positionOptions.map((position) => (
@@ -272,53 +249,58 @@ export function TyreMovementFormFields({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.to_position_code && (
-                                <p className="text-sm text-destructive">{errors.to_position_code}</p>
-                            )}
-                        </div>
+                        </Field>
                     )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="to_odometer">Odometer in</Label>
+                    <Field label="Odometer in" error={errors.to_odometer}>
                         <Input
-                            id="to_odometer"
                             type="number"
                             min={0}
                             value={data.to_odometer ?? ""}
                             onChange={(e) =>
-                                setData(
-                                    "to_odometer",
-                                    e.target.value === "" ? null : Number(e.target.value),
-                                )
+                                setData("to_odometer", e.target.value === "" ? null : Number(e.target.value))
                             }
                         />
-                    </div>
-                </div>
+                    </Field>
+                </section>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                    <Label htmlFor="reason">Reason</Label>
+                <Field label="Reason" error={errors.reason}>
                     <Textarea
-                        id="reason"
                         rows={3}
                         value={data.reason}
                         onChange={(e) => setData("reason", e.target.value)}
                     />
-                    {errors.reason && (
-                        <p className="text-sm text-destructive">{errors.reason}</p>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="notes">Internal notes</Label>
+                </Field>
+                <Field label="Internal notes" error={errors.notes}>
                     <Textarea
-                        id="notes"
                         rows={3}
                         value={data.notes}
                         onChange={(e) => setData("notes", e.target.value)}
                     />
-                </div>
+                </Field>
             </div>
+        </div>
+    );
+}
+
+function Field({
+    label,
+    error,
+    children,
+    className = "",
+}: {
+    label: string;
+    error?: string;
+    children: ReactNode;
+    className?: string;
+}) {
+    return (
+        <div className={`space-y-2 ${className}`}>
+            <Label>{label}</Label>
+            {children}
+            {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
 }

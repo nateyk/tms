@@ -41,6 +41,8 @@ type ModernTyreMapProps = {
     selectedPosition: string | null;
     onSelect: (code: string) => void;
     onContextMenuAction?: (action: string, slot: ModernTyreSlot, x?: number, y?: number) => void;
+    onMovementAction?: (slot: ModernTyreSlot) => void;
+    onDisposalAction?: (slot: ModernTyreSlot) => void;
     showLegend?: boolean;
     className?: string;
 };
@@ -812,9 +814,13 @@ function openUrl(url?: string | null) {
 function TyreActionMenu({
     menu,
     onClose,
+    onMovementAction,
+    onDisposalAction,
 }: {
     menu: NonNullable<TyreContextMenuState>;
     onClose: () => void;
+    onMovementAction?: (slot: ModernTyreSlot) => void;
+    onDisposalAction?: (slot: ModernTyreSlot) => void;
 }) {
     const menuRef = useRef<HTMLDivElement>(null);
     const hasTyre = Boolean(menu.slot.tyre_code);
@@ -891,11 +897,20 @@ function TyreActionMenu({
                 <button
                     type="button"
                     className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={!menu.slot.create_movement_url}
-                    onClick={() => run(() => openUrl(menu.slot.create_movement_url))}
+                    disabled={!hasTyre}
+                    onClick={() => run(() => onMovementAction?.(menu.slot))}
                 >
                     <MoveRight className="h-4 w-4" />
-                    {hasTyre ? (isSpare ? "Create Movement from Spare" : "Create Movement") : "Mount Tyre Here"}
+                    Tyre Movements
+                </button>
+                <button
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!hasTyre}
+                    onClick={() => run(() => onDisposalAction?.(menu.slot))}
+                >
+                    <Clipboard className="h-4 w-4" />
+                    Tyre Disposals
                 </button>
                 {hasTyre && (
                     <button
@@ -952,6 +967,8 @@ export function ModernTyreMap({
     selectedPosition,
     onSelect,
     onContextMenuAction,
+    onMovementAction,
+    onDisposalAction,
     showLegend = true,
     className,
 }: ModernTyreMapProps) {
@@ -1036,7 +1053,14 @@ export function ModernTyreMap({
         >
             <div ref={stageRef} className="flex justify-center px-2 py-2" />
             {showLegend && renderLegend()}
-            {contextMenu && <TyreActionMenu menu={contextMenu} onClose={() => setContextMenu(null)} />}
+            {contextMenu && (
+                <TyreActionMenu
+                    menu={contextMenu}
+                    onClose={() => setContextMenu(null)}
+                    onMovementAction={onMovementAction}
+                    onDisposalAction={onDisposalAction}
+                />
+            )}
         </div>
     );
 }

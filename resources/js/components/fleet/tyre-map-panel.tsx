@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { ChevronDown, Info } from "lucide-react";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
+import { TyreMovementDialog } from "@/components/fleet/tyre-movement-dialog";
+import { TyreDisposalDialog } from "@/components/fleet/tyre-disposal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -303,12 +305,16 @@ function TyreDiagramBlock({
     payload,
     selection,
     onSelect,
+    onMovementAction,
+    onDisposalAction,
 }: {
     unit: MapUnit;
     mapId: string;
     payload: TyreMapPayload;
     selection: MapSelection;
     onSelect: (code: string) => void;
+    onMovementAction?: (slot: KonvaSlot) => void;
+    onDisposalAction?: (slot: KonvaSlot) => void;
 }) {
     if (payload.mapData.length === 0) {
         return null;
@@ -323,6 +329,8 @@ function TyreDiagramBlock({
                     slots={payload.konvaConfig.slots}
                     selectedPosition={selection?.unit === unit ? selection.code : null}
                     onSelect={onSelect}
+                    onMovementAction={onMovementAction}
+                    onDisposalAction={onDisposalAction}
                     className="mx-auto max-w-[560px] border-0 shadow-none"
                 />
             </div>
@@ -338,6 +346,9 @@ export function VehicleTyreMapPanel({
 }: VehicleTyreMapPanelProps) {
     const [selection, setSelection] = useState<MapSelection>(null);
     const [guideOpen, setGuideOpen] = useState(false);
+    const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+    const [disposalDialogOpen, setDisposalDialogOpen] = useState(false);
+    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(null);
 
     const powerGuide = useMemo(
         () => buildGuideGroups(tyreMap.mapData, tyreMap.konvaConfig.assetType),
@@ -372,6 +383,20 @@ export function VehicleTyreMapPanel({
         setSelection({ unit, code });
     };
 
+    const handleMovementAction = (slot: KonvaSlot) => {
+        if (slot.tyre_id) {
+            setSelectedTyreId(slot.tyre_id);
+            setMovementDialogOpen(true);
+        }
+    };
+
+    const handleDisposalAction = (slot: KonvaSlot) => {
+        if (slot.tyre_id) {
+            setSelectedTyreId(slot.tyre_id);
+            setDisposalDialogOpen(true);
+        }
+    };
+
     if (tyreMap.mapData.length === 0 && !trailerTyreMap?.mapData.length) {
         return (
             <Card>
@@ -384,6 +409,7 @@ export function VehicleTyreMapPanel({
 
     const hasTrailer = Boolean(trailer && trailerTyreMap);
     return (
+        <>
         <Card>
             <CardContent className="p-0">
                 <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] lg:divide-x">
@@ -394,6 +420,8 @@ export function VehicleTyreMapPanel({
                             payload={tyreMap}
                             selection={selection}
                             onSelect={(code) => handleSelect("power", code)}
+                            onMovementAction={handleMovementAction}
+                            onDisposalAction={handleDisposalAction}
                         />
 
                         {hasTrailer && (
@@ -403,6 +431,8 @@ export function VehicleTyreMapPanel({
                                 payload={trailerTyreMap!}
                                 selection={selection}
                                 onSelect={(code) => handleSelect("trailer", code)}
+                                onMovementAction={handleMovementAction}
+                                onDisposalAction={handleDisposalAction}
                             />
                         )}
                     </div>
@@ -486,6 +516,24 @@ export function VehicleTyreMapPanel({
                 </div>
             </CardContent>
         </Card>
+
+        <TyreMovementDialog
+            open={movementDialogOpen}
+            onOpenChange={setMovementDialogOpen}
+            tyreId={selectedTyreId}
+            tyres={[]}
+            stores={[]}
+            powerVehicles={[]}
+            trailers={[]}
+            destinationTypes={[]}
+        />
+
+        <TyreDisposalDialog
+            open={disposalDialogOpen}
+            onOpenChange={setDisposalDialogOpen}
+            tyreId={selectedTyreId}
+        />
+        </>
     );
 }
 

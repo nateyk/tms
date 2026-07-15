@@ -151,52 +151,37 @@ export default function ReadingMonitoringVehicle({
             <Head title={`Reading Monitoring - ${vehicle.display_code}`} />
 
             <div className="space-y-6">
-                <section className="rounded-lg border bg-card p-4 shadow-sm">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="space-y-3">
-                            <Button variant="ghost" size="sm" asChild className="-ml-2">
-                                <Link href={route("tyres.reading-monitoring.index")}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Back to Vehicles
-                                </Link>
-                            </Button>
-                            <div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <h1 className="text-2xl font-semibold tracking-tight">{vehicle.display_code}</h1>
-                                    <Badge variant="outline">{vehicle.vehicle_type_name || "Vehicle"}</Badge>
-                                    <Badge variant={summary.critical > 0 ? "destructive" : actionCount > 0 ? "secondary" : "default"}>
-                                        {healthTone}
-                                    </Badge>
-                                </div>
-                                <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-                                    Use the map for a visual health overview, the side panel for quick decisions, and the report table for audit review.
-                                </p>
-                            </div>
+                <section className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={route("tyres.reading-monitoring.index")}>
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-semibold">{vehicle.display_code}</h1>
                         </div>
-
-                        <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[360px]">
-                            <MiniStat label="Current vehicle KM" value={formatKm(vehicle.odometer)} />
-                            <MiniStat label="Audit coverage" value={`${auditedCount}/${summary.total}`} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route("fleet.vehicles.odometer", vehicle.id)}>
+                                <Gauge className="h-4 w-4 mr-2" />
+                                Record KM
+                            </Link>
+                        </Button>
+                        {summary.baseline_required > 0 ? (
                             <Button variant="outline" size="sm" asChild>
-                                <Link href={route("fleet.vehicles.odometer", vehicle.id)}>
-                                    <Gauge className="mr-2 h-4 w-4" />
-                                    Record Vehicle KM
+                                <Link href={route("tyres.baselines.create")}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Set Baselines
                                 </Link>
                             </Button>
-                            {summary.baseline_required > 0 ? (
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href={route("tyres.baselines.create")}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Set Baselines
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Baselines Set
-                                </Button>
-                            )}
-                        </div>
+                        ) : (
+                            <Button variant="outline" size="sm" disabled>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Baselines Set
+                            </Button>
+                        )}
                     </div>
                 </section>
 
@@ -428,7 +413,6 @@ function EmptyPositionPanel({
 }
 
 function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: Vehicle; recordKmUrl: string | null }) {
-    const positionKind = tyre.spare_label ? "Spare" : tyre.position_type || "Running";
     const status = tyre.has_baseline ? tyre.effective_status : "Baseline Required";
 
     return (
@@ -436,9 +420,7 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
             <div className="rounded-lg border bg-muted/20 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <Badge className="text-sm">{tyre.position_display}</Badge>
-                    <Badge variant="outline">{positionKind}</Badge>
                     <Badge variant={getStatusVariant(tyre.status_color)}>{status}</Badge>
-                    {tyre.is_audited && <Badge variant="secondary">Audited</Badge>}
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-end gap-3">
                     <div>
@@ -449,68 +431,33 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
                 </div>
             </div>
 
-            {tyre.spare_label && (
-                <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                    Spare position does not gain running KM.
-                </div>
-            )}
-
             <PanelSection title="Tyre Identity">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <InfoRow label="Code" value={tyre.tyre_code} />
-                    <InfoRow label="Serial" value={tyre.serial_number} />
                     <InfoRow label="Brand" value={tyre.brand_name} />
                     <InfoRow label="Size" value={tyre.size_label} />
-                    <InfoRow label="Vehicle" value={vehicle.display_code} />
-                    <InfoRow label="Position" value={tyre.position_display} />
+                    <InfoRow label="Serial" value={tyre.serial_number} />
                 </div>
             </PanelSection>
 
-            <Separator />
-
-            <PanelSection title="Baseline">
-                {tyre.has_baseline ? (
+            {!tyre.has_baseline ? (
+                <QuickBaselineForm tyre={tyre} vehicle={vehicle} />
+            ) : (
+                <PanelSection title="Baseline">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         <InfoRow label="Baseline %" value={formatPercent(tyre.baseline_percentage)} />
                         <InfoRow label="Baseline KM" value={formatKm(tyre.baseline_odometer)} />
                         <InfoRow label="Expected Life" value={formatKm(tyre.expected_life_km)} />
                         <InfoRow label="Date" value={tyre.baseline_date || "-"} />
                     </div>
-                ) : (
-                    <QuickBaselineForm tyre={tyre} vehicle={vehicle} />
-                )}
-            </PanelSection>
+                </PanelSection>
+            )}
 
-            <PanelSection title="Usage Snapshot">
-                <div className="grid grid-cols-3 gap-2">
-                    <MetricTile label="Calculated" value={tyre.has_baseline ? formatPercent(tyre.calculated_remaining_percentage) : "No Base"} />
-                    <MetricTile label="Audited" value={formatPercent(tyre.latest_audited_remaining_percentage)} />
-                    <MetricTile label="Effective" value={tyre.has_baseline ? formatPercent(tyre.effective_remaining_percentage) : "No Base"} strong />
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <PanelSection title="Usage">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <InfoRow label="Used KM" value={formatKm(tyre.used_km)} />
-                    <InfoRow label="Since audit" value={formatKm(tyre.km_since_latest_audit)} />
                     <InfoRow label="Vehicle KM" value={formatKm(tyre.current_vehicle_odometer)} />
-                    <InfoRow label="Audit date" value={tyre.latest_audit_date || "-"} />
                 </div>
-            </PanelSection>
-
-            <PanelSection title="Audit Variance">
-                {tyre.latest_audited_remaining_percentage !== null ? (
-                    <div className={cn(
-                        "rounded-md border px-3 py-2 text-sm",
-                        (tyre.audit_variance_percentage ?? 0) < 0
-                            ? "border-amber-200 bg-amber-50 text-amber-800"
-                            : "border-blue-200 bg-blue-50 text-blue-800",
-                    )}>
-                        Manual audit is {Math.abs(tyre.audit_variance_percentage ?? 0).toFixed(1)}%
-                        {(tyre.audit_variance_percentage ?? 0) < 0 ? " lower" : " higher"} than system estimate.
-                    </div>
-                ) : (
-                    <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-                        No manual condition audit percentage recorded yet.
-                    </div>
-                )}
             </PanelSection>
 
             <div className="grid gap-2 pt-1">
@@ -535,20 +482,6 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
                             Move
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href={tyre.view_baseline_url || tyre.create_baseline_url}>
-                            <Settings className="mr-2 h-4 w-4" />
-                            Baseline
-                        </Link>
-                    </Button>
-                    {recordKmUrl && (
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={recordKmUrl}>
-                                <Gauge className="mr-2 h-4 w-4" />
-                                KM
-                            </Link>
-                        </Button>
-                    )}
                 </div>
             </div>
         </div>
@@ -558,6 +491,8 @@ function TyreHealthPanel({ tyre, vehicle, recordKmUrl }: { tyre: Tyre; vehicle: 
 function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) {
     const isMounted = Boolean(tyre.current_position_code);
     const requiresOdometer = isMounted && !isSparePosition(tyre.current_position_code || "");
+    const hasVehicleKm = tyre.current_vehicle_odometer !== null || vehicle.odometer !== null;
+    const showOdometerInput = requiresOdometer && !hasVehicleKm;
     const { data, setData, post, processing, errors } = useForm({
         tyre_id: tyre.id,
         baseline_location_type: vehicle.asset_type === "trailer" ? "trailer" : "power_vehicle",
@@ -587,14 +522,12 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
             <div className="grid grid-cols-2 gap-2 text-xs text-amber-900">
                 <InfoRow label="Tyre" value={tyre.tyre_code} />
                 <InfoRow label="Position" value={tyre.position_display} />
-                <InfoRow label="Vehicle" value={vehicle.display_code} />
-                <InfoRow label="Latest KM" value={formatKm(tyre.current_vehicle_odometer ?? vehicle.odometer)} />
             </div>
 
-            {requiresOdometer && (
+            {showOdometerInput && (
                 <div className="space-y-1">
                     <Label htmlFor={`baseline_odometer_${tyre.id}`} className="text-xs">
-                        Baseline Odometer (KM)
+                        Truck KM
                     </Label>
                     <Input
                         id={`baseline_odometer_${tyre.id}`}
@@ -603,6 +536,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                         step={1}
                         value={data.baseline_odometer}
                         onChange={(event) => setData("baseline_odometer", event.target.value === "" ? "" : Number(event.target.value))}
+                        placeholder="Enter current truck KM"
                         className={errors.baseline_odometer ? "border-destructive bg-white" : "bg-white"}
                     />
                     {errors.baseline_odometer && <p className="text-xs text-destructive">{errors.baseline_odometer}</p>}

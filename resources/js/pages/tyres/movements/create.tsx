@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreMovementFormFields } from "@/components/tyres/tyre-movement-form-fields";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 
@@ -50,38 +50,35 @@ export default function MovementsCreate({
         <AuthenticatedLayout header="New Tyre Movement">
             <Head title="New Tyre Movement" />
 
-            <Card className="max-w-4xl">
-                <CardHeader>
-                    <CardTitle>Tyre movement request</CardTitle>
-                    <CardDescription>
-                        Select the tyre, confirm its source, then choose the destination position.
-                        Draft → Submit → Check → Approve → Complete. Inventory updates only after
-                        completion.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <TyreMovementFormFields
-                            data={data}
-                            setData={setData}
-                            errors={errors}
-                            tyres={tyres}
-                            stores={stores}
-                            powerVehicles={powerVehicles}
-                            trailers={trailers}
-                            destinationTypes={destinationTypes}
-                        />
-                        <div className="flex gap-2">
-                            <Button type="submit" disabled={processing}>
-                                Save draft
-                            </Button>
+            <form onSubmit={submit}>
+                <TyreFormShell
+                    title="New tyre movement"
+                    description="Choose the tyre, destination, and position. Odometer fields are used when the movement touches a running vehicle."
+                    backHref={route("tyres.movements.index")}
+                    backLabel="Back to Movements"
+                    footer={(
+                        <>
                             <Button variant="outline" asChild>
                                 <Link href={route("tyres.movements.index")}>Cancel</Link>
                             </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Saving..." : "Save draft"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <TyreMovementFormFields
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        tyres={tyres}
+                        stores={stores}
+                        powerVehicles={powerVehicles}
+                        trailers={trailers}
+                        destinationTypes={destinationTypes}
+                    />
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }

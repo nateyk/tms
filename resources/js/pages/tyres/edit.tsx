@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreFormFields } from "@/components/tyres/tyre-form-fields";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 
@@ -55,32 +55,33 @@ export default function TyresEdit({ brands, sizes, sources, tyre }: FormOptions)
         <AuthenticatedLayout header={`Edit ${tyre.tyre_code}`}>
             <Head title={`Edit ${tyre.tyre_code}`} />
 
-            <Card className="max-w-3xl">
-                <CardHeader>
-                    <CardTitle>Edit tyre</CardTitle>
-                    <CardDescription>Update registration and purchase details.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <TyreFormFields
-                            errors={errors}
-                            data={data}
-                            setData={setData}
-                            brands={brands}
-                            sizes={sizes}
-                            sources={sources}
-                        />
-                        <div className="flex gap-2">
-                            <Button type="submit" disabled={processing}>
-                                Save changes
-                            </Button>
+            <form onSubmit={submit}>
+                <TyreFormShell
+                    title={`Edit ${tyre.tyre_code}`}
+                    description="Update tyre identity, purchase details, and tread values."
+                    backHref={route("tyres.show", tyre.id)}
+                    backLabel="Back to Tyre"
+                    footer={(
+                        <>
                             <Button variant="outline" asChild>
                                 <Link href={route("tyres.show", tyre.id)}>Cancel</Link>
                             </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Saving..." : "Save changes"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <TyreFormFields
+                        errors={errors}
+                        data={data}
+                        setData={setData}
+                        brands={brands}
+                        sizes={sizes}
+                        sources={sources}
+                    />
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }

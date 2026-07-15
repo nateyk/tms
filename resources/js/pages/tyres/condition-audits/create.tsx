@@ -1,8 +1,7 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { AlertTriangle, ArrowLeft, Info } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { FormEventHandler, type ReactNode } from "react";
 
 type TyreAuditContext = {
@@ -87,41 +86,32 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
         <AuthenticatedLayout header="Record Tyre Condition Audit">
             <Head title="Record Tyre Condition Audit" />
 
-            <div className="max-w-4xl space-y-6">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route("tyres.show", tyre.id)}>
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-semibold">Record Tyre Condition Audit</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Save a manual inspected remaining percentage without changing baseline or movement records.
-                        </p>
-                    </div>
-                </div>
+            <form onSubmit={submit}>
+                <TyreFormShell
+                    title="Record condition audit"
+                    description={`${tyre.tyre_code} on ${tyre.vehicle_label}, position ${tyre.position}. Save the manual inspected remaining percentage without changing baseline records.`}
+                    backHref={route("tyres.show", tyre.id)}
+                    backLabel="Back to Tyre"
+                    footer={(
+                        <>
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={route("tyres.show", tyre.id)}>Cancel</Link>
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Saving..." : "Save Condition Audit"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <div className="space-y-6">
+                        <div className="grid gap-3 md:grid-cols-4">
+                            <Metric label="Tyre" value={tyre.tyre_code} />
+                            <Metric label="Vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
+                            <Metric label="Calculated" value={formatPercent(calculated)} />
+                            <Metric label="Last Audit" value={formatPercent(tyre.usage_summary.latest_audited_remaining_percentage)} />
+                        </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Audit Context</CardTitle>
-                        <CardDescription>{tyre.tyre_code} on {tyre.vehicle_label}, position {tyre.position}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-3 md:grid-cols-4">
-                        <Metric label="Tyre" value={tyre.tyre_code} />
-                        <Metric label="Current Vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
-                        <Metric label="Calculated Remaining" value={formatPercent(calculated)} />
-                        <Metric label="Last Audited" value={formatPercent(tyre.usage_summary.latest_audited_remaining_percentage)} />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Inspection Result</CardTitle>
-                        <CardDescription>Enter the mechanic/manual audited remaining percentage.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={submit} className="space-y-6">
+                        <section className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <Field label="Audited Remaining % *" error={errors.audited_remaining_percentage}>
                                     <Input
@@ -221,19 +211,10 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                                     rows={4}
                                 />
                             </Field>
-
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" asChild>
-                                    <Link href={route("tyres.show", tyre.id)}>Cancel</Link>
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? "Saving..." : "Save Condition Audit"}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
+                        </section>
+                    </div>
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }

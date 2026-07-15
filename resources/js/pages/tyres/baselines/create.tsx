@@ -1,9 +1,8 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreBaselineFormFields } from "@/components/tyres/tyre-baseline-form-fields";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft } from "lucide-react";
 
 type BaselineFormData = {
     tyre_id?: number | string;
@@ -68,46 +67,32 @@ export default function BaselineCreate({
         <AuthenticatedLayout header="Create Baseline">
             <Head title="Create Baseline" />
 
-            <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route("tyres.baselines.index")}>
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl font-bold">Create Tyre Baseline</h1>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Baseline Information</CardTitle>
-                        <CardDescription>
-                            Set the initial baseline for tracking tyre usage and remaining life.
-                            Only tyres without an existing baseline can be selected.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <TyreBaselineFormFields
-                                data={data}
-                                errors={errors}
-                                tyres={tyres}
-                                prefilled={prefilled}
-                                onDataChange={handleChange}
-                            />
-
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" asChild>
-                                    <Link href={route("tyres.baselines.index")}>Cancel</Link>
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? "Creating..." : "Create Baseline"}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
+            <form onSubmit={handleSubmit}>
+                <TyreFormShell
+                    title="Create tyre baseline"
+                    description="Set tyre condition percentage and expected life. Truck KM is used automatically when the tyre is already mounted."
+                    backHref={route("tyres.baselines.index")}
+                    backLabel="Back to Baselines"
+                    footer={(
+                        <>
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={route("tyres.baselines.index")}>Cancel</Link>
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Creating..." : "Create Baseline"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <TyreBaselineFormFields
+                        data={data}
+                        errors={errors}
+                        tyres={tyres}
+                        prefilled={prefilled}
+                        onDataChange={handleChange}
+                    />
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }

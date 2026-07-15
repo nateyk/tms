@@ -1,9 +1,8 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { TyreBaselineFormFields } from "@/components/tyres/tyre-baseline-form-fields";
+import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft } from "lucide-react";
 
 type BaselineFormData = {
     tyre_id?: number | string;
@@ -58,53 +57,40 @@ export default function BaselineEdit({ baseline }: { baseline: Baseline }) {
         <AuthenticatedLayout header="Edit Baseline">
             <Head title={`Edit Baseline - ${baseline.tyre_code}`} />
 
-            <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route("tyres.baselines.show", baseline.id)}>
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl font-bold">Edit Baseline - {baseline.tyre_code}</h1>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Baseline Information</CardTitle>
-                        <CardDescription>
-                            Update the baseline settings for tracking tyre usage and remaining life.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <TyreBaselineFormFields
-                                data={data}
-                                errors={errors}
-                                tyres={[]}
-                                prefilled={{
-                                    id: baseline.tyre_id,
-                                    tyre_code: baseline.tyre_code,
-                                    current_location_type: baseline.baseline_location_type,
-                                    current_location_id: baseline.baseline_location_id,
-                                    current_position_code: baseline.baseline_position_code,
-                                    location_display: `${baseline.baseline_location_type} - ${baseline.baseline_position_code || 'N/A'}`,
-                                    current_vehicle_odometer: baseline.current_vehicle_odometer,
-                                }}
-                                onDataChange={handleChange}
-                            />
-
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" asChild>
-                                    <Link href={route("tyres.baselines.show", baseline.id)}>Cancel</Link>
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? "Updating..." : "Update Baseline"}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
+            <form onSubmit={handleSubmit}>
+                <TyreFormShell
+                    title={`Edit baseline - ${baseline.tyre_code}`}
+                    description="Adjust tyre condition percentage, expected life, date, and notes."
+                    backHref={route("tyres.baselines.show", baseline.id)}
+                    backLabel="Back to Baseline"
+                    footer={(
+                        <>
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={route("tyres.baselines.show", baseline.id)}>Cancel</Link>
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Updating..." : "Update Baseline"}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <TyreBaselineFormFields
+                        data={data}
+                        errors={errors}
+                        tyres={[]}
+                        prefilled={{
+                            id: baseline.tyre_id,
+                            tyre_code: baseline.tyre_code,
+                            current_location_type: baseline.baseline_location_type,
+                            current_location_id: baseline.baseline_location_id,
+                            current_position_code: baseline.baseline_position_code,
+                            location_display: `${baseline.baseline_location_type} - ${baseline.baseline_position_code || 'N/A'}`,
+                            current_vehicle_odometer: baseline.current_vehicle_odometer,
+                        }}
+                        onDataChange={handleChange}
+                    />
+                </TyreFormShell>
+            </form>
         </AuthenticatedLayout>
     );
 }
