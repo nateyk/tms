@@ -1,4 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
+import { WorkflowHeader } from "@/components/workflow/workflow-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,23 +61,31 @@ export default function VehicleTypesIndex({
         <AuthenticatedLayout header="Vehicle Types">
             <Head title="Vehicle Types" />
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                    <div>
-                        <CardTitle>Vehicle Types</CardTitle>
-                        <CardDescription>
-                            Manage axle layouts and tyre position configurations.
-                        </CardDescription>
-                    </div>
-                    <Button asChild>
-                        <Link href={route("fleet.vehicle-types.create")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add vehicle type
-                        </Link>
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <Table>
+            <div className="space-y-6">
+                <WorkflowHeader
+                    title="Vehicle Types"
+                    description="Choose a preset layout, preview tyre counts, then save the vehicle type for fleet assignments."
+                    actions={
+                        <Button asChild>
+                            <Link href={route("fleet.vehicle-types.create")}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add vehicle type
+                            </Link>
+                        </Button>
+                    }
+                />
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                        <div>
+                            <CardTitle>Vehicle Types</CardTitle>
+                            <CardDescription>
+                                Manage axle layouts and tyre position configurations.
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Name</TableHead>
@@ -151,28 +160,29 @@ export default function VehicleTypesIndex({
                                 </TableRow>
                             ))}
                         </TableBody>
-                    </Table>
+                        </Table>
 
-                    {vehicleTypes.last_page > 1 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {vehicleTypes.links.map((link, index) =>
-                                link.url ? (
-                                    <Button
-                                        key={`${link.label}-${index}`}
-                                        variant={link.active ? "default" : "outline"}
-                                        size="sm"
-                                        asChild
-                                    >
-                                        <Link href={link.url}>
-                                            {link.label.replace(/&[^;]+;/g, "")}
-                                        </Link>
-                                    </Button>
-                                ) : null,
-                            )}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        {vehicleTypes.last_page > 1 && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                {vehicleTypes.links.map((link, index) =>
+                                    link.url ? (
+                                        <Button
+                                            key={`${link.label}-${index}`}
+                                            variant={link.active ? "default" : "outline"}
+                                            size="sm"
+                                            asChild
+                                        >
+                                            <Link href={link.url}>
+                                                {link.label.replace(/&[^;]+;/g, "")}
+                                            </Link>
+                                        </Button>
+                                    ) : null,
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </AuthenticatedLayout>
     );
 }

@@ -1,9 +1,10 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
+import { WorkflowActionCard, WorkflowHeader } from "@/components/workflow/workflow-ui";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Head, router } from "@inertiajs/react";
-import { Download, FileText } from "lucide-react";
+import { FileText, Gauge, History, MoveRight, Package } from "lucide-react";
 
 type TyreStockItem = {
     id: number;
@@ -75,7 +76,42 @@ export default function ReportsIndex({
             <Head title="Reports" />
 
             <div className="space-y-6">
-                {/* Filters */}
+                <WorkflowHeader
+                    title="Reports"
+                    description="Filter by date, then review stock, lifecycle, KM performance, and movement records."
+                />
+
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <WorkflowActionCard
+                        title="Stock"
+                        description="Current tyres by identity, status, and location."
+                        value={tyreStock.length}
+                        tone="info"
+                        icon={Package}
+                    />
+                    <WorkflowActionCard
+                        title="Lifecycle"
+                        description="Assignments, movements, maintenance, and disposal state."
+                        value={tyreLifecycle.length}
+                        tone="default"
+                        icon={History}
+                    />
+                    <WorkflowActionCard
+                        title="KM Performance"
+                        description="Usage and cost per kilometer visibility."
+                        value={tyreKmPerformance.length}
+                        tone="success"
+                        icon={Gauge}
+                    />
+                    <WorkflowActionCard
+                        title="Movements"
+                        description="Date-filtered tyre transfer history."
+                        value={movements.length}
+                        tone="warning"
+                        icon={MoveRight}
+                    />
+                </div>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Filters</CardTitle>
@@ -103,7 +139,6 @@ export default function ReportsIndex({
                     </CardContent>
                 </Card>
 
-                {/* Report Cards */}
                 <div className="grid gap-6 md:grid-cols-2">
                     <Card>
                         <CardHeader>

@@ -1,10 +1,11 @@
-import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { VehicleTyreMapPanel, TyreMapPayload } from "@/components/fleet/tyre-map-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { WorkflowActionCard, WorkflowHeader, WorkflowSteps } from "@/components/workflow/workflow-ui";
+import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Head, Link } from "@inertiajs/react";
-import { FileText, Pencil } from "lucide-react";
+import { ClipboardCheck, FileText, Gauge, Pencil, Route } from "lucide-react";
 
 type VehicleSummary = {
     id: number;
@@ -31,62 +32,111 @@ export default function VehiclesShow({
     trailer?: VehicleSummary | null;
     trailerTyreMap?: TyreMapPayload | null;
 }) {
+    const counts = tyreMap.counts;
+    const hasCurrentKm = vehicle.odometer !== null && vehicle.odometer !== undefined;
+    const mountedCount = counts?.mounted ?? 0;
+    const totalPositions = counts?.total ?? 0;
+    const emptyCount = counts?.empty ?? 0;
+    const vehicleDescription = `${vehicle.vehicle_type_name ?? "Vehicle"}${vehicle.plate_number ? ` - ${vehicle.plate_number}` : ""}`;
+
     return (
         <AuthenticatedLayout header={vehicle.display_code}>
             <Head title={vehicle.display_code} />
 
             <div className="space-y-6">
+                <WorkflowHeader
+                    title={vehicle.display_code}
+                    description={vehicleDescription}
+                    backHref={route("fleet.vehicles.index")}
+                    backLabel="Back to Vehicles"
+                    badge={vehicle.status_label}
+                    actions={
+                        <>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={route("fleet.vehicles.edit", vehicle.id)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Link>
+                            </Button>
+                            <Button size="sm" asChild>
+                                <Link href={route("fleet.vehicles.odometer", vehicle.id)}>
+                                    <Gauge className="mr-2 h-4 w-4" />
+                                    Record KM
+                                </Link>
+                            </Button>
+                        </>
+                    }
+                />
+
                 <Card>
-                    <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
-                        <div>
-                            <CardTitle>{vehicle.display_code}</CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                                {vehicle.vehicle_type_name}
-                                {vehicle.plate_number ? ` · ${vehicle.plate_number}` : ""}
-                                {vehicle.odometer
-                                    ? ` · ${vehicle.odometer.toLocaleString()} km`
-                                    : ""}
-                            </p>
-                        </div>
+                    <CardContent className="space-y-4 p-4 sm:p-5">
                         <div className="flex flex-wrap gap-2">
                             <Badge>{vehicle.asset_type_label}</Badge>
-                            <Badge variant="secondary">{vehicle.status_label}</Badge>
+                            {hasCurrentKm ? (
+                                <Badge variant="secondary">{vehicle.odometer?.toLocaleString()} KM</Badge>
+                            ) : (
+                                <Badge variant="destructive">KM needed</Badge>
+                            )}
                             {vehicle.attached_trailer_code && (
-                                <Badge variant="outline">
-                                    Trailer: {vehicle.attached_trailer_code}
-                                </Badge>
+                                <Badge variant="outline">Trailer: {vehicle.attached_trailer_code}</Badge>
                             )}
                             {vehicle.attached_power_code && (
-                                <Badge variant="outline">
-                                    Power: {vehicle.attached_power_code}
-                                </Badge>
+                                <Badge variant="outline">Power: {vehicle.attached_power_code}</Badge>
                             )}
                         </div>
-                    </CardHeader>
-                    <CardContent className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={route("fleet.vehicles.edit", vehicle.id)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                            </Link>
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                            <a
-                                href={route("vouchers.vehicle.tyre-status.pdf", vehicle.id)}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Tyre status PDF
-                            </a>
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={route("fleet.trailer-transfers.index")}>
-                                Trailer transfers
-                            </Link>
-                        </Button>
+
+                        <WorkflowSteps
+                            steps={[
+                                { label: "Record KM", done: hasCurrentKm },
+                                { label: "Inspect map", done: mountedCount > 0 },
+                                { label: "Set baselines", done: emptyCount === 0 },
+                                { label: "Move or report", done: false },
+                            ]}
+                        />
                     </CardContent>
                 </Card>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <WorkflowActionCard
+                        title="Tyre Positions"
+                        description="Mounted tyres on this unit."
+                        value={`${mountedCount}/${totalPositions}`}
+                        href={route("tyres.reading-monitoring.show", vehicle.id)}
+                        actionLabel="Open monitor"
+                        tone={emptyCount > 0 ? "warning" : "success"}
+                        icon={ClipboardCheck}
+                    />
+                    <WorkflowActionCard
+                        title="Current KM"
+                        description="Used for tyre usage and movement completion."
+                        value={hasCurrentKm ? vehicle.odometer?.toLocaleString() : "Needed"}
+                        href={route("fleet.vehicles.odometer", vehicle.id)}
+                        actionLabel="Update KM"
+                        tone={hasCurrentKm ? "success" : "warning"}
+                        icon={Gauge}
+                    />
+                    <WorkflowActionCard
+                        title="Documents"
+                        description="Export tyre status and continue trailer workflow."
+                        href={route("fleet.trailer-transfers.index")}
+                        actionLabel="Trailer flow"
+                        tone="info"
+                        icon={Route}
+                    />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                        <a
+                            href={route("vouchers.vehicle.tyre-status.pdf", vehicle.id)}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Tyre status PDF
+                        </a>
+                    </Button>
+                </div>
 
                 <VehicleTyreMapPanel
                     vehicle={vehicle}

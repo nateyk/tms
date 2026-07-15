@@ -1,10 +1,10 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { VehicleOdometerForm } from "@/components/fleet/vehicle-odometer-form";
 import { OdometerReadingHistory } from "@/components/fleet/odometer-reading-history";
+import { WorkflowHeader, WorkflowSteps } from "@/components/workflow/workflow-ui";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft } from "lucide-react";
 
 type VehicleOdometerData = {
     id: number;
@@ -96,14 +96,22 @@ export default function VehicleOdometer({
             <Head title={`Vehicle Odometer - ${displayCode}`} />
 
             <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route("fleet.vehicles.show", vehicle.id)}>
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl font-bold">Vehicle Odometer</h1>
-                </div>
+                <WorkflowHeader
+                    title="Vehicle Odometer"
+                    description="Set first baseline KM once, then record current KM during daily operation or movement completion."
+                    backHref={route("fleet.vehicles.show", vehicle.id)}
+                    backLabel="Back to Vehicle"
+                    badge={displayCode}
+                />
+
+                <WorkflowSteps
+                    steps={[
+                        { label: "First baseline KM", done: Boolean(baselineReading) },
+                        { label: "Current KM", done: Boolean(currentOdometer) },
+                        { label: "History recorded", done: readings.length > 0 },
+                        { label: "Tyre usage ready", done: Boolean(baselineReading && currentOdometer) },
+                    ]}
+                />
 
                 <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-6">
@@ -112,7 +120,7 @@ export default function VehicleOdometer({
                                 <CardHeader>
                                     <CardTitle>First Baseline KM</CardTitle>
                                     <CardDescription>
-                                        Set the truck baseline odometer before tyre KM tracking starts.
+                                        Use this once when the vehicle enters tyre tracking.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -137,7 +145,7 @@ export default function VehicleOdometer({
                                 <CardHeader>
                                     <CardTitle>First Baseline KM</CardTitle>
                                     <CardDescription>
-                                        The truck baseline odometer is already set.
+                                        Locked starting point for vehicle tyre usage.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -155,9 +163,9 @@ export default function VehicleOdometer({
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Update Odometer</CardTitle>
+                                <CardTitle>Current KM Reading</CardTitle>
                                 <CardDescription>
-                                    Record the current odometer reading for {displayCode}
+                                    Record the latest odometer reading for {displayCode}.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>

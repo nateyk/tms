@@ -1,4 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
+import { WorkflowHeader } from "@/components/workflow/workflow-ui";
 import {
     AssetTypeOption,
     LayoutPresetOption,
@@ -37,33 +38,42 @@ export default function VehicleTypesEdit({
         <AuthenticatedLayout header="Edit Vehicle Type">
             <Head title="Edit Vehicle Type" />
 
-            <Card className="max-w-2xl">
-                <CardHeader>
-                    <CardTitle>Edit vehicle type</CardTitle>
-                    <CardDescription>
-                        Update name, asset type, or regenerate layout from a preset.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <VehicleTypeFormFields
-                            errors={errors}
-                            data={data}
-                            setData={setData}
-                            assetTypes={assetTypes}
-                            layoutPresets={layoutPresets}
-                        />
-                        <div className="flex gap-2">
-                            <Button type="submit" disabled={processing}>
-                                Save changes
-                            </Button>
-                            <Button variant="outline" asChild>
-                                <Link href={route("fleet.vehicle-types.index")}>Cancel</Link>
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+            <div className="space-y-6">
+                <WorkflowHeader
+                    title="Edit Vehicle Type"
+                    description="Update the name or regenerate the tyre layout from a preset."
+                    backHref={route("fleet.vehicle-types.index")}
+                    backLabel="Back to Vehicle Types"
+                />
+
+                <Card className="max-w-2xl">
+                    <CardHeader>
+                        <CardTitle>Edit vehicle type</CardTitle>
+                        <CardDescription>
+                            Update name, asset type, or regenerate layout from a preset.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={submit} className="space-y-6">
+                            <VehicleTypeFormFields
+                                errors={errors}
+                                data={data}
+                                setData={setData}
+                                assetTypes={assetTypes}
+                                layoutPresets={layoutPresets}
+                            />
+                            <div className="flex gap-2">
+                                <Button type="submit" disabled={processing}>
+                                    Save changes
+                                </Button>
+                                <Button variant="outline" asChild>
+                                    <Link href={route("fleet.vehicle-types.index")}>Cancel</Link>
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </AuthenticatedLayout>
     );
 }
