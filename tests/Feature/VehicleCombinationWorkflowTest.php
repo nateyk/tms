@@ -142,6 +142,26 @@ class VehicleCombinationWorkflowTest extends TestCase
             ->assertSessionHasErrors('vehicle_type_id');
     }
 
+    public function test_vehicle_create_page_self_heals_missing_trailer_default_vehicle_type(): void
+    {
+        VehicleType::query()
+            ->where('name', 'Trailer - 12 tyres')
+            ->delete();
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('fleet/vehicles/create')
+                ->where('vehicleTypes', fn ($types) => collect($types)->contains(
+                    fn (array $type) => $type['asset_type'] === 'trailer'
+                        && $type['tyre_count'] === 12
+                        && $type['axle_count'] === 3
+                        && $type['recommended'] === true
+                ))
+            );
+    }
+
     private function vehicleType(string $name, string $assetType): VehicleType
     {
         return VehicleType::query()->create([

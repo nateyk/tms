@@ -8,7 +8,7 @@ import { FormEventHandler } from "react";
 type FormOptions = {
     assetTypes: { value: string; label: string }[];
     vehicleStatuses: { value: string; label: string }[];
-    vehicleTypes: { id: number; name: string; asset_type: string; tyre_count: number | null; axle_count: number | null }[];
+    vehicleTypes: { id: number; name: string; asset_type: string; tyre_count: number | null; axle_count: number | null; recommended?: boolean }[];
     locations: { id: number; label: string }[];
     attachablePowerVehicles: { id: number; label: string }[];
     attachableTrailers: { id: number; label: string }[];

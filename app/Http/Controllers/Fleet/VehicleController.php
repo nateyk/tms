@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Fleet;
 
 use App\Enums\AssetType;
+use App\Enums\PredefinedTyreLayout;
 use App\Enums\VehicleStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\StoreVehicleRequest;
@@ -12,6 +13,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Services\VehicleCombinationService;
 use App\Services\VehicleMapDataService;
+use App\Services\VehicleTyreLayoutBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -22,6 +24,7 @@ class VehicleController extends Controller
     public function __construct(
         private readonly VehicleMapDataService $mapDataService,
         private readonly VehicleCombinationService $combinationService,
+        private readonly VehicleTyreLayoutBuilder $layoutBuilder,
     ) {}
 
     public function index(): Response
@@ -141,6 +144,8 @@ class VehicleController extends Controller
     /** @return array<string, mixed> */
     private function formOptions(?Vehicle $vehicle = null): array
     {
+        $this->ensureDefaultVehicleTypes();
+
         return [
             'assetTypes' => collect(AssetType::cases())->map(fn (AssetType $type) => [
                 'value' => $type->value,
@@ -159,6 +164,7 @@ class VehicleController extends Controller
                     'asset_type' => $type->asset_type->value,
                     'tyre_count' => $type->tyre_count,
                     'axle_count' => $type->axle_count,
+                    'recommended' => $this->isRecommendedVehicleType($type),
                 ]),
             'locations' => Location::query()
                 ->orderBy('name')
@@ -169,6 +175,42 @@ class VehicleController extends Controller
                 ]),
             'attachablePowerVehicles' => $this->attachablePowerVehicles($vehicle),
             'attachableTrailers' => $this->attachableTrailers($vehicle),
+        ];
+    }
+
+    private function ensureDefaultVehicleTypes(): void
+    {
+        foreach ($this->defaultVehicleTypePresets() as [$name, $preset]) {
+            VehicleType::query()->firstOrCreate(
+                ['name' => $name],
+                [
+                    'asset_type' => $preset->suggestedAssetType()->value,
+                    'axle_count' => $preset->axleCount(),
+                    'tyre_count' => $preset->tyreCount(),
+                    'layout_json' => $this->layoutBuilder->buildLayout(
+                        $preset->tyreCount(),
+                        $preset->axleCount(),
+                        $preset->positionPrefix(),
+                    ),
+                    'status' => 'active',
+                ]
+            );
+        }
+    }
+
+    private function isRecommendedVehicleType(VehicleType $type): bool
+    {
+        return collect($this->defaultVehicleTypePresets())
+            ->contains(fn (array $default) => $default[0] === $type->name);
+    }
+
+    private function defaultVehicleTypePresets(): array
+    {
+        return [
+            ['Heavy truck - 24 tyres (6 axles + W/X spares)', PredefinedTyreLayout::HeavyTruck24],
+            ['Power unit - 10 tyres', PredefinedTyreLayout::PowerUnit10],
+            ['Trailer - 12 tyres', PredefinedTyreLayout::Trailer12],
+            ['Rigid truck - 6 tyres', PredefinedTyreLayout::RigidTruck6],
         ];
     }
 

@@ -21,7 +21,14 @@ export type VehicleFormData = {
 };
 
 type Option = { value: string; label: string };
-type VehicleTypeOption = { id: number; name: string; asset_type: string; tyre_count: number | null; axle_count: number | null };
+type VehicleTypeOption = {
+    id: number;
+    name: string;
+    asset_type: string;
+    tyre_count: number | null;
+    axle_count: number | null;
+    recommended?: boolean;
+};
 type LocationOption = { id: number; label: string };
 type VehicleAttachOption = { id: number; label: string };
 
@@ -64,12 +71,14 @@ export function VehicleFormFields({
             : "No free power vehicles found. Create a power vehicle first, or detach this trailer's power unit.";
 
     const changeAssetType = (value: string) => {
-        const firstMatchingType = vehicleTypes.find((type) => type.asset_type === value);
+        const nextVehicleType =
+            vehicleTypes.find((type) => type.asset_type === value && type.recommended) ??
+            vehicleTypes.find((type) => type.asset_type === value);
 
         setData({
             ...data,
             asset_type: value,
-            vehicle_type_id: firstMatchingType?.id ?? null,
+            vehicle_type_id: nextVehicleType?.id ?? null,
             attached_power_vehicle_id: null,
             attached_trailer_vehicle_id: null,
         });
@@ -158,6 +167,7 @@ export function VehicleFormFields({
                             {matchingVehicleTypes.map((type) => (
                                 <option key={type.id} value={String(type.id)}>
                                     {type.name}
+                                    {type.recommended ? " (default)" : ""}
                                 </option>
                             ))}
                         </select>
