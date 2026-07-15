@@ -185,6 +185,7 @@ class VehicleController extends Controller
             'id' => $vehicle->id,
             'vehicle_code' => $vehicle->vehicleCodeDisplay(),
             'plate_number' => $vehicle->plate_number,
+            'plate_display' => $this->plateDisplay($vehicle, $attachedVehicle),
             'asset_type' => $vehicle->asset_type->value,
             'asset_type_label' => $vehicle->asset_type->label(),
             'vehicle_type_name' => $vehicle->vehicleType?->name,
@@ -194,12 +195,30 @@ class VehicleController extends Controller
             'odometer' => $vehicle->odometer,
             'attached_vehicle_id' => $attachedVehicle?->id,
             'attached_vehicle_label' => $attachedVehicle?->displayCodeWithPlate(),
+            'attached_vehicle_plate' => $attachedVehicle?->plate_number,
             'attached_vehicle_role' => match ($vehicle->asset_type) {
                 AssetType::PowerVehicle => 'Trailer',
                 AssetType::Trailer => 'Power',
                 default => null,
             },
         ];
+    }
+
+    private function plateDisplay(Vehicle $vehicle, ?Vehicle $attachedVehicle): ?string
+    {
+        if (! $vehicle->plate_number) {
+            return $attachedVehicle?->plate_number;
+        }
+
+        if (! $attachedVehicle?->plate_number) {
+            return $vehicle->plate_number;
+        }
+
+        return match ($vehicle->asset_type) {
+            AssetType::PowerVehicle => "{$vehicle->plate_number} / {$attachedVehicle->plate_number}",
+            AssetType::Trailer => "{$attachedVehicle->plate_number} / {$vehicle->plate_number}",
+            default => $vehicle->plate_number,
+        };
     }
 
     private function attachablePowerVehicles(?Vehicle $vehicle): array

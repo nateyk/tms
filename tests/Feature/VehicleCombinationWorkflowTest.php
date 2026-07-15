@@ -101,6 +101,7 @@ class VehicleCombinationWorkflowTest extends TestCase
                     fn (array $row) => $row['id'] === $power->id
                         && $row['attached_vehicle_id'] === $trailer->id
                         && $row['attached_vehicle_role'] === 'Trailer'
+                        && $row['plate_display'] === "{$power->plate_number} / {$trailer->plate_number}"
                 ))
             );
     }

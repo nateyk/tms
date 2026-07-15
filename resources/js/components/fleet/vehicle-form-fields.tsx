@@ -1,13 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { InputError } from "@/components/ui/input-error";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 
@@ -76,6 +69,9 @@ export function VehicleFormFields({
         setData("vehicle_type_id", firstMatchingType?.id ?? null);
     };
 
+    const selectClassName =
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+
     return (
         <div className="space-y-6">
             <div>
@@ -129,43 +125,36 @@ export function VehicleFormFields({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                         <Label>Asset type</Label>
-                        <Select
+                        <select
+                            className={selectClassName}
                             value={data.asset_type}
-                            onValueChange={changeAssetType}
+                            onChange={(event) => changeAssetType(event.target.value)}
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {assetTypes.map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                        {type.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            {assetTypes.map((type) => (
+                                <option key={type.value} value={type.value}>
+                                    {type.label}
+                                </option>
+                            ))}
+                        </select>
                         <InputError message={errors.asset_type} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label>Vehicle type</Label>
-                        <Select
+                        <select
+                            className={selectClassName}
                             value={data.vehicle_type_id ? String(data.vehicle_type_id) : ""}
-                            onValueChange={(value) =>
-                                setData("vehicle_type_id", value ? Number(value) : null)
+                            onChange={(event) =>
+                                setData("vehicle_type_id", event.target.value ? Number(event.target.value) : null)
                             }
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select vehicle type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {matchingVehicleTypes.map((type) => (
-                                    <SelectItem key={type.id} value={String(type.id)}>
-                                        {type.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <option value="">Select vehicle type</option>
+                            {matchingVehicleTypes.map((type) => (
+                                <option key={type.id} value={String(type.id)}>
+                                    {type.name}
+                                </option>
+                            ))}
+                        </select>
                         {selectedVehicleType ? (
                             <p className="text-xs text-muted-foreground">
                                 Tyre positions: {selectedVehicleType.tyre_count ?? 0}
@@ -182,51 +171,43 @@ export function VehicleFormFields({
 
                     <div className="grid gap-2">
                         <Label>Status</Label>
-                        <Select
+                        <select
+                            className={selectClassName}
                             value={data.status}
-                            onValueChange={(value) => setData("status", value)}
+                            onChange={(event) => setData("status", event.target.value)}
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {vehicleStatuses.map((status) => (
-                                    <SelectItem key={status.value} value={status.value}>
-                                        {status.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            {vehicleStatuses.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                    {status.label}
+                                </option>
+                            ))}
+                        </select>
                         <InputError message={errors.status} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label>Current location</Label>
-                        <Select
+                        <select
+                            className={selectClassName}
                             value={
                                 data.current_location_id
                                     ? String(data.current_location_id)
                                     : "none"
                             }
-                            onValueChange={(value) =>
+                            onChange={(event) =>
                                 setData(
                                     "current_location_id",
-                                    value === "none" ? null : Number(value),
+                                    event.target.value === "none" ? null : Number(event.target.value),
                                 )
                             }
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {locations.map((location) => (
-                                    <SelectItem key={location.id} value={String(location.id)}>
-                                        {location.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <option value="none">None</option>
+                            {locations.map((location) => (
+                                <option key={location.id} value={String(location.id)}>
+                                    {location.label}
+                                </option>
+                            ))}
+                        </select>
                         <InputError message={errors.current_location_id} />
                     </div>
 
@@ -276,24 +257,20 @@ export function VehicleFormFields({
                     </div>
                     <div className="grid gap-2 sm:max-w-md">
                         <Label>{attachLabel}</Label>
-                        <Select
+                        <select
+                            className={selectClassName}
                             value={data[attachField] ? String(data[attachField]) : "none"}
-                            onValueChange={(value) =>
-                                setData(attachField, value === "none" ? null : Number(value))
+                            onChange={(event) =>
+                                setData(attachField, event.target.value === "none" ? null : Number(event.target.value))
                             }
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select vehicle" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">Not attached</SelectItem>
-                                {attachOptions.map((vehicle) => (
-                                    <SelectItem key={vehicle.id} value={String(vehicle.id)}>
-                                        {vehicle.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <option value="none">Not attached</option>
+                            {attachOptions.map((vehicle) => (
+                                <option key={vehicle.id} value={String(vehicle.id)}>
+                                    {vehicle.label}
+                                </option>
+                            ))}
+                        </select>
                         {attachOptions.length === 0 ? (
                             <p className="text-xs text-muted-foreground">{emptyAttachText}</p>
                         ) : (
