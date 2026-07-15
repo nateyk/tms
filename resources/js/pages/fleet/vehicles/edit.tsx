@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import { VehicleFormFields } from "@/components/fleet/vehicle-form-fields";
+import { VehicleFormFields, type VehicleFormData } from "@/components/fleet/vehicle-form-fields";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
@@ -39,7 +39,7 @@ export default function VehiclesEdit({
     attachableTrailers,
     vehicle,
 }: FormOptions) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm<VehicleFormData>({
         vehicle_code: vehicle.vehicle_code,
         plate_number: vehicle.plate_number,
         chassis_number: vehicle.chassis_number,

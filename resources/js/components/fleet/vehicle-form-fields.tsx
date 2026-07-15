@@ -28,7 +28,10 @@ type VehicleAttachOption = { id: number; label: string };
 type VehicleFormFieldsProps = {
     errors: Partial<Record<string, string>>;
     data: VehicleFormData;
-    setData: <K extends keyof VehicleFormData>(key: K, value: VehicleFormData[K]) => void;
+    setData: {
+        <K extends keyof VehicleFormData>(key: K, value: VehicleFormData[K]): void;
+        (data: VehicleFormData): void;
+    };
     assetTypes: Option[];
     vehicleStatuses: Option[];
     vehicleTypes: VehicleTypeOption[];
@@ -61,12 +64,15 @@ export function VehicleFormFields({
             : "No free power vehicles found. Create a power vehicle first, or detach this trailer's power unit.";
 
     const changeAssetType = (value: string) => {
-        setData("asset_type", value);
-        setData("attached_power_vehicle_id", null);
-        setData("attached_trailer_vehicle_id", null);
-
         const firstMatchingType = vehicleTypes.find((type) => type.asset_type === value);
-        setData("vehicle_type_id", firstMatchingType?.id ?? null);
+
+        setData({
+            ...data,
+            asset_type: value,
+            vehicle_type_id: firstMatchingType?.id ?? null,
+            attached_power_vehicle_id: null,
+            attached_trailer_vehicle_id: null,
+        });
     };
 
     const selectClassName =

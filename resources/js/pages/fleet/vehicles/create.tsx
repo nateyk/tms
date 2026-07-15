@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
-import { VehicleFormFields } from "@/components/fleet/vehicle-form-fields";
+import { VehicleFormFields, type VehicleFormData } from "@/components/fleet/vehicle-form-fields";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head, Link, useForm } from "@inertiajs/react";
@@ -25,7 +25,7 @@ export default function VehiclesCreate({
     const defaultType =
         vehicleTypes.find((type) => type.asset_type === "power_vehicle") ?? vehicleTypes[0];
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<VehicleFormData>({
         vehicle_code: "",
         plate_number: "",
         chassis_number: "",
