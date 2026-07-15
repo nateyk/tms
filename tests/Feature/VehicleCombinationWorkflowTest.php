@@ -103,6 +103,9 @@ class VehicleCombinationWorkflowTest extends TestCase
                         && $row['attached_vehicle_role'] === 'Trailer'
                         && $row['plate_display'] === "{$power->plate_number} / {$trailer->plate_number}"
                 ))
+                ->where('vehicles.data', fn ($rows) => collect($rows)->doesntContain(
+                    fn (array $row) => $row['id'] === $trailer->id
+                ))
             );
     }
 

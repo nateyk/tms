@@ -36,6 +36,10 @@ class VehicleController extends Controller
                 'activeCombinationAsPower.trailer:id,vehicle_code,plate_number',
                 'activeCombinationAsTrailer.powerVehicle:id,vehicle_code,plate_number',
             ])
+            ->where(function ($query) {
+                $query->where('asset_type', '!=', AssetType::Trailer->value)
+                    ->orWhereDoesntHave('activeCombinationAsTrailer');
+            })
             ->orderBy('vehicle_code')
             ->paginate(15)
             ->through(fn (Vehicle $vehicle) => $this->serializeIndexRow($vehicle));
