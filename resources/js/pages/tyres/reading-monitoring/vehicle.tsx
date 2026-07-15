@@ -348,19 +348,19 @@ function SummaryCard({
 }) {
     const variantStyles = {
         default: "border-border bg-card",
-        success: "border-green-200 bg-green-50",
-        warning: "border-amber-200 bg-amber-50",
-        danger: "border-red-200 bg-red-50",
-        outline: "border-slate-200 bg-slate-50",
-        info: "border-blue-200 bg-blue-50",
+        success: "border-green-200 bg-green-50 dark:border-green-400/25 dark:bg-green-500/10",
+        warning: "border-amber-200 bg-amber-50 dark:border-amber-400/30 dark:bg-amber-500/10",
+        danger: "border-red-200 bg-red-50 dark:border-red-400/30 dark:bg-red-500/10",
+        outline: "border-slate-200 bg-slate-50 dark:border-slate-500/30 dark:bg-slate-500/10",
+        info: "border-blue-200 bg-blue-50 dark:border-blue-400/30 dark:bg-blue-500/10",
     };
     const iconStyles = {
-        default: "bg-blue-100 text-blue-700",
-        success: "bg-green-100 text-green-700",
-        warning: "bg-amber-100 text-amber-700",
-        danger: "bg-red-100 text-red-700",
-        outline: "bg-slate-100 text-slate-700",
-        info: "bg-blue-100 text-blue-700",
+        default: "bg-blue-100 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200",
+        success: "bg-green-100 text-green-700 dark:bg-green-400/15 dark:text-green-200",
+        warning: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200",
+        danger: "bg-red-100 text-red-700 dark:bg-red-400/15 dark:text-red-200",
+        outline: "bg-slate-100 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200",
+        info: "bg-blue-100 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200",
     };
 
     return (
@@ -511,15 +511,15 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
     };
 
     return (
-        <form onSubmit={submit} className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+        <form onSubmit={submit} className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-400/30 dark:bg-amber-500/10">
             <div>
-                <p className="text-sm font-semibold text-amber-900">Baseline required</p>
-                <p className="text-xs text-amber-800">
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Baseline required</p>
+                <p className="text-xs text-amber-800 dark:text-amber-200/80">
                     Save the starting point for this tyre before relying on calculated usage.
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs text-amber-900">
+            <div className="grid grid-cols-2 gap-2 text-xs text-amber-900 dark:text-amber-100">
                 <InfoRow label="Tyre" value={tyre.tyre_code} />
                 <InfoRow label="Position" value={tyre.position_display} />
             </div>
@@ -537,7 +537,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                         value={data.baseline_odometer}
                         onChange={(event) => setData("baseline_odometer", event.target.value === "" ? "" : Number(event.target.value))}
                         placeholder="Enter current truck KM"
-                        className={errors.baseline_odometer ? "border-destructive bg-white" : "bg-white"}
+                        className={errors.baseline_odometer ? "border-destructive bg-white dark:bg-background" : "bg-white dark:bg-background"}
                     />
                     {errors.baseline_odometer && <p className="text-xs text-destructive">{errors.baseline_odometer}</p>}
                 </div>
@@ -556,7 +556,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                         step="0.01"
                         value={data.baseline_percentage}
                         onChange={(event) => setData("baseline_percentage", Number(event.target.value))}
-                        className={errors.baseline_percentage ? "border-destructive bg-white" : "bg-white"}
+                        className={errors.baseline_percentage ? "border-destructive bg-white dark:bg-background" : "bg-white dark:bg-background"}
                     />
                     {errors.baseline_percentage && <p className="text-xs text-destructive">{errors.baseline_percentage}</p>}
                 </div>
@@ -571,7 +571,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                         step={1}
                         value={data.expected_life_km}
                         onChange={(event) => setData("expected_life_km", Number(event.target.value))}
-                        className={errors.expected_life_km ? "border-destructive bg-white" : "bg-white"}
+                        className={errors.expected_life_km ? "border-destructive bg-white dark:bg-background" : "bg-white dark:bg-background"}
                     />
                     {errors.expected_life_km && <p className="text-xs text-destructive">{errors.expected_life_km}</p>}
                 </div>
@@ -586,7 +586,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                     type="date"
                     value={data.baseline_date}
                     onChange={(event) => setData("baseline_date", event.target.value)}
-                    className={errors.baseline_date ? "border-destructive bg-white" : "bg-white"}
+                    className={errors.baseline_date ? "border-destructive bg-white dark:bg-background" : "bg-white dark:bg-background"}
                 />
                 {errors.baseline_date && <p className="text-xs text-destructive">{errors.baseline_date}</p>}
             </div>
@@ -600,7 +600,7 @@ function QuickBaselineForm({ tyre, vehicle }: { tyre: Tyre; vehicle: Vehicle }) 
                     rows={2}
                     value={data.notes}
                     onChange={(event) => setData("notes", event.target.value)}
-                    className="bg-white"
+                    className="bg-white dark:bg-background"
                     placeholder="Optional baseline note"
                 />
             </div>

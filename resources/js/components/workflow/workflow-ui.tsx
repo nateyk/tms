@@ -66,10 +66,10 @@ export function WorkflowActionCard({
 }: WorkflowActionCardProps) {
     const toneClass = {
         default: "border-border bg-card",
-        success: "border-green-200 bg-green-50",
-        warning: "border-amber-200 bg-amber-50",
-        danger: "border-red-200 bg-red-50",
-        info: "border-blue-200 bg-blue-50",
+        success: "border-green-200 bg-green-50 dark:border-green-400/25 dark:bg-green-500/10",
+        warning: "border-amber-200 bg-amber-50 dark:border-amber-400/30 dark:bg-amber-500/10",
+        danger: "border-red-200 bg-red-50 dark:border-red-400/30 dark:bg-red-500/10",
+        info: "border-blue-200 bg-blue-50 dark:border-blue-400/30 dark:bg-blue-500/10",
     }[tone];
 
     return (
@@ -77,7 +77,7 @@ export function WorkflowActionCard({
             <CardContent className="flex h-full flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-sm font-semibold">{title}</p>
+                        <p className="text-sm font-semibold text-foreground">{title}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
                     </div>
                     {Icon && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}
