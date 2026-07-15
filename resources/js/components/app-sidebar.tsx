@@ -29,11 +29,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href={route('dashboard')}>
-                <div className="flex h-10 w-28 items-center justify-center rounded-lg bg-white px-2 shadow-sm ring-1 ring-sidebar-border">
-                  <img src="/images/menkem-logo.svg" alt="Menkem" className="h-7 w-full object-contain" />
+              <Link href={route('dashboard')} className="h-auto flex-col items-start gap-2 px-2 py-3">
+                <div className="flex w-full items-center rounded-lg bg-white px-2.5 py-2 shadow-sm ring-1 ring-sidebar-border">
+                  <img src="/images/menkem-logo.svg" alt="Menkem" className="h-8 w-36 max-w-full object-contain object-left" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid w-full text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Menkem TMS</span>
                   <span className="truncate text-xs">Tyre Management</span>
                 </div>

@@ -43,10 +43,10 @@ export default function Login({
             <Head title="Log in" />
 
             <form onSubmit={submit}>
-                <Card className="mx-auto max-w-sm">
-                    <CardHeader>
-                        <CardTitle className="text-2xl">Menkem TMS</CardTitle>
-                        <CardDescription>
+                <Card className="mx-auto w-[min(92vw,420px)] border-slate-200 bg-white text-slate-950 shadow-sm">
+                    <CardHeader className="pb-5">
+                        <CardTitle className="text-2xl font-semibold text-slate-950">Menkem TMS</CardTitle>
+                        <CardDescription className="text-slate-500">
                             Sign in to the tyre management dashboard
                         </CardDescription>
                     </CardHeader>
@@ -59,11 +59,12 @@ export default function Login({
 
                         <div className="grid gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email" className="text-slate-800">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder="m@example.com"
+                                    className="border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
                                     value={data.email}
                                     onChange={(e) =>
                                         setData("email", e.target.value)
@@ -74,10 +75,10 @@ export default function Login({
                             </div>
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password" className="text-slate-800">Password</Label>
                                     <Link
                                         href={route("password.request")}
-                                        className="ml-auto inline-block text-sm underline"
+                                        className="ml-auto inline-block text-sm font-medium text-slate-600 underline hover:text-slate-950"
                                     >
                                         Forgot your password?
                                     </Link>
@@ -85,6 +86,7 @@ export default function Login({
                                 <Input
                                     id="password"
                                     type="password"
+                                    className="border-slate-200 bg-white text-slate-950"
                                     value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)
@@ -93,13 +95,13 @@ export default function Login({
                                 />
                                 <InputError message={errors.password} />
                             </div>
-                            <Button type="submit" className="w-full">
+                            <Button type="submit" className="w-full bg-slate-950 text-white hover:bg-slate-800">
                                 Login
                             </Button>
                         </div>
-                        <div className="mt-4 text-center text-sm">
+                        <div className="mt-5 text-center text-sm text-slate-500">
                             Don&apos;t have an account?{" "}
-                            <Link href="/register" className="underline">
+                            <Link href="/register" className="font-medium text-slate-700 underline hover:text-slate-950">
                                 Sign up
                             </Link>
                         </div>
