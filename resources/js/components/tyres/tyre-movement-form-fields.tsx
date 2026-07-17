@@ -44,10 +44,27 @@ type DestinationVehicleOption = LocationOption & {
     mounted_count?: number;
     available_position_count?: number;
     status?: string;
+    power_available_count?: number;
+    trailer_available_count?: number;
+    total_available_count?: number;
+    attached_trailer?: {
+        id: number;
+        vehicle_code?: string;
+        plate_number?: string | null;
+        label: string;
+        vehicle_type_name?: string | null;
+        current_odometer?: number | null;
+        available_position_count?: number;
+    } | null;
 };
 type DestinationType = { value: string; label: string };
 type PositionOption = {
     value: string;
+    owner_type: "power_vehicle" | "trailer";
+    owner_vehicle_id: number;
+    owner_vehicle_code: string;
+    owner_label: string;
+    owner_current_odometer?: number | null;
     code: string;
     display_code: string;
     label: string;
@@ -57,6 +74,7 @@ type PositionOption = {
     mounted_tyre_id: number | null;
     mounted_tyre_code: string | null;
     disabled_reason: string | null;
+    disabled?: boolean;
 };
 
 type MovementFormData = {
@@ -80,6 +98,7 @@ type TyreMovementFormFieldsProps = {
     powerVehicles: DestinationVehicleOption[];
     trailers: DestinationVehicleOption[];
     destinationTypes: DestinationType[];
+    destinationTargets?: DestinationType[];
     readOnlyTyre?: boolean;
     onTyreSelected?: (tyreId: number | null) => void;
     sourceInfo?: {
@@ -112,29 +131,23 @@ function positionTypeLabel(type: "running" | "spare" | null | undefined): string
 }
 
 function groupPositionOptions(options: PositionOption[]): Array<{ title: string; subtitle?: string; positions: PositionOption[] }> {
-    const groups = [
-        { title: "Front axle", codes: ["A", "B"] },
-        { title: "1st drive axle", codes: ["C", "D", "E", "F"] },
-        { title: "2nd drive axle", codes: ["G", "H", "I", "J"] },
-        { title: "Spare wheels", subtitle: "Non-running positions", codes: ["W", "X"] },
-        { title: "Tag axle", codes: ["K", "L", "M", "N"] },
-        { title: "Rear axles", codes: ["O", "P", "Q", "R", "S", "T", "U", "V"] },
-    ];
-    const used = new Set<string>();
-    const result = groups.map((group) => {
-        const positions = group.codes
-            .map((code) => options.find((position) => position.display_code === code || position.code === code))
-            .filter((position): position is PositionOption => Boolean(position));
-        positions.forEach((position) => used.add(position.code));
-        return { title: group.title, subtitle: group.subtitle, positions };
-    }).filter((group) => group.positions.length > 0);
-    const remaining = options.filter((position) => !used.has(position.code));
+    const grouped = new Map<string, PositionOption[]>();
 
-    if (remaining.length > 0) {
-        result.push({ title: "Other positions", subtitle: undefined, positions: remaining });
-    }
+    options.forEach((position) => {
+        const key = `${position.owner_type}:${position.owner_vehicle_id}`;
+        grouped.set(key, [...(grouped.get(key) ?? []), position]);
+    });
 
-    return result;
+    return Array.from(grouped.values()).map((positions) => {
+        const owner = positions[0];
+        const isTrailer = owner.owner_type === "trailer";
+
+        return {
+            title: isTrailer ? `Attached Trailer - ${owner.owner_label}` : `Power Unit - ${owner.owner_label}`,
+            subtitle: isTrailer ? "Positions on the attached trailer" : "Positions on the selected power unit",
+            positions,
+        };
+    });
 }
 
 export function TyreMovementFormFields({
@@ -146,6 +159,7 @@ export function TyreMovementFormFields({
     powerVehicles,
     trailers,
     destinationTypes,
+    destinationTargets,
     readOnlyTyre = false,
     onTyreSelected,
     sourceInfo,
@@ -186,26 +200,23 @@ export function TyreMovementFormFields({
         [filteredTyres],
     );
 
-    const destinationLocations = useMemo(() => {
-        const sourceVehicleId = selectedTyre?.current_location_id;
-        const sourceType = selectedTyre?.current_location_type;
-
-        if (data.to_location_type === "store") {
-            return stores;
+    const initialUnitId = useMemo(() => {
+        if (data.to_location_type === "power_vehicle") {
+            return data.to_location_id;
         }
 
-        const vehicles = data.to_location_type === "trailer" ? trailers : powerVehicles;
+        return powerVehicles.find((vehicle) => vehicle.attached_trailer?.id === data.to_location_id)?.id ?? null;
+    }, [data.to_location_id, data.to_location_type, powerVehicles]);
+    const [destinationTarget, setDestinationTarget] = useState(
+        data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "",
+    );
+    const [selectedUnitId, setSelectedUnitId] = useState<number | null>(initialUnitId);
+    const [selectedPositionValue, setSelectedPositionValue] = useState(data.to_position_code || "");
 
-        return vehicles
-            .filter((vehicle) => (vehicle.available_position_count ?? 1) > 0 || vehicle.id === sourceVehicleId)
-            .map((vehicle) => ({
-                ...vehicle,
-                label:
-                    vehicle.id === sourceVehicleId && sourceType === data.to_location_type
-                        ? `${vehicle.label} - Rotation on same vehicle`
-                        : vehicle.label,
-            }));
-    }, [data.to_location_type, powerVehicles, selectedTyre, stores, trailers]);
+    const selectedUnit = useMemo(
+        () => powerVehicles.find((vehicle) => vehicle.id === selectedUnitId) ?? null,
+        [powerVehicles, selectedUnitId],
+    );
 
     const selectedDestinationVehicle = useMemo(
         () =>
@@ -216,26 +227,38 @@ export function TyreMovementFormFields({
     );
 
     const selectedPosition = useMemo(
-        () => positionOptions.find((position) => position.code === data.to_position_code) ?? null,
-        [data.to_position_code, positionOptions],
+        () => positionOptions.find((position) => position.value === selectedPositionValue)
+            ?? positionOptions.find((position) => position.code === data.to_position_code)
+            ?? null,
+        [data.to_position_code, positionOptions, selectedPositionValue],
     );
     const positionGroups = useMemo(() => groupPositionOptions(positionOptions), [positionOptions]);
 
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
-    const destinationNeedsOdometer = isVehicleType(data.to_location_type) && selectedPosition?.type === "running";
+    const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
 
     useEffect(() => {
-        if (!isVehicleType(data.to_location_type) || !data.to_location_id) {
+        if (destinationTarget !== "vehicle_unit" || !selectedUnitId) {
             setPositionOptions([]);
             return;
         }
 
         setLoadingPositions(true);
-        fetch(route("tyres.movements.position-options", data.to_location_id))
+        fetch(route("tyres.movements.position-options", selectedUnitId))
             .then((response) => response.json())
-            .then((options: PositionOption[]) => setPositionOptions(options))
+            .then((options: PositionOption[]) => {
+                setPositionOptions(options);
+                const preselected = options.find((position) =>
+                    position.code === data.to_position_code
+                    && position.owner_type === data.to_location_type
+                    && position.owner_vehicle_id === data.to_location_id,
+                );
+                if (preselected) {
+                    setSelectedPositionValue(preselected.value);
+                }
+            })
             .finally(() => setLoadingPositions(false));
-    }, [data.to_location_type, data.to_location_id]);
+    }, [destinationTarget, selectedUnitId]);
 
     const handleTyreChange = (value: string) => {
         const tyreId = Number.parseInt(value, 10);
@@ -249,22 +272,36 @@ export function TyreMovementFormFields({
     };
 
     const handleDestinationTypeChange = (value: string) => {
-        setData("to_location_type", value);
+        setDestinationTarget(value);
+        setData("to_location_type", value === "store" ? "store" : "power_vehicle");
         setData("to_location_id", null);
         setData("to_position_code", "");
         setData("to_odometer", null);
+        setSelectedUnitId(null);
+        setSelectedPositionValue("");
     };
 
     const handleDestinationChange = (value: string) => {
         const destinationId = Number.parseInt(value, 10);
-        const destination = destinationLocations.find((location) => Number(location.id) === destinationId);
+        const destination = powerVehicles.find((location) => Number(location.id) === destinationId);
 
+        setSelectedUnitId(Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
+        setData("to_location_type", "power_vehicle");
         setData("to_location_id", Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
         setData("to_position_code", "");
         const currentOdometer = destination && "current_odometer" in destination
             ? (typeof destination.current_odometer === "number" ? destination.current_odometer : null)
             : null;
         setData("to_odometer", currentOdometer);
+        setSelectedPositionValue("");
+    };
+
+    const handlePositionChange = (position: PositionOption) => {
+        setSelectedPositionValue(position.value);
+        setData("to_location_type", position.owner_type);
+        setData("to_location_id", position.owner_vehicle_id);
+        setData("to_position_code", position.code);
+        setData("to_odometer", position.owner_current_odometer ?? null);
     };
 
     const preview = buildPreview(selectedTyre, selectedDestinationVehicle, selectedPosition, data, stores);
@@ -399,16 +436,19 @@ export function TyreMovementFormFields({
                         <CardDescription>Choose a valid destination and then an empty position.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <Field label="Destination type" error={errors.to_location_type}>
+                        <Field label="Destination target" error={errors.to_location_type}>
                             <Select
-                                value={data.to_location_type || undefined}
+                                value={destinationTarget || undefined}
                                 onValueChange={handleDestinationTypeChange}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select destination type" />
+                                    <SelectValue placeholder="Choose store or vehicle unit" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {destinationTypes.map((type) => (
+                                    {(destinationTargets ?? [
+                                        { value: "store", label: "Store" },
+                                        { value: "vehicle_unit", label: "Vehicle / Attached Unit" },
+                                    ]).map((type) => (
                                         <SelectItem key={type.value} value={type.value}>
                                             {type.label}
                                         </SelectItem>
@@ -417,34 +457,72 @@ export function TyreMovementFormFields({
                             </Select>
                         </Field>
 
-                        <Field label={data.to_location_type === "store" ? "Destination store" : "Destination vehicle"} error={errors.to_location_id}>
+                        {destinationTarget === "store" && (
+                            <Field label="Destination store" error={errors.to_location_id}>
                             <Select
                                 value={data.to_location_id ? String(data.to_location_id) : undefined}
-                                onValueChange={handleDestinationChange}
-                                disabled={!data.to_location_type}
+                                onValueChange={(value) => {
+                                    setData("to_location_id", Number(value));
+                                    setData("to_position_code", "");
+                                    setData("to_odometer", null);
+                                }}
+                                disabled={destinationTarget !== "store"}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder={data.to_location_type ? "Select destination" : "Choose destination type first"} />
+                                    <SelectValue placeholder="Select destination store" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {destinationLocations.map((location) => (
+                                    {stores.map((location) => (
                                         <SelectItem key={location.id} value={String(location.id)}>
                                             {location.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </Field>
+                            </Field>
+                        )}
 
-                        {selectedDestinationVehicle && (
+                        {destinationTarget === "vehicle_unit" && (
+                            <Field label="Vehicle / attached unit" error={errors.to_location_id}>
+                                <Select
+                                    value={selectedUnitId ? String(selectedUnitId) : undefined}
+                                    onValueChange={handleDestinationChange}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select power unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {powerVehicles
+                                            .filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0)
+                                            .map((vehicle) => (
+                                                <SelectItem key={vehicle.id} value={String(vehicle.id)}>
+                                                    <div className="py-0.5">
+                                                        <p>{vehicle.label}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {vehicle.vehicle_type_name ?? "Power unit"} - Odo {formatKm(vehicle.current_odometer)}
+                                                            {vehicle.attached_trailer ? ` - Trailer: ${vehicle.attached_trailer.label}` : ""}
+                                                        </p>
+                                                        <p className="text-[11px] text-muted-foreground">
+                                                            Power {vehicle.power_available_count ?? vehicle.available_position_count ?? 0} open
+                                                            {vehicle.attached_trailer ? ` - Trailer ${vehicle.trailer_available_count ?? 0} open` : ""}
+                                                        </p>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                        )}
+
+                        {selectedUnit && destinationTarget === "vehicle_unit" && (
                             <div className="grid gap-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground sm:grid-cols-3">
-                                <SummaryItem label="Available" value={`${selectedDestinationVehicle.available_position_count ?? "-"}`} />
-                                <SummaryItem label="Mounted" value={`${selectedDestinationVehicle.mounted_count ?? "-"}`} />
-                                <SummaryItem label="Latest KM" value={formatKm(selectedDestinationVehicle.current_odometer)} />
+                                <SummaryItem label="Power open" value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
+                                <SummaryItem label="Trailer open" value={`${selectedUnit.trailer_available_count ?? 0}`} />
+                                <SummaryItem label="Power KM" value={formatKm(selectedUnit.current_odometer)} />
                             </div>
                         )}
 
-                        {isVehicleType(data.to_location_type) && (
+                        {destinationTarget === "vehicle_unit" && (
                             <Field label="Destination position" error={errors.to_position_code}>
                                 <div className="space-y-4">
                                     {positionGroups.map((group) => (
@@ -458,16 +536,19 @@ export function TyreMovementFormFields({
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                 {group.positions.map((position) => {
-                                                    const selected = data.to_position_code === position.code;
-                                                    const disabled = position.is_occupied;
+                                                    const selected = selectedPositionValue === position.value
+                                                        || (data.to_position_code === position.code
+                                                            && data.to_location_type === position.owner_type
+                                                            && data.to_location_id === position.owner_vehicle_id);
+                                                    const disabled = position.is_occupied || position.disabled;
 
                                                     return (
                                                         <button
-                                                            key={position.code}
+                                                            key={position.value}
                                                             type="button"
                                                             disabled={disabled}
                                                             title={`${position.display_code} - ${position.label}${position.mounted_tyre_code ? ` - ${position.mounted_tyre_code}` : ""}`}
-                                                            onClick={() => setData("to_position_code", position.code)}
+                                                            onClick={() => handlePositionChange(position)}
                                                             className={cn(
                                                                 "min-h-16 rounded-md border p-2 text-left text-sm transition",
                                                                 selected && "border-primary bg-primary text-primary-foreground shadow-sm",
@@ -492,7 +573,7 @@ export function TyreMovementFormFields({
                                     ))}
                                 </div>
                                 {loadingPositions && <HelperText>Loading destination positions...</HelperText>}
-                                {!loadingPositions && data.to_location_id && positionOptions.length === 0 && (
+                                {!loadingPositions && selectedUnitId && positionOptions.length === 0 && (
                                     <WarningText>No tyre positions are configured for this destination.</WarningText>
                                 )}
                                 {selectedPosition?.type === "spare" && (

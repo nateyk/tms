@@ -90,6 +90,10 @@ class StoreTyreMovementRequest extends FormRequest
                 if (! $destinationVehicle) {
                     $validator->errors()->add('to_location_id', 'Select a valid active destination vehicle.');
                 } else {
+                    if ($toType === TyreLocationType::Trailer && ! $destinationVehicle->attachedPower()) {
+                        $validator->errors()->add('to_location_id', 'The trailer must be attached to a power vehicle before receiving a tyre.');
+                    }
+
                     $this->validateDestinationPosition($validator, $destinationVehicle, $toPosition);
                 }
             }

@@ -134,19 +134,15 @@ class TyreMovementController extends Controller
     {
         $this->authorize('create', TyreMovement::class);
 
-        $options = collect($this->mapWorkflow->positionStatusForVehicle($vehicle))
-            ->map(fn (array $position) => [
-                'value' => $position['code'],
-                'code' => $position['code'],
-                'display_code' => $position['display_code'],
-                'label' => $position['label'],
-                'type' => $position['type'],
-                'is_empty' => $position['is_empty'],
-                'is_occupied' => $position['is_occupied'],
-                'mounted_tyre_id' => $position['mounted_tyre_id'],
-                'mounted_tyre_code' => $position['mounted_tyre_code'],
-                'disabled_reason' => $position['disabled_reason'],
-            ]);
+        $powerVehicle = $vehicle->isTrailer() ? $vehicle->attachedPower() : $vehicle;
+        $powerVehicle ??= $vehicle;
+
+        $options = collect($this->ownerPositionOptions($powerVehicle, 'power_vehicle'));
+        $attachedTrailer = $powerVehicle->attachedTrailer();
+
+        if ($attachedTrailer) {
+            $options = $options->concat($this->ownerPositionOptions($attachedTrailer, 'trailer'));
+        }
 
         return response()->json($options);
     }
@@ -274,7 +270,10 @@ class TyreMovementController extends Controller
                 'label' => collect([$s->code, $s->name])->filter()->implode(' - ') ?: "Store #{$s->id}",
             ]),
             'powerVehicles' => Vehicle::query()
-                ->with('vehicleType:id,name,tyre_count,axle_count,layout_json')
+                ->with([
+                    'vehicleType:id,name,tyre_count,axle_count,layout_json',
+                    'activeCombinationAsPower.trailer.vehicleType:id,name,tyre_count,axle_count,layout_json',
+                ])
                 ->whereIn('asset_type', ['power_vehicle', 'rigid_truck'])
                 ->where('status', VehicleStatus::Active->value)
                 ->orderBy('vehicle_code')
@@ -295,6 +294,10 @@ class TyreMovementController extends Controller
                 'value' => $type->value,
                 'label' => $type->label(),
             ]),
+            'destinationTargets' => [
+                ['value' => 'store', 'label' => 'Store'],
+                ['value' => 'vehicle_unit', 'label' => 'Vehicle / Attached Unit'],
+            ],
         ];
     }
 
@@ -408,6 +411,11 @@ class TyreMovementController extends Controller
         $positions = collect($this->mapWorkflow->positionStatusForVehicle($vehicle));
         $available = $positions->where('is_empty', true)->count();
         $mounted = $positions->where('is_occupied', true)->count();
+        $attachedTrailer = $vehicle->attachedTrailer();
+        $trailerPositions = $attachedTrailer
+            ? collect($this->mapWorkflow->positionStatusForVehicle($attachedTrailer))
+            : collect();
+        $trailerAvailable = $trailerPositions->where('is_empty', true)->count();
 
         return [
             'id' => $vehicle->id,
@@ -426,7 +434,46 @@ class TyreMovementController extends Controller
             'mounted_count' => $mounted,
             'available_position_count' => $available,
             'status' => $vehicle->status->value,
+            'power_available_count' => $available,
+            'trailer_available_count' => $trailerAvailable,
+            'total_available_count' => $available + $trailerAvailable,
+            'attached_trailer' => $attachedTrailer ? [
+                'id' => $attachedTrailer->id,
+                'vehicle_code' => $attachedTrailer->vehicle_code,
+                'plate_number' => $attachedTrailer->plate_number,
+                'label' => $attachedTrailer->displayCodeWithPlate(),
+                'vehicle_type_name' => $attachedTrailer->vehicleType?->name,
+                'current_odometer' => $attachedTrailer->odometer,
+                'available_position_count' => $trailerAvailable,
+            ] : null,
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function ownerPositionOptions(Vehicle $vehicle, string $ownerType): array
+    {
+        return collect($this->mapWorkflow->positionStatusForVehicle($vehicle))
+            ->map(fn (array $position) => [
+                'value' => sprintf('%s:%d:%s', $ownerType, $vehicle->id, $position['code']),
+                'owner_type' => $ownerType,
+                'owner_vehicle_id' => $vehicle->id,
+                'owner_vehicle_code' => $vehicle->vehicle_code,
+                'owner_label' => $vehicle->displayCodeWithPlate(),
+                'owner_current_odometer' => $vehicle->odometer,
+                'code' => $position['code'],
+                'display_code' => $position['display_code'],
+                'label' => $position['label'],
+                'type' => $position['type'],
+                'is_spare_position' => $position['type'] === 'spare',
+                'is_empty' => $position['is_empty'],
+                'is_occupied' => $position['is_occupied'],
+                'mounted_tyre_id' => $position['mounted_tyre_id'],
+                'mounted_tyre_code' => $position['mounted_tyre_code'],
+                'disabled' => $position['is_occupied'],
+                'disabled_reason' => $position['disabled_reason'],
+            ])
+            ->values()
+            ->all();
     }
 
     private function tyreVehicle(Tyre $tyre): ?Vehicle

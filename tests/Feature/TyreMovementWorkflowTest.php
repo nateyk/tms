@@ -8,6 +8,7 @@ use App\Models\TyreAssignment;
 use App\Models\TyreMovement;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleCombination;
 use App\Models\VehicleType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -105,6 +106,125 @@ class TyreMovementWorkflowTest extends TestCase
                 'type' => 'spare',
                 'is_empty' => true,
             ]);
+    }
+
+    public function test_combined_destination_returns_power_and_attached_trailer_positions(): void
+    {
+        $power = $this->vehicle('COMBINED-POWER', 'power_vehicle', 'active', 175842, 24, 6);
+        $trailer = $this->vehicle('COMBINED-TRAILER', 'trailer', 'active', 90000, 12, 3);
+        VehicleCombination::query()->create([
+            'power_vehicle_id' => $power->id,
+            'trailer_vehicle_id' => $trailer->id,
+            'attached_date' => now()->toDateString(),
+            'odometer_at_attach' => $power->odometer,
+            'status' => 'active',
+            'attached_by' => $this->adminUser->id,
+        ]);
+
+        $this->actingAs($this->adminUser)
+            ->get(route('tyres.movements.create'))
+            ->assertInertia(fn ($page) => $page
+                ->where('powerVehicles', fn ($vehicles) => collect($vehicles)->contains(
+                    fn (array $vehicle) => $vehicle['id'] === $power->id
+                        && $vehicle['attached_trailer']['id'] === $trailer->id
+                        && $vehicle['trailer_available_count'] > 0
+                ))
+            );
+
+        $this->actingAs($this->adminUser)
+            ->getJson(route('tyres.movements.position-options', $power))
+            ->assertJsonFragment([
+                'owner_type' => 'power_vehicle',
+                'owner_vehicle_id' => $power->id,
+            ])
+            ->assertJsonFragment([
+                'owner_type' => 'trailer',
+                'owner_vehicle_id' => $trailer->id,
+            ]);
+    }
+
+    public function test_same_vehicle_position_change_can_be_drafted_without_moving_tyre(): void
+    {
+        $power = $this->vehicle('ROTATION-POWER', 'power_vehicle', 'active', 175000, 24, 6);
+        $tyre = $this->mountedTyre($power, 'B', 170000);
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $tyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'power_vehicle',
+                'to_location_id' => $power->id,
+                'to_position_code' => 'J',
+                'from_odometer' => 175000,
+                'to_odometer' => 175000,
+            ])
+            ->assertRedirect();
+
+        $tyre->refresh();
+        $this->assertSame('B', $tyre->current_position_code);
+        $this->assertDatabaseHas('tyre_movements', [
+            'tyre_id' => $tyre->id,
+            'to_location_type' => 'power_vehicle',
+            'to_location_id' => $power->id,
+            'to_position_code' => 'J',
+            'movement_type' => 'position_change_same_asset',
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_power_to_attached_trailer_movement_can_be_drafted_with_owner_fields(): void
+    {
+        $power = $this->vehicle('POWER-TO-TRAILER', 'power_vehicle', 'active', 175000, 24, 6);
+        $trailer = $this->vehicle('ATTACHED-TRAILER', 'trailer', 'active', 90000, 12, 3);
+        VehicleCombination::query()->create([
+            'power_vehicle_id' => $power->id,
+            'trailer_vehicle_id' => $trailer->id,
+            'attached_date' => now()->toDateString(),
+            'odometer_at_attach' => $power->odometer,
+            'status' => 'active',
+            'attached_by' => $this->adminUser->id,
+        ]);
+        $tyre = $this->mountedTyre($power, 'B', 170000);
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $tyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'trailer',
+                'to_location_id' => $trailer->id,
+                'to_position_code' => 'C',
+                'from_odometer' => 175000,
+                'to_odometer' => 90000,
+            ])
+            ->assertRedirect();
+
+        $tyre->refresh();
+        $this->assertSame($power->id, $tyre->current_location_id);
+        $this->assertSame('B', $tyre->current_position_code);
+        $this->assertDatabaseHas('tyre_movements', [
+            'tyre_id' => $tyre->id,
+            'to_location_type' => 'trailer',
+            'to_location_id' => $trailer->id,
+            'to_position_code' => 'C',
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_unattached_trailer_cannot_receive_a_tyre(): void
+    {
+        $trailer = $this->vehicle('UNATTACHED-TRAILER', 'trailer', 'active', 90000, 12, 3);
+        $tyre = $this->storeTyre('UNATTACHED-DESTINATION-TYRE');
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $tyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'trailer',
+                'to_location_id' => $trailer->id,
+                'to_position_code' => 'A',
+                'to_odometer' => 90000,
+            ])
+            ->assertSessionHasErrors('to_location_id');
     }
 
     public function test_occupied_destination_position_cannot_be_selected(): void

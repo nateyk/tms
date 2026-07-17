@@ -12,6 +12,7 @@ type FormOptions = {
     powerVehicles: Parameters<typeof TyreMovementFormFields>[0]["powerVehicles"];
     trailers: Parameters<typeof TyreMovementFormFields>[0]["trailers"];
     destinationTypes: Parameters<typeof TyreMovementFormFields>[0]["destinationTypes"];
+    destinationTargets: Parameters<typeof TyreMovementFormFields>[0]["destinationTargets"];
     prefilled: Partial<{
         tyre_id: number;
         movement_date: string;
@@ -28,6 +29,7 @@ export default function MovementsCreate({
     powerVehicles,
     trailers,
     destinationTypes,
+    destinationTargets,
     prefilled,
 }: FormOptions) {
     const form = useForm({
@@ -60,7 +62,7 @@ export default function MovementsCreate({
             <form onSubmit={submit}>
                 <TyreFormShell
                     title="New tyre movement"
-                    description="Choose the tyre, destination, and position. Odometer fields are used when the movement touches a running vehicle."
+                    description="Create a movement voucher. The tyre location changes only after completion."
                     backHref={route("tyres.movements.index")}
                     backLabel="Back to Movements"
                     footer={(
@@ -83,6 +85,7 @@ export default function MovementsCreate({
                         powerVehicles={powerVehicles}
                         trailers={trailers}
                         destinationTypes={destinationTypes}
+                        destinationTargets={destinationTargets}
                         onTyreSelected={setSelectedTyreId}
                     />
                 </TyreFormShell>
