@@ -81,6 +81,7 @@ type TyreMovementFormFieldsProps = {
     trailers: DestinationVehicleOption[];
     destinationTypes: DestinationType[];
     readOnlyTyre?: boolean;
+    onTyreSelected?: (tyreId: number | null) => void;
     sourceInfo?: {
         location_label: string;
         position_label: string;
@@ -146,6 +147,7 @@ export function TyreMovementFormFields({
     trailers,
     destinationTypes,
     readOnlyTyre = false,
+    onTyreSelected,
     sourceInfo,
 }: TyreMovementFormFieldsProps) {
     const [positionOptions, setPositionOptions] = useState<PositionOption[]>([]);
@@ -240,6 +242,7 @@ export function TyreMovementFormFields({
         const nextTyreId = Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null;
         setSelectedTyreId(nextTyreId);
         setData("tyre_id", nextTyreId);
+        onTyreSelected?.(nextTyreId);
         setData("from_odometer", null);
         setTyreSearch("");
         setTyrePickerOpen(false);

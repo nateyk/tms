@@ -4,6 +4,7 @@ import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
+import { useState } from "react";
 
 type FormOptions = {
     tyres: Parameters<typeof TyreMovementFormFields>[0]["tyres"];
@@ -40,13 +41,14 @@ export default function MovementsCreate({
         reason: prefilled.reason ?? "",
         notes: "",
     });
+    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(form.data.tyre_id);
     const { data, setData, processing, errors } = form;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         form.transform((payload) => ({
             ...payload,
-            tyre_id: payload.tyre_id ? Number(payload.tyre_id) : null,
+            tyre_id: selectedTyreId ? Number(selectedTyreId) : null,
         }));
         form.post(route("tyres.movements.store"));
     };
@@ -81,6 +83,7 @@ export default function MovementsCreate({
                         powerVehicles={powerVehicles}
                         trailers={trailers}
                         destinationTypes={destinationTypes}
+                        onTyreSelected={setSelectedTyreId}
                     />
                 </TyreFormShell>
             </form>
