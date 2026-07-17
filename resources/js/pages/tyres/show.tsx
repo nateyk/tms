@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
     Table,
     TableBody,
@@ -29,7 +28,6 @@ import {
     ArrowRight,
     CheckCircle2,
     ClipboardCheck,
-    ExternalLink,
     FileText,
     History,
     MapPin,
@@ -38,7 +36,6 @@ import {
     RefreshCw,
     Activity,
     Gauge,
-    Truck,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -162,7 +159,7 @@ function DetailItem({ label, value }: { label: string; value: ReactNode }) {
 
 function IdentityTile({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-md border bg-muted/20 p-3">
+        <div className="border-l-2 border-muted px-3 py-1">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="mt-1 text-sm font-semibold">{value}</p>
         </div>
@@ -249,8 +246,11 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 <p className="mt-1 text-sm text-muted-foreground">Serial {tyre.serial_number}</p>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link href={tyre.action_urls.create_movement}><Gauge className="mr-2 h-4 w-4" />Move tyre</Link>
+                                <Button size="sm" asChild>
+                                    <Link href={tyre.action_urls.create_movement}>
+                                        <Gauge className="mr-2 h-4 w-4" />
+                                        {tyre.current_position_code ? `Move from ${tyre.current_position_code}` : "Place tyre"}
+                                    </Link>
                                 </Button>
                                 {can.update && (
                                     <Button variant="outline" size="sm" asChild>
@@ -267,10 +267,10 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 <IdentityTile label="Size" value={tyre.size_label || "Not recorded"} />
                                 <IdentityTile label="Total tyre KM" value={formatKm(tyre.total_km)} />
                             </div>
-                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                            <div className="border-y border-primary/20 bg-primary/5 px-1 py-4 sm:px-3">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div className="flex items-start gap-3">
-                                        <div className="rounded-md bg-primary/10 p-2 text-primary"><MapPin className="h-5 w-5" /></div>
+                                        <div className="p-2 text-primary"><MapPin className="h-5 w-5" /></div>
                                         <div>
                                             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current placement</p>
                                             <p className="mt-1 text-base font-semibold">{tyre.vehicle_plate || tyre.current_location_type}</p>
@@ -434,12 +434,6 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                     </Link>
                                 </Button>
                             )}
-                            <Button asChild variant="outline" className="w-full justify-start" size="sm">
-                                <Link href={tyre.action_urls.create_movement}>
-                                    <Gauge className="mr-2 h-4 w-4" />
-                                    Create Movement
-                                </Link>
-                            </Button>
                             {!isPending && (
                                 <Button
                                     variant="outline"
