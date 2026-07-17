@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Circle, MapPin, Search } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, Circle, MapPin, Search } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 type TyreOption = {
@@ -149,6 +150,7 @@ export function TyreMovementFormFields({
 }: TyreMovementFormFieldsProps) {
     const [positionOptions, setPositionOptions] = useState<PositionOption[]>([]);
     const [tyreSearch, setTyreSearch] = useState("");
+    const [tyrePickerOpen, setTyrePickerOpen] = useState(false);
     const [loadingPositions, setLoadingPositions] = useState(false);
 
     const selectedTyre = useMemo(
@@ -236,6 +238,8 @@ export function TyreMovementFormFields({
         const tyreId = Number.parseInt(value, 10);
         setData("tyre_id", Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null);
         setData("from_odometer", null);
+        setTyreSearch("");
+        setTyrePickerOpen(false);
     };
 
     const handleDestinationTypeChange = (value: string) => {
@@ -271,43 +275,59 @@ export function TyreMovementFormFields({
                         {readOnlyTyre ? (
                             <Input value={selectedTyre ? tyreOptionLabel(selectedTyre) : ""} disabled />
                         ) : (
-                            <div className="space-y-2">
-                                <div className="relative">
-                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        value={tyreSearch}
-                                        onChange={(event) => setTyreSearch(event.target.value)}
-                                        placeholder="Search tyre code, serial number, or location"
-                                        className="pl-9"
-                                        aria-label="Search tyres"
-                                    />
-                                </div>
-                                <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border bg-muted/10 p-2">
-                                    {availableTyres.length > 0 && (
-                                        <TyreOptionGroup
-                                            title="Available to move"
-                                            tyres={availableTyres}
-                                            selectedId={data.tyre_id}
-                                            onSelect={handleTyreChange}
+                            <Popover open={tyrePickerOpen} onOpenChange={setTyrePickerOpen}>
+                                <PopoverTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        aria-label="Choose tyre"
+                                    >
+                                        <span className={cn("flex min-w-0 items-center gap-2 truncate", !selectedTyre && "text-muted-foreground")}>
+                                            <Search className="h-4 w-4 shrink-0" />
+                                            {selectedTyre ? tyreOptionLabel(selectedTyre) : "Search and select tyre"}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent align="start" className="w-[min(520px,calc(100vw-2rem))] p-2">
+                                    <div className="relative">
+                                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            autoFocus
+                                            value={tyreSearch}
+                                            onChange={(event) => setTyreSearch(event.target.value)}
+                                            placeholder="Search code, serial number, or location"
+                                            className="pl-9"
+                                            aria-label="Search tyres"
                                         />
-                                    )}
-                                    {mountedTyres.length > 0 && (
-                                        <TyreOptionGroup
-                                            title="Mounted on a vehicle"
-                                            description="Shown muted. Select one to remove or relocate it."
-                                            tyres={mountedTyres}
-                                            selectedId={data.tyre_id}
-                                            onSelect={handleTyreChange}
-                                            muted
-                                        />
-                                    )}
-                                    {filteredTyres.length === 0 && (
-                                        <p className="px-3 py-5 text-center text-sm text-muted-foreground">
-                                            No tyres match this search.
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                                    </div>
+                                    <div className="mt-2 max-h-64 space-y-2 overflow-y-auto">
+                                        {availableTyres.length > 0 && (
+                                            <TyreOptionGroup
+                                                title="Available"
+                                                tyres={availableTyres}
+                                                selectedId={data.tyre_id}
+                                                onSelect={handleTyreChange}
+                                            />
+                                        )}
+                                        {mountedTyres.length > 0 && (
+                                            <TyreOptionGroup
+                                                title="Mounted"
+                                                description="Muted but selectable for relocation"
+                                                tyres={mountedTyres}
+                                                selectedId={data.tyre_id}
+                                                onSelect={handleTyreChange}
+                                                muted
+                                            />
+                                        )}
+                                        {filteredTyres.length === 0 && (
+                                            <p className="px-3 py-5 text-center text-sm text-muted-foreground">
+                                                No tyres match this search.
+                                            </p>
+                                        )}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         )}
                     </Field>
 
