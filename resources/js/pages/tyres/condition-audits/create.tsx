@@ -1,7 +1,8 @@
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
+import { WorkflowHeader } from "@/components/workflow/workflow-ui";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -89,23 +90,23 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
         <AuthenticatedLayout header="Record Tyre Condition Audit">
             <Head title="Record Tyre Condition Audit" />
 
-            <form onSubmit={submit}>
-                <TyreFormShell
+            <div className="space-y-6">
+                <WorkflowHeader
                     title="Record condition audit"
                     description={`${tyre.tyre_code} on ${tyre.vehicle_label}, position ${tyre.position}. Save the manual inspected remaining percentage without changing baseline records.`}
                     backHref={route("tyres.show", tyre.id)}
                     backLabel="Back to Tyre"
-                    footer={(
-                        <>
-                            <Button type="button" variant="outline" asChild>
-                                <Link href={route("tyres.show", tyre.id)}>Cancel</Link>
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? "Saving..." : "Save Condition Audit"}
-                            </Button>
-                        </>
-                    )}
-                >
+                />
+
+                <Card className="max-w-3xl overflow-hidden">
+                    <CardHeader>
+                        <CardTitle>Audit checkpoint</CardTitle>
+                        <CardDescription>
+                            Record the inspected tyre condition. Vehicle, position, KM, and calculated remaining life are captured automatically.
+                        </CardDescription>
+                    </CardHeader>
+                    <form onSubmit={submit}>
+                        <CardContent>
                     <div className="space-y-6">
                         <div className="grid gap-3 md:grid-cols-5">
                             <Metric label="Tyre" value={tyre.tyre_code} />
@@ -115,7 +116,7 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                             <Metric label="Calculated now" value={formatPercent(calculated)} />
                         </div>
                         <div className="rounded-lg border bg-muted/20 p-4 text-sm">
-                            <p className="font-semibold">Audit checkpoint</p>
+                            <p className="font-semibold">Inspection snapshot</p>
                             <p className="mt-1 text-muted-foreground">The system captures vehicle, position, odometer, calculated remaining, and the recording user automatically. Baseline and assignment data remain unchanged.</p>
                             {tyre.latest_audit && <p className="mt-2 text-xs text-muted-foreground">Latest audited remaining: {formatPercent(tyre.latest_audit.audited_remaining_percentage)} on {tyre.latest_audit.inspection_date || "-"}</p>}
                         </div>
@@ -225,8 +226,18 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                             </Field>
                         </section>
                     </div>
-                </TyreFormShell>
-            </form>
+                        </CardContent>
+                        <div className="flex flex-col-reverse gap-2 border-t bg-muted/20 px-6 py-4 sm:flex-row sm:justify-end">
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={route("tyres.show", tyre.id)}>Cancel</Link>
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Saving..." : "Save Condition Audit"}
+                            </Button>
+                        </div>
+                    </form>
+                </Card>
+            </div>
         </AuthenticatedLayout>
     );
 }
