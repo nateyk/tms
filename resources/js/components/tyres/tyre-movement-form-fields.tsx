@@ -151,11 +151,12 @@ export function TyreMovementFormFields({
     const [positionOptions, setPositionOptions] = useState<PositionOption[]>([]);
     const [tyreSearch, setTyreSearch] = useState("");
     const [tyrePickerOpen, setTyrePickerOpen] = useState(false);
+    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(data.tyre_id);
     const [loadingPositions, setLoadingPositions] = useState(false);
 
     const selectedTyre = useMemo(
-        () => tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id)) ?? null,
-        [tyres, data.tyre_id],
+        () => tyres.find((tyre) => Number(tyre.id) === Number(selectedTyreId)) ?? null,
+        [selectedTyreId, tyres],
     );
     const filteredTyres = useMemo(() => {
         const query = tyreSearch.trim().toLowerCase();
@@ -236,7 +237,9 @@ export function TyreMovementFormFields({
 
     const handleTyreChange = (value: string) => {
         const tyreId = Number.parseInt(value, 10);
-        setData("tyre_id", Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null);
+        const nextTyreId = Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null;
+        setSelectedTyreId(nextTyreId);
+        setData("tyre_id", nextTyreId);
         setData("from_odometer", null);
         setTyreSearch("");
         setTyrePickerOpen(false);
@@ -306,7 +309,7 @@ export function TyreMovementFormFields({
                                             <TyreOptionGroup
                                                 title="Available"
                                                 tyres={availableTyres}
-                                                selectedId={data.tyre_id}
+                                                selectedId={selectedTyreId}
                                                 onSelect={handleTyreChange}
                                             />
                                         )}
@@ -315,7 +318,7 @@ export function TyreMovementFormFields({
                                                 title="Mounted"
                                                 description="Muted but selectable for relocation"
                                                 tyres={mountedTyres}
-                                                selectedId={data.tyre_id}
+                                                selectedId={selectedTyreId}
                                                 onSelect={handleTyreChange}
                                                 muted
                                             />
