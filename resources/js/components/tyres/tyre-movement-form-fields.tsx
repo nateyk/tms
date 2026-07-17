@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -149,11 +148,37 @@ export function TyreMovementFormFields({
     sourceInfo,
 }: TyreMovementFormFieldsProps) {
     const [positionOptions, setPositionOptions] = useState<PositionOption[]>([]);
+    const [tyreSearch, setTyreSearch] = useState("");
     const [loadingPositions, setLoadingPositions] = useState(false);
 
     const selectedTyre = useMemo(
         () => tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id)) ?? null,
         [tyres, data.tyre_id],
+    );
+    const filteredTyres = useMemo(() => {
+        const query = tyreSearch.trim().toLowerCase();
+
+        if (!query) {
+            return tyres;
+        }
+
+        return tyres.filter((tyre) => [
+            tyre.tyre_code,
+            tyre.serial_number,
+            tyre.source_label,
+            tyre.source_position_label,
+            tyre.current_position_code,
+            tyre.status_label,
+        ].filter(Boolean).some((value) => String(value).toLowerCase().includes(query)));
+    }, [tyreSearch, tyres]);
+
+    const availableTyres = useMemo(
+        () => filteredTyres.filter((tyre) => tyre.current_location_type !== "power_vehicle" && tyre.current_location_type !== "trailer"),
+        [filteredTyres],
+    );
+    const mountedTyres = useMemo(
+        () => filteredTyres.filter((tyre) => tyre.current_location_type === "power_vehicle" || tyre.current_location_type === "trailer"),
+        [filteredTyres],
     );
 
     const destinationLocations = useMemo(() => {
@@ -244,23 +269,45 @@ export function TyreMovementFormFields({
                 <CardContent className="space-y-4">
                     <Field label="Tyre" error={errors.tyre_id}>
                         {readOnlyTyre ? (
-                            <Input value={selectedTyre?.tyre_code ?? ""} disabled />
+                            <Input value={selectedTyre ? tyreOptionLabel(selectedTyre) : ""} disabled />
                         ) : (
-                            <Select
-                                value={data.tyre_id !== null ? String(data.tyre_id) : undefined}
-                                onValueChange={handleTyreChange}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select tyre" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {tyres.map((tyre) => (
-                                        <SelectItem key={tyre.id} value={String(tyre.id)}>
-                                            {tyre.tyre_code} - {tyre.status_label} - {tyre.source_label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="space-y-2">
+                                <div className="relative">
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        value={tyreSearch}
+                                        onChange={(event) => setTyreSearch(event.target.value)}
+                                        placeholder="Search tyre code, serial number, or location"
+                                        className="pl-9"
+                                        aria-label="Search tyres"
+                                    />
+                                </div>
+                                <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border bg-muted/10 p-2">
+                                    {availableTyres.length > 0 && (
+                                        <TyreOptionGroup
+                                            title="Available to move"
+                                            tyres={availableTyres}
+                                            selectedId={data.tyre_id}
+                                            onSelect={handleTyreChange}
+                                        />
+                                    )}
+                                    {mountedTyres.length > 0 && (
+                                        <TyreOptionGroup
+                                            title="Mounted on a vehicle"
+                                            description="Shown muted. Select one to remove or relocate it."
+                                            tyres={mountedTyres}
+                                            selectedId={data.tyre_id}
+                                            onSelect={handleTyreChange}
+                                            muted
+                                        />
+                                    )}
+                                    {filteredTyres.length === 0 && (
+                                        <p className="px-3 py-5 text-center text-sm text-muted-foreground">
+                                            No tyres match this search.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </Field>
 
@@ -512,6 +559,76 @@ function buildPreview(
     }
 
     return `Move ${tyre.tyre_code} from ${source}. Choose a destination and empty position to complete the draft.`;
+}
+
+function tyreOptionLabel(tyre: TyreOption): string {
+    return [tyre.tyre_code, tyre.serial_number ? `Serial ${tyre.serial_number}` : null]
+        .filter(Boolean)
+        .join(" - ");
+}
+
+function TyreOptionGroup({
+    title,
+    description,
+    tyres,
+    selectedId,
+    onSelect,
+    muted = false,
+}: {
+    title: string;
+    description?: string;
+    tyres: TyreOption[];
+    selectedId: number | null;
+    onSelect: (value: string) => void;
+    muted?: boolean;
+}) {
+    return (
+        <div className="space-y-1">
+            <div className="px-2 py-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+                {description && <p className="text-[11px] text-muted-foreground">{description}</p>}
+            </div>
+            {tyres.map((tyre) => {
+                const selected = Number(selectedId) === Number(tyre.id);
+                const mounted = tyre.current_location_type === "power_vehicle" || tyre.current_location_type === "trailer";
+
+                return (
+                    <button
+                        key={tyre.id}
+                        type="button"
+                        onClick={() => onSelect(String(tyre.id))}
+                        className={cn(
+                            "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition",
+                            selected && "border-primary bg-primary/10 ring-1 ring-primary/30",
+                            !selected && "bg-background hover:border-primary/50 hover:bg-primary/5",
+                            muted && !selected && "opacity-65",
+                        )}
+                    >
+                        <span className="min-w-0">
+                            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className="font-semibold text-foreground">{tyre.tyre_code}</span>
+                                {tyre.serial_number && (
+                                    <span className="text-xs text-muted-foreground">Serial: {tyre.serial_number}</span>
+                                )}
+                            </span>
+                            <span className="mt-1 block truncate text-xs text-muted-foreground">
+                                {mounted && tyre.current_position_code ? `${tyre.source_label} - Position ${tyre.current_position_code}` : tyre.source_label}
+                            </span>
+                        </span>
+                        <span className="shrink-0 text-right">
+                            <span className={cn(
+                                "block text-[11px] font-medium",
+                                mounted ? "text-muted-foreground" : "text-emerald-700 dark:text-emerald-400",
+                            )}>
+                                {mounted ? "Mounted" : tyre.status_label}
+                            </span>
+                            {mounted && <span className="block text-[10px] text-muted-foreground">Select to relocate</span>}
+                        </span>
+                    </button>
+                );
+            })}
+        </div>
+    );
 }
 
 function SummaryItem({ label, value }: { label: string; value: string }) {
