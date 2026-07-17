@@ -25,14 +25,20 @@ import {
 } from "@/components/ui/table";
 import { Head, Link, router } from "@inertiajs/react";
 import {
+    ArrowLeft,
+    ArrowRight,
     CheckCircle2,
+    ClipboardCheck,
     ExternalLink,
     FileText,
+    History,
+    MapPin,
     Pencil,
     QrCode,
     RefreshCw,
     Activity,
     Gauge,
+    Truck,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -154,6 +160,15 @@ function DetailItem({ label, value }: { label: string; value: ReactNode }) {
     );
 }
 
+function IdentityTile({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="rounded-md border bg-muted/20 p-3">
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="mt-1 text-sm font-semibold">{value}</p>
+        </div>
+    );
+}
+
 function formatPercent(value: number | null | undefined): string {
     return typeof value === "number" ? `${value.toFixed(1)}%` : "-";
 }
@@ -210,48 +225,78 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
         <AuthenticatedLayout header={tyre.tyre_code}>
             <Head title={tyre.tyre_code} />
 
-            <div className="grid gap-6 lg:grid-cols-3">
-                {/* Left Column - Main Info */}
-                <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link href={route("tyres.index")}><ArrowLeft className="mr-2 h-4 w-4" />Tyres</Link>
+                    </Button>
+                    <span className="text-sm text-muted-foreground">/ Tyre detail</span>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-6 lg:col-span-2">
                     <Card>
-                        <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-4">
+                        <CardHeader className="flex flex-col gap-4 border-b bg-muted/20 pb-5 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <CardTitle className="flex flex-wrap items-center gap-2 text-xl">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tyre identity</p>
+                                <CardTitle className="mt-1 flex flex-wrap items-center gap-2 text-2xl">
                                     {tyre.tyre_code}
                                     <TyreStatusBadge
                                         label={tyre.status_label}
                                         color={tyre.status_color}
                                     />
                                 </CardTitle>
-                                <p className="text-sm text-muted-foreground mt-1">{tyre.serial_number}</p>
+                                <p className="mt-1 text-sm text-muted-foreground">Serial {tyre.serial_number}</p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={tyre.action_urls.create_movement}><Gauge className="mr-2 h-4 w-4" />Move tyre</Link>
+                                </Button>
                                 {can.update && (
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href={route("tyres.edit", tyre.id)}>
-                                            <Pencil className="h-4 w-4" />
+                                            <Pencil className="mr-2 h-4 w-4" />Edit
                                         </Link>
                                     </Button>
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent>
-                            <dl className="grid gap-4 sm:grid-cols-2">
-                                <DetailItem label="Brand" value={tyre.brand_name} />
-                                <DetailItem label="Size" value={tyre.size_label} />
-                                <DetailItem label="Status" value={tyre.status_label} />
-                                <DetailItem label="Location" value={tyre.vehicle_plate || tyre.current_location_type} />
-                                <DetailItem label="Position" value={tyre.current_position_code} />
-                                <DetailItem label="Total km" value={tyre.total_km.toLocaleString()} />
-                            </dl>
+                        <CardContent className="space-y-5 p-5 sm:p-6">
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <IdentityTile label="Brand" value={tyre.brand_name || "Not recorded"} />
+                                <IdentityTile label="Size" value={tyre.size_label || "Not recorded"} />
+                                <IdentityTile label="Total tyre KM" value={formatKm(tyre.total_km)} />
+                            </div>
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-start gap-3">
+                                        <div className="rounded-md bg-primary/10 p-2 text-primary"><MapPin className="h-5 w-5" /></div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current placement</p>
+                                            <p className="mt-1 text-base font-semibold">{tyre.vehicle_plate || tyre.current_location_type}</p>
+                                            <p className="text-sm text-muted-foreground">{tyre.current_location_id ? "Mounted on the fleet" : "Stored and ready to mount"}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline">Position {tyre.current_position_code || "Not mounted"}</Badge>
+                                        <Badge variant={tyre.current_position_code ? "default" : "secondary"}>{tyre.current_position_code ? "Mounted" : "In store"}</Badge>
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardHeader className="pb-4">
-                            <CardTitle className="text-lg">Health Status</CardTitle>
+                        <CardHeader className="border-b bg-muted/20 pb-4">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <CardTitle className="text-lg">Tyre health</CardTitle>
+                                    <p className="mt-1 text-sm text-muted-foreground">Use effective remaining life for the next decision.</p>
+                                </div>
+                                <Badge variant={tyre.usage_summary.effective_status === "Good" ? "default" : "outline"}>{tyre.usage_summary.effective_status}</Badge>
+                            </div>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 p-5 sm:p-6">
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <HealthMetric label="Effective Remaining" value={formatPercent(tyre.usage_summary.effective_remaining_percentage)} strong />
                                 <HealthMetric label="Calculated Remaining" value={formatPercent(tyre.usage_summary.calculated_remaining_percentage)} />
@@ -259,9 +304,10 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 <HealthMetric label="Used KM" value={formatKm(tyre.usage_summary.used_km)} />
                             </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-5 sm:grid-cols-2">
                                 <section className="space-y-3">
-                                    <h3 className="text-sm font-semibold">Calculation Source</h3>
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold"><Gauge className="h-4 w-4 text-muted-foreground" />Calculation source</h3>
+                                    <p className="text-xs text-muted-foreground">Estimated from baseline and vehicle odometer usage.</p>
                                     {tyre.baseline ? (
                                         <dl className="grid gap-2 text-sm">
                                             <DetailLine label="Baseline %" value={formatPercent(tyre.baseline.baseline_percentage)} />
@@ -279,7 +325,7 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 </section>
 
                                 <section className="space-y-3">
-                                    <h3 className="text-sm font-semibold">Latest Condition Audit</h3>
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold"><ClipboardCheck className="h-4 w-4 text-muted-foreground" />Latest condition audit</h3>
                                     {tyre.latest_audit ? (
                                         <dl className="grid gap-2 text-sm">
                                             <DetailLine label="Audited remaining" value={formatPercent(tyre.latest_audit.audited_remaining_percentage)} />
@@ -297,7 +343,7 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                         </dl>
                                     ) : (
                                         <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
-                                            No condition audit recorded yet.
+                                            No condition audit recorded yet. Record an inspection when the tyre is checked.
                                         </div>
                                     )}
                                 </section>
@@ -306,8 +352,9 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                     </Card>
 
                     <Card>
-                        <CardHeader className="pb-4">
-                            <CardTitle className="text-lg">Audit History</CardTitle>
+                        <CardHeader className="border-b bg-muted/20 pb-4">
+                            <CardTitle className="flex items-center gap-2 text-lg"><History className="h-5 w-5" />Audit history</CardTitle>
+                            <p className="text-sm text-muted-foreground">Manual inspections are checkpoints. Baseline and usage history remain unchanged.</p>
                         </CardHeader>
                         <CardContent className="p-0">
                             {tyre.audit_history.length > 0 ? (
@@ -345,8 +392,8 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
 
                     {tyre.recent_movements.length > 0 && (
                         <Card>
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg">Recent Movements</CardTitle>
+                            <CardHeader className="border-b bg-muted/20 pb-4">
+                                <CardTitle className="flex items-center gap-2 text-lg"><ArrowRight className="h-5 w-5" />Recent movements</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Table>
@@ -480,6 +527,7 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                             </CardContent>
                         </Card>
                     )}
+                </div>
                 </div>
             </div>
         </AuthenticatedLayout>

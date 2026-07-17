@@ -110,6 +110,32 @@ function positionTypeLabel(type: "running" | "spare" | null | undefined): string
     return "Not mounted";
 }
 
+function groupPositionOptions(options: PositionOption[]): Array<{ title: string; subtitle?: string; positions: PositionOption[] }> {
+    const groups = [
+        { title: "Front axle", codes: ["A", "B"] },
+        { title: "1st drive axle", codes: ["C", "D", "E", "F"] },
+        { title: "2nd drive axle", codes: ["G", "H", "I", "J"] },
+        { title: "Spare wheels", subtitle: "Non-running positions", codes: ["W", "X"] },
+        { title: "Tag axle", codes: ["K", "L", "M", "N"] },
+        { title: "Rear axles", codes: ["O", "P", "Q", "R", "S", "T", "U", "V"] },
+    ];
+    const used = new Set<string>();
+    const result = groups.map((group) => {
+        const positions = group.codes
+            .map((code) => options.find((position) => position.display_code === code || position.code === code))
+            .filter((position): position is PositionOption => Boolean(position));
+        positions.forEach((position) => used.add(position.code));
+        return { title: group.title, subtitle: group.subtitle, positions };
+    }).filter((group) => group.positions.length > 0);
+    const remaining = options.filter((position) => !used.has(position.code));
+
+    if (remaining.length > 0) {
+        result.push({ title: "Other positions", subtitle: undefined, positions: remaining });
+    }
+
+    return result;
+}
+
 export function TyreMovementFormFields({
     data,
     setData,
@@ -163,6 +189,7 @@ export function TyreMovementFormFields({
         () => positionOptions.find((position) => position.code === data.to_position_code) ?? null,
         [data.to_position_code, positionOptions],
     );
+    const positionGroups = useMemo(() => groupPositionOptions(positionOptions), [positionOptions]);
 
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
     const destinationNeedsOdometer = isVehicleType(data.to_location_type) && selectedPosition?.type === "running";
@@ -346,47 +373,50 @@ export function TyreMovementFormFields({
 
                         {isVehicleType(data.to_location_type) && (
                             <Field label="Destination position" error={errors.to_position_code}>
-                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                                    {positionOptions.map((position) => {
-                                        const selected = data.to_position_code === position.code;
-                                        const disabled = position.is_occupied;
-
-                                        return (
-                                            <button
-                                                key={position.code}
-                                                type="button"
-                                                disabled={disabled}
-                                                onClick={() => setData("to_position_code", position.code)}
-                                                className={cn(
-                                                    "rounded-md border p-3 text-left text-sm transition",
-                                                    selected && "border-primary bg-primary text-primary-foreground",
-                                                    !selected && !disabled && "bg-background hover:border-primary/60",
-                                                    disabled && "cursor-not-allowed border-dashed bg-muted/40 text-muted-foreground",
-                                                )}
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="font-semibold">{position.display_code}</span>
-                                                    <Badge variant={position.type === "spare" ? "secondary" : "outline"}>
-                                                        {position.type === "spare" ? "Spare" : "Run"}
-                                                    </Badge>
+                                <div className="space-y-4">
+                                    {positionGroups.map((group) => (
+                                        <section key={group.title} className="space-y-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+                                                    {group.subtitle && <p className="text-[11px] text-muted-foreground">{group.subtitle}</p>}
                                                 </div>
-                                                <p className="mt-1 line-clamp-2 text-xs">{position.label}</p>
-                                                <p className="mt-2 flex items-center gap-1 text-xs">
-                                                    {position.is_empty ? (
-                                                        <>
-                                                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                                                            Empty
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Circle className="h-3.5 w-3.5" />
-                                                            {position.mounted_tyre_code}
-                                                        </>
-                                                    )}
-                                                </p>
-                                            </button>
-                                        );
-                                    })}
+                                                <span className="text-[11px] text-muted-foreground">{group.positions.filter((position) => position.is_empty).length} open</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                                {group.positions.map((position) => {
+                                                    const selected = data.to_position_code === position.code;
+                                                    const disabled = position.is_occupied;
+
+                                                    return (
+                                                        <button
+                                                            key={position.code}
+                                                            type="button"
+                                                            disabled={disabled}
+                                                            title={`${position.display_code} - ${position.label}${position.mounted_tyre_code ? ` - ${position.mounted_tyre_code}` : ""}`}
+                                                            onClick={() => setData("to_position_code", position.code)}
+                                                            className={cn(
+                                                                "min-h-16 rounded-md border p-2 text-left text-sm transition",
+                                                                selected && "border-primary bg-primary text-primary-foreground shadow-sm",
+                                                                !selected && !disabled && "bg-background hover:border-primary/60 hover:bg-primary/5",
+                                                                disabled && "cursor-not-allowed border-dashed bg-muted/40 text-muted-foreground",
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-1">
+                                                                <span className="font-semibold">{position.display_code}</span>
+                                                                <span className="text-[10px]">{position.type === "spare" ? "Spare" : "Run"}</span>
+                                                            </div>
+                                                            <p className="mt-1 line-clamp-1 text-[11px]">{position.label}</p>
+                                                            <p className="mt-1 flex items-center gap-1 text-[11px]">
+                                                                {position.is_empty ? <CheckCircle2 className="h-3 w-3 text-emerald-500" /> : <Circle className="h-3 w-3" />}
+                                                                <span className="truncate">{position.is_empty ? "Open" : position.mounted_tyre_code}</span>
+                                                            </p>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </section>
+                                    ))}
                                 </div>
                                 {loadingPositions && <HelperText>Loading destination positions...</HelperText>}
                                 {!loadingPositions && data.to_location_id && positionOptions.length === 0 && (
