@@ -230,8 +230,8 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                     <span className="text-sm text-muted-foreground">/ Tyre detail</span>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-3">
-                <div className="space-y-6 lg:col-span-2">
+                <div className="grid gap-6 xl:grid-cols-3">
+                <div className="space-y-6 xl:col-span-2">
                     <Card>
                         <CardHeader className="flex flex-col gap-4 border-b bg-muted/20 pb-5 sm:flex-row sm:items-start sm:justify-between">
                             <div>
@@ -390,33 +390,6 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                         </CardContent>
                     </Card>
 
-                    {tyre.recent_movements.length > 0 && (
-                        <Card>
-                            <CardHeader className="border-b bg-muted/20 pb-4">
-                                <CardTitle className="flex items-center gap-2 text-lg"><ArrowRight className="h-5 w-5" />Recent movements</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Movement</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {tyre.recent_movements.map((movement) => (
-                                            <TableRow key={movement.movement_no}>
-                                                <TableCell className="font-medium">{movement.movement_no}</TableCell>
-                                                <TableCell>{movement.movement_type}</TableCell>
-                                                <TableCell>{movement.status}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
 
                 {/* Right Column - Actions & QR */}
@@ -518,6 +491,49 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                         Scan profile
                                     </a>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <Card>
+                        <CardHeader className="border-b bg-muted/20 pb-4">
+                            <CardTitle className="text-lg">Record snapshot</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            <dl className="grid gap-3 text-sm">
+                                <DetailLine label="Current placement" value={tyre.vehicle_plate || tyre.current_location_type} />
+                                <DetailLine label="Position" value={tyre.current_position_code || "Not mounted"} />
+                                <DetailLine label="Baseline" value={tyre.baseline ? formatPercent(tyre.baseline.baseline_percentage) : "Required"} />
+                                <DetailLine label="Vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
+                                <DetailLine label="Last audit" value={tyre.latest_audit?.audit_date || "Not audited"} />
+                            </dl>
+                        </CardContent>
+                    </Card>
+
+                    {tyre.recent_movements.length > 0 && (
+                        <Card>
+                            <CardHeader className="border-b bg-muted/20 pb-4">
+                                <CardTitle className="flex items-center gap-2 text-lg"><ArrowRight className="h-5 w-5" />Recent movements</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Movement</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {tyre.recent_movements.map((movement) => (
+                                            <TableRow key={movement.movement_no}>
+                                                <TableCell className="font-medium">{movement.movement_no}</TableCell>
+                                                <TableCell>{movement.movement_type}</TableCell>
+                                                <TableCell>{movement.status}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </CardContent>
                         </Card>
                     )}
