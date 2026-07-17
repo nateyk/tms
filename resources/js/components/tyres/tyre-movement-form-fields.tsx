@@ -126,7 +126,7 @@ export function TyreMovementFormFields({
     const [loadingPositions, setLoadingPositions] = useState(false);
 
     const selectedTyre = useMemo(
-        () => tyres.find((tyre) => tyre.id === data.tyre_id) ?? null,
+        () => tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id)) ?? null,
         [tyres, data.tyre_id],
     );
 
@@ -181,7 +181,8 @@ export function TyreMovementFormFields({
     }, [data.to_location_type, data.to_location_id]);
 
     const handleTyreChange = (value: string) => {
-        setData("tyre_id", Number(value));
+        const tyreId = Number.parseInt(value, 10);
+        setData("tyre_id", Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null);
         setData("from_odometer", null);
     };
 
@@ -193,9 +194,15 @@ export function TyreMovementFormFields({
     };
 
     const handleDestinationChange = (value: string) => {
-        setData("to_location_id", Number(value));
+        const destinationId = Number.parseInt(value, 10);
+        const destination = destinationLocations.find((location) => Number(location.id) === destinationId);
+
+        setData("to_location_id", Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
         setData("to_position_code", "");
-        setData("to_odometer", null);
+        const currentOdometer = destination && "current_odometer" in destination
+            ? (typeof destination.current_odometer === "number" ? destination.current_odometer : null)
+            : null;
+        setData("to_odometer", currentOdometer);
     };
 
     const preview = buildPreview(selectedTyre, selectedDestinationVehicle, selectedPosition, data, stores);
@@ -213,7 +220,7 @@ export function TyreMovementFormFields({
                             <Input value={selectedTyre?.tyre_code ?? ""} disabled />
                         ) : (
                             <Select
-                                value={data.tyre_id ? String(data.tyre_id) : undefined}
+                                value={data.tyre_id !== null ? String(data.tyre_id) : undefined}
                                 onValueChange={handleTyreChange}
                             >
                                 <SelectTrigger>

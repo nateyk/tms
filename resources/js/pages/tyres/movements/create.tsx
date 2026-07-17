@@ -29,8 +29,8 @@ export default function MovementsCreate({
     destinationTypes,
     prefilled,
 }: FormOptions) {
-    const { data, setData, post, processing, errors } = useForm({
-        tyre_id: prefilled.tyre_id ?? (null as number | null),
+    const form = useForm({
+        tyre_id: prefilled.tyre_id ? Number(prefilled.tyre_id) : (null as number | null),
         movement_date: prefilled.movement_date ?? new Date().toISOString().slice(0, 10),
         to_location_type: prefilled.to_location_type ?? "",
         to_location_id: prefilled.to_location_id ?? (null as number | null),
@@ -40,10 +40,15 @@ export default function MovementsCreate({
         reason: prefilled.reason ?? "",
         notes: "",
     });
+    const { data, setData, processing, errors } = form;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route("tyres.movements.store"));
+        form.transform((payload) => ({
+            ...payload,
+            tyre_id: payload.tyre_id ? Number(payload.tyre_id) : null,
+        }));
+        form.post(route("tyres.movements.store"));
     };
 
     return (

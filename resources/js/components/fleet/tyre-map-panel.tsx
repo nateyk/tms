@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { ChevronDown, Info } from "lucide-react";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
-import { TyreMovementDialog } from "@/components/fleet/tyre-movement-dialog";
 import { TyreDisposalDialog } from "@/components/fleet/tyre-disposal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -342,7 +341,6 @@ export function VehicleTyreMapPanel({
 }: VehicleTyreMapPanelProps) {
     const [selection, setSelection] = useState<MapSelection>(null);
     const [guideOpen, setGuideOpen] = useState(false);
-    const [movementDialogOpen, setMovementDialogOpen] = useState(false);
     const [disposalDialogOpen, setDisposalDialogOpen] = useState(false);
     const [selectedTyreId, setSelectedTyreId] = useState<number | null>(null);
 
@@ -364,9 +362,8 @@ export function VehicleTyreMapPanel({
     };
 
     const handleMovementAction = (slot: KonvaSlot) => {
-        if (slot.tyre_id) {
-            setSelectedTyreId(slot.tyre_id);
-            setMovementDialogOpen(true);
+        if (slot.create_movement_url) {
+            window.location.assign(slot.create_movement_url);
         }
     };
 
@@ -474,17 +471,6 @@ export function VehicleTyreMapPanel({
                 </div>
             </CardContent>
         </Card>
-
-        <TyreMovementDialog
-            open={movementDialogOpen}
-            onOpenChange={setMovementDialogOpen}
-            tyreId={selectedTyreId}
-            tyres={[]}
-            stores={[]}
-            powerVehicles={[]}
-            trailers={[]}
-            destinationTypes={[]}
-        />
 
         <TyreDisposalDialog
             open={disposalDialogOpen}

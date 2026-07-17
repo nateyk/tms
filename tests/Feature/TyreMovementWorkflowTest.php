@@ -48,6 +48,45 @@ class TyreMovementWorkflowTest extends TestCase
             );
     }
 
+    public function test_map_fill_url_prefills_destination_and_creates_store_to_vehicle_draft(): void
+    {
+        $tyre = $this->storeTyre('MAP-FILL-001');
+        $vehicle = $this->vehicle('MAP-FILL-DEST', 'power_vehicle', 'active', 172842);
+
+        $this->actingAs($this->adminUser)
+            ->get(route('tyres.movements.create', [
+                'vehicle_id' => $vehicle->id,
+                'position' => 'B',
+                'movement_type' => 'store_to_vehicle',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('tyres/movements/create')
+                ->where('prefilled.to_location_id', $vehicle->id)
+                ->where('prefilled.to_position_code', 'B')
+                ->where('prefilled.to_location_type', 'power_vehicle')
+            );
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $tyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'power_vehicle',
+                'to_location_id' => $vehicle->id,
+                'to_position_code' => 'B',
+                'to_odometer' => 172842,
+                'reason' => 'Install tyre at B on MAP-FILL-DEST',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('tyre_movements', [
+            'tyre_id' => $tyre->id,
+            'to_location_id' => $vehicle->id,
+            'to_position_code' => 'B',
+            'status' => 'draft',
+        ]);
+    }
+
     public function test_destination_positions_return_empty_occupied_and_spare_status(): void
     {
         $vehicle = $this->vehicle('MOVE-POSITIONS', 'power_vehicle', 'active', 130000, 24, 6);
