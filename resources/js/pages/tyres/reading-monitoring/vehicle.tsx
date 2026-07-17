@@ -80,6 +80,10 @@ type Tyre = {
     audit_variance_percentage: number | null;
     latest_audit_date: string | null;
     latest_audit_odometer: number | null;
+    latest_audit: {
+        audited_remaining_percentage: number | null;
+        audit_date: string | null;
+    } | null;
     tread_depth_mm: number | null;
     audit_status: string | null;
     is_audited: boolean;
@@ -254,7 +258,8 @@ export default function ReadingMonitoringVehicle({
                                     <Table2 className="h-4 w-4" />
                                     Reading Monitoring Report
                                 </CardTitle>
-                                <CardDescription>Audit-aware tyre usage report for this vehicle.</CardDescription>
+                                <CardDescription>Tracks calculated tyre life from vehicle KM and manual condition audit records.</CardDescription>
+                                <p className="text-xs text-muted-foreground">Calculated is estimated from odometer KM. Audited is the latest mechanic inspection. Effective is used for tyre health status.</p>
                             </div>
                             <Badge variant="outline">{summary.total} rows</Badge>
                         </div>
@@ -268,9 +273,9 @@ export default function ReadingMonitoringVehicle({
                                         <ReportHead>Position</ReportHead>
                                         <ReportHead>Baseline</ReportHead>
                                         <ReportHead>Used KM</ReportHead>
-                                        <ReportHead>Calculated</ReportHead>
-                                        <ReportHead>Audited</ReportHead>
-                                        <ReportHead>Effective</ReportHead>
+                                        <ReportHead>Calculated Remaining</ReportHead>
+                                        <ReportHead>Latest Audit</ReportHead>
+                                        <ReportHead>Effective Remaining</ReportHead>
                                         <ReportHead>Status</ReportHead>
                                         <ReportHead align="right">Actions</ReportHead>
                                     </tr>
@@ -289,12 +294,13 @@ export default function ReadingMonitoringVehicle({
                                             </td>
                                             <td className="px-4 py-3 text-sm">{formatPercent(tyre.baseline_percentage)}</td>
                                             <td className="px-4 py-3 text-sm">{formatKm(tyre.used_km)}</td>
-                                            <td className="px-4 py-3 text-sm">{tyre.has_baseline ? formatPercent(tyre.calculated_remaining_percentage) : "Baseline Required"}</td>
                                             <td className="px-4 py-3 text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <span>{formatPercent(tyre.latest_audited_remaining_percentage)}</span>
-                                                    {tyre.is_audited && <span className="h-2 w-2 rounded-full bg-blue-600" />}
-                                                </div>
+                                                {tyre.has_baseline ? (
+                                                    <div><div>{formatPercent(tyre.calculated_remaining_percentage)}</div><div className="text-[11px] text-muted-foreground">from KM</div></div>
+                                                ) : "—"}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                {tyre.latest_audit ? <div><div className="flex items-center gap-2"><span>{formatPercent(tyre.latest_audited_remaining_percentage)}</span><span className="h-2 w-2 rounded-full bg-blue-600" /></div><div className="text-[11px] text-muted-foreground">{tyre.latest_audit.audit_date || "Audit date unavailable"}</div></div> : <div><div>—</div><div className="text-[11px] text-muted-foreground">No audit</div></div>}
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <div className="min-w-28">

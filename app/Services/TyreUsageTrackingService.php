@@ -75,7 +75,7 @@ class TyreUsageTrackingService
             $auditUsagePercentage = ($kmSinceLatestAudit !== null && $baseline->expected_life_km > 0)
                 ? ($kmSinceLatestAudit / $baseline->expected_life_km) * 100
                 : 0;
-            $effectiveRemaining = round(max(0, min((float) $baseline->baseline_percentage, $latestAuditedRemaining - $auditUsagePercentage)), 2);
+            $effectiveRemaining = round(max(0, min(100, $latestAuditedRemaining - $auditUsagePercentage)), 2);
         }
 
         $calculatedAtAudit = $latestInspection?->calculated_remaining_percentage_at_audit !== null

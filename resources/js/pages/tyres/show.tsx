@@ -106,20 +106,29 @@ type TyreDetail = {
         tread_depth_mm: number | null;
         condition_status: string | null;
         audit_odometer: number | null;
+        odometer_km: number | null;
+        vehicle_code: string | null;
+        position_code: string | null;
         audited_by: string | null;
+        recorded_at: string | null;
         audit_date: string | null;
+        reason: string | null;
         notes: string | null;
     } | null;
     audit_history: {
         id: number;
         date: string | null;
+        recorded_at: string | null;
         odometer: number | null;
+        vehicle_code: string | null;
+        position_code: string | null;
         calculated_remaining_percentage: number | null;
         audited_remaining_percentage: number | null;
         variance_percentage: number | null;
         tread_depth_mm: number | null;
         status: string | null;
         audited_by: string | null;
+        reason: string | null;
         notes: string | null;
     }[];
     action_urls: {
@@ -151,6 +160,12 @@ function formatPercent(value: number | null | undefined): string {
 
 function formatKm(value: number | null | undefined): string {
     return typeof value === "number" ? `${value.toLocaleString()} KM` : "-";
+}
+
+function formatVariance(value: number | null | undefined): ReactNode {
+    if (typeof value !== "number") return "-";
+
+    return <span className={value < 0 ? "text-amber-700" : value > 0 ? "text-blue-700" : "text-muted-foreground"}>{`${value > 0 ? "+" : ""}${value.toFixed(1)}%`}</span>;
 }
 
 function HealthMetric({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
@@ -237,20 +252,24 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                             <CardTitle className="text-lg">Health Status</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="grid gap-4 sm:grid-cols-3">
+                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <HealthMetric label="Effective Remaining" value={formatPercent(tyre.usage_summary.effective_remaining_percentage)} strong />
                                 <HealthMetric label="Calculated Remaining" value={formatPercent(tyre.usage_summary.calculated_remaining_percentage)} />
+                                <HealthMetric label="Latest Audited" value={formatPercent(tyre.usage_summary.latest_audited_remaining_percentage)} />
                                 <HealthMetric label="Used KM" value={formatKm(tyre.usage_summary.used_km)} />
                             </div>
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <section className="space-y-3">
-                                    <h3 className="text-sm font-semibold">Baseline</h3>
+                                    <h3 className="text-sm font-semibold">Calculation Source</h3>
                                     {tyre.baseline ? (
                                         <dl className="grid gap-2 text-sm">
                                             <DetailLine label="Baseline %" value={formatPercent(tyre.baseline.baseline_percentage)} />
-                                            <DetailLine label="Expected life" value={formatKm(tyre.baseline.expected_life_km)} />
-                                            <DetailLine label="Baseline date" value={tyre.baseline.baseline_date || "-"} />
+                                            <DetailLine label="Baseline odometer" value={formatKm(tyre.baseline.baseline_odometer)} />
+                                            <DetailLine label="Expected life KM" value={formatKm(tyre.baseline.expected_life_km)} />
+                                            <DetailLine label="Used KM" value={formatKm(tyre.usage_summary.used_km)} />
+                                            <DetailLine label="Current vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
+                                            <DetailLine label="Calculated remaining" value={formatPercent(tyre.usage_summary.calculated_remaining_percentage)} />
                                         </dl>
                                     ) : (
                                         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -260,20 +279,67 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                 </section>
 
                                 <section className="space-y-3">
-                                    <h3 className="text-sm font-semibold">Latest Audit</h3>
+                                    <h3 className="text-sm font-semibold">Latest Condition Audit</h3>
                                     {tyre.latest_audit ? (
                                         <dl className="grid gap-2 text-sm">
-                                            <DetailLine label="Audited %" value={formatPercent(tyre.latest_audit.audited_remaining_percentage)} />
-                                            <DetailLine label="Tread" value={tyre.latest_audit.tread_depth_mm !== null ? `${tyre.latest_audit.tread_depth_mm} mm` : "-"} />
-                                            <DetailLine label="Date" value={tyre.latest_audit.audit_date || "-"} />
+                                            <DetailLine label="Audited remaining" value={formatPercent(tyre.latest_audit.audited_remaining_percentage)} />
+                                            <DetailLine label="Calculated at audit" value={formatPercent(tyre.latest_audit.calculated_remaining_percentage)} />
+                                            <DetailLine label="Variance" value={formatVariance(tyre.latest_audit.variance_percentage)} />
+                                            <DetailLine label="Vehicle" value={tyre.latest_audit.vehicle_code || "-"} />
+                                            <DetailLine label="Position" value={tyre.latest_audit.position_code || "-"} />
+                                            <DetailLine label="Odometer at audit" value={formatKm(tyre.latest_audit.odometer_km)} />
+                                            <DetailLine label="Audit date" value={tyre.latest_audit.audit_date || "-"} />
+                                            <DetailLine label="Recorded by" value={tyre.latest_audit.audited_by || "-"} />
+                                            <DetailLine label="Recorded at" value={tyre.latest_audit.recorded_at || "-"} />
+                                            <DetailLine label="Reason" value={tyre.latest_audit.reason || "-"} />
+                                            <DetailLine label="Tread depth" value={tyre.latest_audit.tread_depth_mm !== null ? `${tyre.latest_audit.tread_depth_mm} mm` : "-"} />
+                                            <DetailLine label="Notes" value={tyre.latest_audit.notes || "-"} />
                                         </dl>
                                     ) : (
                                         <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
-                                            No audit recorded
+                                            No condition audit recorded yet.
                                         </div>
                                     )}
                                 </section>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-lg">Audit History</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {tyre.audit_history.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <Table className="min-w-[1050px]">
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Audit Date</TableHead><TableHead>Recorded At</TableHead><TableHead>Recorded By</TableHead>
+                                                <TableHead>Vehicle / Position</TableHead><TableHead>Odometer</TableHead><TableHead>Calculated</TableHead>
+                                                <TableHead>Audited</TableHead><TableHead>Variance</TableHead><TableHead>Tread</TableHead><TableHead>Status</TableHead><TableHead>Reason</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {tyre.audit_history.map((audit) => (
+                                                <TableRow key={audit.id}>
+                                                    <TableCell>{audit.date || "-"}</TableCell>
+                                                    <TableCell>{audit.recorded_at || "-"}</TableCell>
+                                                    <TableCell>{audit.audited_by || "-"}</TableCell>
+                                                    <TableCell>{audit.vehicle_code || "-"}<div className="text-xs text-muted-foreground">{audit.position_code || "-"}</div></TableCell>
+                                                    <TableCell>{formatKm(audit.odometer)}</TableCell>
+                                                    <TableCell>{formatPercent(audit.calculated_remaining_percentage)}</TableCell>
+                                                    <TableCell>{formatPercent(audit.audited_remaining_percentage)}</TableCell>
+                                                    <TableCell>{formatVariance(audit.variance_percentage)}</TableCell>
+                                                    <TableCell>{audit.tread_depth_mm !== null ? `${audit.tread_depth_mm} mm` : "-"}</TableCell>
+                                                    <TableCell>{audit.status || "-"}</TableCell>
+                                                    <TableCell>{audit.reason || "-"}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : <div className="p-6 text-sm text-muted-foreground">No condition audit recorded yet.</div>}
                         </CardContent>
                     </Card>
 

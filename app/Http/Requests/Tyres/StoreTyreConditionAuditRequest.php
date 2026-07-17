@@ -16,7 +16,6 @@ class StoreTyreConditionAuditRequest extends FormRequest
         return [
             'audited_remaining_percentage' => ['required', 'numeric', 'between:0,100'],
             'inspection_date' => ['required', 'date'],
-            'audit_odometer' => ['nullable', 'integer', 'min:0'],
             'tread_depth' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'condition' => ['nullable', 'string', 'max:80'],
             'reason' => ['nullable', 'string', 'max:120'],

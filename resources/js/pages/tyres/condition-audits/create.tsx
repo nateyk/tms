@@ -30,12 +30,15 @@ type TyreAuditContext = {
         latest_audited_remaining_percentage: number | null;
         effective_remaining_percentage: number | null;
         current_vehicle_odometer: number | null;
+        baseline_percentage: number | null;
     };
     latest_audit: {
         audited_remaining_percentage: number | null;
         inspection_date: string | null;
         audit_odometer: number | null;
         condition: string | null;
+        calculated_remaining_percentage: number | null;
+        variance_percentage: number | null;
     } | null;
 };
 
@@ -66,7 +69,6 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
     const { data, setData, post, processing, errors } = useForm({
         audited_remaining_percentage: "" as string | number,
         inspection_date: new Date().toISOString().slice(0, 10),
-        audit_odometer: tyre.usage_summary.current_vehicle_odometer ?? "",
         tread_depth: tyre.current_tread_depth ?? "",
         condition: "",
         reason: "Routine inspection",
@@ -104,11 +106,17 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                     )}
                 >
                     <div className="space-y-6">
-                        <div className="grid gap-3 md:grid-cols-4">
+                        <div className="grid gap-3 md:grid-cols-5">
                             <Metric label="Tyre" value={tyre.tyre_code} />
-                            <Metric label="Vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
-                            <Metric label="Calculated" value={formatPercent(calculated)} />
-                            <Metric label="Last Audit" value={formatPercent(tyre.usage_summary.latest_audited_remaining_percentage)} />
+                            <Metric label="Vehicle" value={tyre.vehicle_label} />
+                            <Metric label="Position" value={tyre.position} />
+                            <Metric label="Current vehicle KM" value={formatKm(tyre.usage_summary.current_vehicle_odometer)} />
+                            <Metric label="Calculated now" value={formatPercent(calculated)} />
+                        </div>
+                        <div className="rounded-lg border bg-muted/20 p-4 text-sm">
+                            <p className="font-semibold">Audit checkpoint</p>
+                            <p className="mt-1 text-muted-foreground">The system captures vehicle, position, odometer, calculated remaining, and the recording user automatically. Baseline and assignment data remain unchanged.</p>
+                            {tyre.latest_audit && <p className="mt-2 text-xs text-muted-foreground">Latest audited remaining: {formatPercent(tyre.latest_audit.audited_remaining_percentage)} on {tyre.latest_audit.inspection_date || "-"}</p>}
                         </div>
 
                         <section className="space-y-4">
@@ -129,14 +137,6 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                                         type="date"
                                         value={data.inspection_date}
                                         onChange={(event) => setData("inspection_date", event.target.value)}
-                                    />
-                                </Field>
-                                <Field label="Audit Odometer" error={errors.audit_odometer}>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={data.audit_odometer}
-                                        onChange={(event) => setData("audit_odometer", event.target.value)}
                                     />
                                 </Field>
                                 <Field label="Tread Depth MM" error={errors.tread_depth}>
@@ -175,25 +175,25 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                             </div>
 
                             <div className="grid gap-3 md:grid-cols-3">
-                                <Metric label="Calculated" value={formatPercent(calculated)} />
-                                <Metric label="Audited" value={formatPercent(audited)} />
+                                <Metric label="Calculated now" value={formatPercent(calculated)} />
+                                <Metric label="Audited input" value={formatPercent(audited)} />
                                 <Metric
-                                    label="Variance"
+                                    label="Audit variance"
                                     value={variance === null ? "-" : `${variance > 0 ? "+" : ""}${variance.toFixed(1)}%`}
                                     strong
                                 />
                             </div>
 
-                            {variance !== null && variance <= -5 && (
+                            {variance !== null && variance < 0 && (
                                 <Alert className="border-amber-200 bg-amber-50 text-amber-900">
                                     <AlertTriangle className="h-4 w-4" />
                                     <AlertDescription>
                                         <span className="font-semibold">Audit lower than system estimate.</span>{" "}
-                                        Manual audit is significantly lower than calculated estimate. Check for uneven wear, damage, or alignment issue.
+                                        Manual audit is lower than the system estimate. Check for wear, damage, overload, alignment, or road conditions.
                                     </AlertDescription>
                                 </Alert>
                             )}
-                            {variance !== null && variance >= 5 && (
+                            {variance !== null && variance > 0 && (
                                 <Alert className="border-blue-200 bg-blue-50 text-blue-900">
                                     <Info className="h-4 w-4" />
                                     <AlertDescription>

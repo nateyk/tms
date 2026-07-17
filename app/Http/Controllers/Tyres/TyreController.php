@@ -77,7 +77,7 @@ class TyreController extends Controller
             'movements' => fn ($q) => $q->latest()->limit(10),
             'activeAssignment.vehicle',
             'baseline',
-            'inspections' => fn ($q) => $q->latest('inspection_date')->limit(10),
+            'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(10),
         ]);
 
         return Inertia::render('tyres/show', [
@@ -250,14 +250,22 @@ class TyreController extends Controller
                 'tread_depth_mm' => $latestAudit->tread_depth !== null ? (float) $latestAudit->tread_depth : null,
                 'condition_status' => $latestAudit->condition,
                 'audit_odometer' => $latestAudit->audit_odometer,
-                'audited_by' => $latestAudit->inspector,
+                'odometer_km' => $latestAudit->audit_odometer,
+                'vehicle_code' => $latestAudit->vehicle?->displayCodeWithPlate(),
+                'position_code' => $latestAudit->position_code,
+                'audited_by' => $latestAudit->auditedBy?->name ?? $latestAudit->inspector,
+                'recorded_at' => $latestAudit->created_at?->toDateTimeString(),
+                'reason' => $latestAudit->reason,
                 'audit_date' => $latestAudit->inspection_date?->format('Y-m-d'),
                 'notes' => $latestAudit->notes,
             ] : null,
-            'audit_history' => $tyre->inspections->map(fn ($inspection) => [
+            'audit_history' => $tyre->inspections->sortByDesc(fn ($inspection) => $inspection->inspection_date?->timestamp ?? 0)->values()->map(fn ($inspection) => [
                 'id' => $inspection->id,
                 'date' => $inspection->inspection_date?->format('Y-m-d'),
+                'recorded_at' => $inspection->created_at?->toDateTimeString(),
                 'odometer' => $inspection->audit_odometer,
+                'vehicle_code' => $inspection->vehicle?->displayCodeWithPlate(),
+                'position_code' => $inspection->position_code,
                 'calculated_remaining_percentage' => $inspection->calculated_remaining_percentage_at_audit !== null ? (float) $inspection->calculated_remaining_percentage_at_audit : null,
                 'audited_remaining_percentage' => $inspection->audited_remaining_percentage !== null ? (float) $inspection->audited_remaining_percentage : null,
                 'variance_percentage' => $inspection->audited_remaining_percentage !== null && $inspection->calculated_remaining_percentage_at_audit !== null
@@ -265,7 +273,8 @@ class TyreController extends Controller
                     : null,
                 'tread_depth_mm' => $inspection->tread_depth !== null ? (float) $inspection->tread_depth : null,
                 'status' => $inspection->condition,
-                'audited_by' => $inspection->inspector,
+                'audited_by' => $inspection->auditedBy?->name ?? $inspection->inspector,
+                'reason' => $inspection->reason,
                 'notes' => $inspection->notes,
             ])->values(),
             'action_urls' => [

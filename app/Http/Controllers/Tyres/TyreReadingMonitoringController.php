@@ -105,7 +105,7 @@ class TyreReadingMonitoringController extends Controller
         }
 
         $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
+            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
             ->where('current_location_id', $vehicle->id)
             ->where('current_location_type', '!=', 'store')
             ->orderBy('current_position_code')
@@ -145,7 +145,7 @@ class TyreReadingMonitoringController extends Controller
         $this->authorize('tyre.view');
 
         $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
+            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
             ->where('current_location_id', $vehicle->id)
             ->where('current_location_type', '!=', 'store')
             ->orderBy('current_position_code')
@@ -163,7 +163,7 @@ class TyreReadingMonitoringController extends Controller
         $this->authorize('tyre.view');
 
         $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->latest()->limit(1)])
+            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
             ->where('current_location_id', $trailer->id)
             ->where('current_location_type', '!=', 'store')
             ->orderBy('current_position_code')
@@ -212,6 +212,24 @@ class TyreReadingMonitoringController extends Controller
             'audit_variance_percentage' => $usage['audit_variance_percentage'],
             'latest_audit_date' => $usage['latest_audit_date'],
             'latest_audit_odometer' => $usage['latest_audit_odometer'],
+            'latest_audit' => $latestInspection ? [
+                'id' => $latestInspection->id,
+                'audited_remaining_percentage' => $latestInspection->audited_remaining_percentage !== null ? (float) $latestInspection->audited_remaining_percentage : null,
+                'calculated_remaining_percentage' => $latestInspection->calculated_remaining_percentage_at_audit !== null ? (float) $latestInspection->calculated_remaining_percentage_at_audit : null,
+                'variance_percentage' => $latestInspection->audited_remaining_percentage !== null && $latestInspection->calculated_remaining_percentage_at_audit !== null
+                    ? round((float) $latestInspection->audited_remaining_percentage - (float) $latestInspection->calculated_remaining_percentage_at_audit, 2)
+                    : null,
+                'odometer_km' => $latestInspection->audit_odometer,
+                'audit_date' => $latestInspection->inspection_date?->format('Y-m-d'),
+                'recorded_at' => $latestInspection->created_at?->toDateTimeString(),
+                'recorded_by_name' => $latestInspection->auditedBy?->name ?? $latestInspection->inspector,
+                'vehicle_code' => $latestInspection->vehicle?->displayCodeWithPlate(),
+                'position_code' => $latestInspection->position_code,
+                'tread_depth_mm' => $latestInspection->tread_depth !== null ? (float) $latestInspection->tread_depth : null,
+                'condition_status' => $latestInspection->condition,
+                'reason' => $latestInspection->reason,
+                'notes' => $latestInspection->notes,
+            ] : null,
             'tread_depth_mm' => $usage['tread_depth_mm'],
             'audit_status' => $usage['audit_status'],
             'is_audited' => $usage['is_audited'],
