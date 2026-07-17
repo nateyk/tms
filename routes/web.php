@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/movements', [TyreMovementController::class, 'index'])->name('movements.index');
         Route::get('/movements/create', [TyreMovementController::class, 'create'])->name('movements.create');
+        Route::get('/movements/form-options', [TyreMovementController::class, 'options'])
+            ->name('movements.form-options');
         Route::post('/movements', [TyreMovementController::class, 'store'])->name('movements.store');
         Route::get('/movements/position-options/{vehicle}', [TyreMovementController::class, 'positionOptions'])
             ->name('movements.position-options');

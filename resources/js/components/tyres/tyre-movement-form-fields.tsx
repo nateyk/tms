@@ -100,6 +100,7 @@ type TyreMovementFormFieldsProps = {
     destinationTypes: DestinationType[];
     destinationTargets?: DestinationType[];
     readOnlyTyre?: boolean;
+    compact?: boolean;
     onTyreSelected?: (tyreId: number | null) => void;
     sourceInfo?: {
         location_label: string;
@@ -161,6 +162,7 @@ export function TyreMovementFormFields({
     destinationTypes,
     destinationTargets,
     readOnlyTyre = false,
+    compact = false,
     onTyreSelected,
     sourceInfo,
 }: TyreMovementFormFieldsProps) {
@@ -200,13 +202,28 @@ export function TyreMovementFormFields({
         [filteredTyres],
     );
 
+    const attachedTrailerIds = useMemo(
+        () => new Set(powerVehicles.map((vehicle) => vehicle.attached_trailer?.id).filter((id): id is number => Boolean(id))),
+        [powerVehicles],
+    );
+    const destinationUnits = useMemo(
+        () => [
+            ...powerVehicles,
+            ...trailers.filter((trailer) => !attachedTrailerIds.has(trailer.id)),
+        ],
+        [attachedTrailerIds, powerVehicles, trailers],
+    );
+
     const initialUnitId = useMemo(() => {
         if (data.to_location_type === "power_vehicle") {
             return data.to_location_id;
         }
 
-        return powerVehicles.find((vehicle) => vehicle.attached_trailer?.id === data.to_location_id)?.id ?? null;
-    }, [data.to_location_id, data.to_location_type, powerVehicles]);
+        return powerVehicles.find((vehicle) => vehicle.attached_trailer?.id === data.to_location_id)?.id
+            ?? (data.to_location_type === "trailer" && destinationUnits.some((unit) => unit.id === data.to_location_id)
+                ? data.to_location_id
+                : null);
+    }, [data.to_location_id, data.to_location_type, destinationUnits, powerVehicles]);
     const [destinationTarget, setDestinationTarget] = useState(
         data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "",
     );
@@ -214,16 +231,36 @@ export function TyreMovementFormFields({
     const [selectedPositionValue, setSelectedPositionValue] = useState(data.to_position_code || "");
 
     const selectedUnit = useMemo(
-        () => powerVehicles.find((vehicle) => vehicle.id === selectedUnitId) ?? null,
-        [powerVehicles, selectedUnitId],
+        () => destinationUnits.find((vehicle) => vehicle.id === selectedUnitId) ?? null,
+        [destinationUnits, selectedUnitId],
     );
 
     const selectedDestinationVehicle = useMemo(
-        () =>
-            [...powerVehicles, ...trailers].find(
+        () => {
+            const direct = destinationUnits.find(
                 (vehicle) => vehicle.id === data.to_location_id && (!vehicle.asset_type || vehicle.asset_type === data.to_location_type),
-            ) ?? null,
-        [data.to_location_id, data.to_location_type, powerVehicles, trailers],
+            );
+
+            if (direct) {
+                return direct;
+            }
+
+            const attachedTrailer = data.to_location_type === "trailer"
+                ? powerVehicles.find((vehicle) => vehicle.attached_trailer?.id === data.to_location_id)?.attached_trailer
+                : null;
+
+            return attachedTrailer ? {
+                id: attachedTrailer.id,
+                label: attachedTrailer.label,
+                vehicle_code: attachedTrailer.vehicle_code,
+                plate_number: attachedTrailer.plate_number,
+                vehicle_type_name: attachedTrailer.vehicle_type_name,
+                asset_type: "trailer",
+                current_odometer: attachedTrailer.current_odometer,
+                available_position_count: attachedTrailer.available_position_count,
+            } : null;
+        },
+        [data.to_location_id, data.to_location_type, destinationUnits],
     );
 
     const selectedPosition = useMemo(
@@ -236,6 +273,13 @@ export function TyreMovementFormFields({
 
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
+
+    useEffect(() => {
+        setSelectedTyreId(data.tyre_id);
+        setSelectedPositionValue(data.to_position_code || "");
+        setDestinationTarget(data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "");
+        setSelectedUnitId(initialUnitId);
+    }, [data.to_location_id, data.to_location_type, data.to_position_code, data.tyre_id, initialUnitId]);
 
     useEffect(() => {
         if (destinationTarget !== "vehicle_unit" || !selectedUnitId) {
@@ -283,10 +327,11 @@ export function TyreMovementFormFields({
 
     const handleDestinationChange = (value: string) => {
         const destinationId = Number.parseInt(value, 10);
-        const destination = powerVehicles.find((location) => Number(location.id) === destinationId);
+        const destination = destinationUnits.find((location) => Number(location.id) === destinationId);
+        const destinationType = destination?.asset_type === "trailer" ? "trailer" : "power_vehicle";
 
         setSelectedUnitId(Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
-        setData("to_location_type", "power_vehicle");
+        setData("to_location_type", destinationType);
         setData("to_location_id", Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
         setData("to_position_code", "");
         const currentOdometer = destination && "current_odometer" in destination
@@ -308,12 +353,12 @@ export function TyreMovementFormFields({
 
     return (
         <div className="space-y-5">
-            <Card>
-                <CardHeader>
+            <Card className={compact ? "shadow-none" : undefined}>
+                <CardHeader className={compact ? "px-4 py-3" : undefined}>
                     <CardTitle className="text-base">1. Tyre Selection</CardTitle>
                     <CardDescription>Select the tyre first. The system then locks the current source.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className={cn("space-y-4", compact && "px-4 py-3") }>
                     <Field label="Tyre" error={errors.tyre_id}>
                         {readOnlyTyre ? (
                             <Input value={selectedTyre ? tyreOptionLabel(selectedTyre) : ""} disabled />
@@ -396,12 +441,12 @@ export function TyreMovementFormFields({
             </Card>
 
             <div className="grid gap-5 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
+                <Card className={compact ? "shadow-none" : undefined}>
+                    <CardHeader className={compact ? "px-4 py-3" : undefined}>
                         <CardTitle className="text-base">2. From</CardTitle>
                         <CardDescription>Current tyre location, detected from the tyre record.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className={cn("space-y-4", compact && "px-4 py-3") }>
                         <div className="grid gap-3 rounded-md border bg-muted/20 p-3 text-sm sm:grid-cols-2">
                             <SummaryItem label="Location" value={sourceInfo?.location_label ?? selectedTyre?.source_label ?? "Select a tyre"} />
                             <SummaryItem label="Position" value={sourceInfo?.position_label ?? selectedTyre?.source_position_label ?? selectedTyre?.current_position_code ?? "-"} />
@@ -430,12 +475,12 @@ export function TyreMovementFormFields({
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
+                <Card className={compact ? "shadow-none" : undefined}>
+                    <CardHeader className={compact ? "px-4 py-3" : undefined}>
                         <CardTitle className="text-base">3. To</CardTitle>
                         <CardDescription>Choose a valid destination and then an empty position.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className={cn("space-y-4", compact && "px-4 py-3") }>
                         <Field label="Destination target" error={errors.to_location_type}>
                             <Select
                                 value={destinationTarget || undefined}
@@ -492,18 +537,20 @@ export function TyreMovementFormFields({
                                         <SelectValue placeholder="Select power unit" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {powerVehicles
+                                        {destinationUnits
                                             .filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0)
                                             .map((vehicle) => (
                                                 <SelectItem key={vehicle.id} value={String(vehicle.id)}>
                                                     <div className="py-0.5">
                                                         <p>{vehicle.label}</p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {vehicle.vehicle_type_name ?? "Power unit"} - Odo {formatKm(vehicle.current_odometer)}
+                                                            {vehicle.asset_type === "trailer" ? "Standalone trailer" : vehicle.vehicle_type_name ?? "Power unit"} - Odo {formatKm(vehicle.current_odometer)}
                                                             {vehicle.attached_trailer ? ` - Trailer: ${vehicle.attached_trailer.label}` : ""}
                                                         </p>
                                                         <p className="text-[11px] text-muted-foreground">
-                                                            Power {vehicle.power_available_count ?? vehicle.available_position_count ?? 0} open
+                                                            {vehicle.asset_type === "trailer"
+                                                                ? `${vehicle.available_position_count ?? 0} positions open`
+                                                                : `Power ${vehicle.power_available_count ?? vehicle.available_position_count ?? 0} open`}
                                                             {vehicle.attached_trailer ? ` - Trailer ${vehicle.trailer_available_count ?? 0} open` : ""}
                                                         </p>
                                                     </div>
@@ -516,9 +563,9 @@ export function TyreMovementFormFields({
 
                         {selectedUnit && destinationTarget === "vehicle_unit" && (
                             <div className="grid gap-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground sm:grid-cols-3">
-                                <SummaryItem label="Power open" value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
-                                <SummaryItem label="Trailer open" value={`${selectedUnit.trailer_available_count ?? 0}`} />
-                                <SummaryItem label="Power KM" value={formatKm(selectedUnit.current_odometer)} />
+                                <SummaryItem label={selectedUnit.asset_type === "trailer" ? "Open positions" : "Power open"} value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
+                                <SummaryItem label="Attached trailer" value={selectedUnit.attached_trailer ? `${selectedUnit.trailer_available_count ?? 0} open` : "None"} />
+                                <SummaryItem label="Current KM" value={formatKm(selectedUnit.current_odometer)} />
                             </div>
                         )}
 
@@ -601,12 +648,12 @@ export function TyreMovementFormFields({
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader>
+            <Card className={compact ? "shadow-none" : undefined}>
+                <CardHeader className={compact ? "px-4 py-3" : undefined}>
                     <CardTitle className="text-base">4. Movement Details</CardTitle>
                     <CardDescription>These details are saved on the voucher. The tyre moves only after completion.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-2">
+                <CardContent className={cn("grid gap-4 md:grid-cols-2", compact && "px-4 py-3") }>
                     <Field label="Movement date" error={errors.movement_date}>
                         <Input
                             type="date"

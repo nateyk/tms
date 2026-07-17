@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
+import { TyreMovementDialog } from "@/components/fleet/tyre-movement-dialog";
 import { cn } from "@/lib/utils";
 import { Head, Link, useForm } from "@inertiajs/react";
 import {
@@ -129,6 +130,8 @@ export default function ReadingMonitoringVehicle({
     const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
     const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
     const [selectedTyre, setSelectedTyre] = useState<Tyre | null>(null);
+    const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+    const [movementSlot, setMovementSlot] = useState<KonvaSlot | null>(null);
 
     const vehicleSlots = useMemo(
         () => convertToKonvaSlots(tyres, vehicle.vehicle_type, vehicle.asset_type, vehicle.id),
@@ -148,6 +151,11 @@ export default function ReadingMonitoringVehicle({
         setSelectedPosition(code);
         setSelectedVehicleId(vehicleId);
         setSelectedTyre(findTyreForPosition(tyres, code) || null);
+    };
+
+    const handleMovementAction = (slot: KonvaSlot) => {
+        setMovementSlot(slot);
+        setMovementDialogOpen(true);
     };
 
     return (
@@ -222,6 +230,7 @@ export default function ReadingMonitoringVehicle({
                                 slots={vehicleSlots}
                                 selectedPosition={selectedVehicleId === vehicle.id ? selectedPosition : null}
                                 onSelect={(code) => handleSelectPosition(code, vehicle.id)}
+                                onMovementAction={handleMovementAction}
                                 className="mx-auto max-w-[700px] border-0 shadow-none"
                             />
                         </CardContent>
@@ -326,6 +335,24 @@ export default function ReadingMonitoringVehicle({
                     </CardContent>
                 </Card>
             </div>
+            <TyreMovementDialog
+                open={movementDialogOpen}
+                onOpenChange={(open) => {
+                    setMovementDialogOpen(open);
+                    if (!open) {
+                        setMovementSlot(null);
+                    }
+                }}
+                tyreId={movementSlot?.tyre_id}
+                initialValues={movementSlot ? {
+                    to_location_type: movementSlot.tyre_id ? undefined : vehicle.asset_type === "trailer" ? "trailer" : "power_vehicle",
+                    to_location_id: movementSlot.tyre_id ? null : vehicle.id,
+                    to_position_code: movementSlot.tyre_id ? "" : movementSlot.code,
+                    reason: movementSlot.tyre_id
+                        ? `Move ${movementSlot.tyre_code ?? "tyre"} from ${movementSlot.display_code}`
+                        : `Mount tyre at ${movementSlot.display_code} on ${vehicle.display_code}`,
+                } : undefined}
+            />
         </AuthenticatedLayout>
     );
 }

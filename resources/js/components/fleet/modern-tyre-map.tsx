@@ -796,8 +796,8 @@ function renderLegend() {
 }
 
 function clampMenuPosition(x: number, y: number) {
-    const width = 220;
-    const height = 240;
+    const width = 240;
+    const height = 300;
 
     return {
         x: Math.min(Math.max(8, x), window.innerWidth - width - 8),
@@ -825,6 +825,7 @@ function TyreActionMenu({
     const menuRef = useRef<HTMLDivElement>(null);
     const hasTyre = Boolean(menu.slot.tyre_code);
     const isSpare = isSpareSlot(menu.slot);
+    const canMove = Boolean(menu.slot.create_movement_url);
     const position = clampMenuPosition(menu.x, menu.y);
 
     useEffect(() => {
@@ -862,16 +863,25 @@ function TyreActionMenu({
     return (
         <div
             ref={menuRef}
-            className="fixed z-50 w-56 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg"
+            className="fixed z-50 w-60 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-xl"
             style={{ left: position.x, top: position.y }}
         >
             <div className="border-b px-3 py-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Position {menu.slot.display_code}
-                </p>
-                <p className="truncate text-sm font-semibold">
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        Position {menu.slot.display_code}
+                    </p>
+                    <span className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                        hasTyre ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600",
+                    )}>
+                        {hasTyre ? "Mounted" : isSpare ? "Spare" : "Open"}
+                    </span>
+                </div>
+                <p className="mt-1 truncate text-sm font-semibold">
                     {hasTyre ? menu.slot.tyre_code : isSpare ? "Empty spare pocket" : "Empty position"}
                 </p>
+                <p className="truncate text-xs text-muted-foreground">{menu.slot.label}</p>
             </div>
             <div className="p-1">
                 {hasTyre && (
@@ -897,11 +907,11 @@ function TyreActionMenu({
                 <button
                     type="button"
                     className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={!hasTyre}
+                    disabled={!canMove}
                     onClick={() => run(() => onMovementAction?.(menu.slot))}
                 >
                     <MoveRight className="h-4 w-4" />
-                    Tyre Movements
+                    {hasTyre ? "Move tyre" : "Mount tyre"}
                 </button>
                 <button
                     type="button"

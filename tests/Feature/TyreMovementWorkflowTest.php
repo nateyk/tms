@@ -49,6 +49,41 @@ class TyreMovementWorkflowTest extends TestCase
             );
     }
 
+    public function test_inline_form_options_endpoint_returns_complete_movement_payload(): void
+    {
+        $this->actingAs($this->adminUser)
+            ->getJson(route('tyres.movements.form-options'))
+            ->assertOk()
+            ->assertJsonStructure([
+                'tyres',
+                'stores',
+                'powerVehicles',
+                'trailers',
+                'destinationTypes',
+                'destinationTargets',
+            ])
+            ->assertJsonPath('destinationTargets.0.value', 'store')
+            ->assertJsonPath('destinationTargets.1.value', 'vehicle_unit');
+    }
+
+    public function test_vehicle_map_payload_contains_inline_mount_and_move_actions(): void
+    {
+        $vehicle = $this->vehicle('INLINE-MAP-VEHICLE', 'power_vehicle', 'active', 150000, 24, 6);
+        $this->mountedTyre($vehicle, 'A');
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.show', $vehicle))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tyreMap.konvaConfig.slots', fn ($slots) => collect($slots)->contains(
+                    fn (array $slot) => $slot['display_code'] === 'A' && filled($slot['tyre_id']) && filled($slot['create_movement_url'])
+                ))
+                ->where('tyreMap.konvaConfig.slots', fn ($slots) => collect($slots)->contains(
+                    fn (array $slot) => $slot['display_code'] === 'B' && $slot['tyre_id'] === null && filled($slot['create_movement_url'])
+                ))
+            );
+    }
+
     public function test_map_fill_url_prefills_destination_and_creates_store_to_vehicle_draft(): void
     {
         $tyre = $this->storeTyre('MAP-FILL-001');

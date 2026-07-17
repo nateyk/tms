@@ -50,7 +50,7 @@ class VehicleMapDataService
         $assignmentsByPosition = TyreAssignment::query()
             ->where('asset_id', $vehicle->id)
             ->where('status', TyreAssignmentStatus::Active)
-            ->with(['tyre.brand', 'tyre.size'])
+            ->with(['tyre.brand', 'tyre.size', 'tyre.baseline'])
             ->get()
             ->keyBy('position_code');
 
@@ -119,6 +119,13 @@ class VehicleMapDataService
                 'status_value' => $tyreStatus !== null ? $tyreStatus->value : 'empty',
                 'color' => $tyreStatus?->mapColor() ?? 'gray',
                 'install_url' => $tyre ? null : $this->workflow->installMovementUrl($vehicle, $position['code']),
+                'view_tyre_url' => $tyre ? $this->workflow->viewTyreUrl($tyre->id) : null,
+                'create_movement_url' => $this->movementUrl($vehicle, $position['code'], $tyre),
+                'create_baseline_url' => $tyre ? route('tyres.baselines.create', ['tyre_id' => $tyre->id]) : null,
+                'view_baseline_url' => $tyre?->baseline?->id ? route('tyres.baselines.show', $tyre->baseline->id) : null,
+                'record_audit_url' => $tyre ? route('tyres.condition-audits.create', $tyre->id) : null,
+                'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
+                'baseline_required' => $tyre ? $tyre->baseline === null : false,
             ];
         })->values();
 
@@ -138,7 +145,14 @@ class VehicleMapDataService
             'x' => 0,
             'y' => 0,
             'tyre_code' => $spare['tyre_code'],
+            'tyre_id' => $spare['tyre_id'],
             'color' => $spare['tyre_code'] ? 'blue' : 'gray',
+            'view_tyre_url' => $spare['tyre_id'] ? $this->workflow->viewTyreUrl($spare['tyre_id']) : null,
+            'create_movement_url' => $this->movementUrl($vehicle, $spare['position'], $spare['tyre_id'] ? Tyre::query()->find($spare['tyre_id']) : null),
+            'create_baseline_url' => $spare['tyre_id'] ? route('tyres.baselines.create', ['tyre_id' => $spare['tyre_id']]) : null,
+            'record_audit_url' => $spare['tyre_id'] ? route('tyres.condition-audits.create', $spare['tyre_id']) : null,
+            'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
+            'baseline_required' => false,
         ]);
 
         $konvaSlots = $mapData->map(fn (array $slot) => [
@@ -152,6 +166,14 @@ class VehicleMapDataService
             'y' => $slot['y'],
             'tyre_code' => $slot['tyre_code'],
             'color' => $slot['color'],
+            'tyre_id' => $slot['tyre_id'],
+            'view_tyre_url' => $slot['view_tyre_url'],
+            'create_movement_url' => $slot['create_movement_url'],
+            'create_baseline_url' => $slot['create_baseline_url'],
+            'view_baseline_url' => $slot['view_baseline_url'] ?? null,
+            'record_audit_url' => $slot['record_audit_url'],
+            'record_km_url' => $slot['record_km_url'],
+            'baseline_required' => $slot['baseline_required'],
         ])->concat($spareMapSlots)->values()->all();
 
         $selectedSlot = $selectedPosition
@@ -249,5 +271,20 @@ class VehicleMapDataService
         $status = $tyre->status;
 
         return $status instanceof TyreStatus ? $status : TyreStatus::tryFrom((string) $status);
+    }
+
+    private function movementUrl(Vehicle $vehicle, string $positionCode, ?Tyre $tyre): string
+    {
+        return route('tyres.movements.create', array_filter([
+            'tyre_id' => $tyre?->id,
+            'vehicle_id' => $tyre ? null : $vehicle->id,
+            'position' => $positionCode,
+            'destination_vehicle_id' => $vehicle->id,
+            'destination_position' => $positionCode,
+            'source_vehicle_id' => $tyre ? $vehicle->id : null,
+            'source_position' => $tyre ? $positionCode : null,
+            'source_location_type' => $tyre ? 'vehicle' : null,
+            'movement_context' => 'vehicle_map',
+        ], fn ($value) => $value !== null && $value !== ''));
     }
 }

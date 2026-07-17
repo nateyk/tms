@@ -71,6 +71,13 @@ class TyreMovementController extends Controller
         ]);
     }
 
+    public function options(): JsonResponse
+    {
+        $this->authorize('create', TyreMovement::class);
+
+        return response()->json($this->formOptions());
+    }
+
     public function store(StoreTyreMovementRequest $request): RedirectResponse
     {
         try {
@@ -134,11 +141,12 @@ class TyreMovementController extends Controller
     {
         $this->authorize('create', TyreMovement::class);
 
-        $powerVehicle = $vehicle->isTrailer() ? $vehicle->attachedPower() : $vehicle;
-        $powerVehicle ??= $vehicle;
+        $attachedPower = $vehicle->isTrailer() ? $vehicle->attachedPower() : null;
+        $rootVehicle = $attachedPower ?? $vehicle;
+        $rootOwnerType = $rootVehicle->isTrailer() ? 'trailer' : 'power_vehicle';
 
-        $options = collect($this->ownerPositionOptions($powerVehicle, 'power_vehicle'));
-        $attachedTrailer = $powerVehicle->attachedTrailer();
+        $options = collect($this->ownerPositionOptions($rootVehicle, $rootOwnerType));
+        $attachedTrailer = $rootVehicle->attachedTrailer();
 
         if ($attachedTrailer) {
             $options = $options->concat($this->ownerPositionOptions($attachedTrailer, 'trailer'));

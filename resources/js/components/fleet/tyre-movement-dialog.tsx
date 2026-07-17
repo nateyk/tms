@@ -9,30 +9,16 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TyreMovementFormFields } from "@/components/tyres/tyre-movement-form-fields";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { useEffect, useState, type ComponentProps } from "react";
 
-type TyreOption = {
-    id: number;
-    tyre_code: string;
-    serial_number: string;
-    status_label: string;
-    current_location_type: string | null;
-    current_location_id: number | null;
-    current_position_code: string | null;
-    source_label: string;
-};
-
-type LocationOption = { id: number; label: string };
-type DestinationType = { value: string; label: string };
+type MovementFieldsProps = ComponentProps<typeof TyreMovementFormFields>;
+type MovementOptions = Pick<MovementFieldsProps, "tyres" | "stores" | "powerVehicles" | "trailers" | "destinationTypes" | "destinationTargets">;
 
 type TyreMovementDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tyreId?: number | null;
-    tyres: TyreOption[];
-    stores: LocationOption[];
-    powerVehicles: LocationOption[];
-    trailers: LocationOption[];
-    destinationTypes: DestinationType[];
     initialValues?: {
         tyre_id?: number | null;
         movement_date?: string;
@@ -50,11 +36,6 @@ export function TyreMovementDialog({
     open,
     onOpenChange,
     tyreId,
-    tyres,
-    stores,
-    powerVehicles,
-    trailers,
-    destinationTypes,
     initialValues,
 }: TyreMovementDialogProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -68,10 +49,68 @@ export function TyreMovementDialog({
         reason: initialValues?.reason ?? "",
         notes: initialValues?.notes ?? "",
     });
+    const [options, setOptions] = useState<MovementOptions | null>(null);
+    const [loadingOptions, setLoadingOptions] = useState(false);
+    const [optionsError, setOptionsError] = useState(false);
+    const initialSignature = JSON.stringify({ tyreId: tyreId ?? null, initialValues: initialValues ?? null });
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        setData("tyre_id", initialValues?.tyre_id ?? tyreId ?? null);
+        setData("movement_date", initialValues?.movement_date ?? new Date().toISOString().split("T")[0]);
+        setData("to_location_type", initialValues?.to_location_type ?? "");
+        setData("to_location_id", initialValues?.to_location_id ?? null);
+        setData("to_position_code", initialValues?.to_position_code ?? "");
+        setData("from_odometer", initialValues?.from_odometer ?? null);
+        setData("to_odometer", initialValues?.to_odometer ?? null);
+        setData("reason", initialValues?.reason ?? "");
+        setData("notes", initialValues?.notes ?? "");
+    }, [initialSignature, open]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        let cancelled = false;
+        setLoadingOptions(true);
+        setOptionsError(false);
+
+        fetch(route("tyres.movements.form-options"), { headers: { Accept: "application/json" } })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Unable to load movement options");
+                }
+
+                return response.json() as Promise<MovementOptions>;
+            })
+            .then((payload) => {
+                if (!cancelled) {
+                    setOptions(payload);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setOptionsError(true);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoadingOptions(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post("/tyres/movements", {
+        post(route("tyres.movements.store"), {
             onSuccess: () => {
                 reset();
                 onOpenChange(false);
@@ -81,44 +120,61 @@ export function TyreMovementDialog({
 
     const handleClose = () => {
         reset();
+        setOptions(null);
         onOpenChange(false);
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : handleClose()}>
+            <DialogContent className="max-h-[94vh] max-w-5xl overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Tyre Movement</DialogTitle>
+                    <DialogTitle>{tyreId ? "Move tyre" : "Mount tyre"}</DialogTitle>
                     <DialogDescription>
-                        Record the movement of a tyre to a new location or position.
+                        Create a draft voucher from this position. The tyre changes location only after completion.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                    <TyreMovementFormFields
-                        data={data}
-                        setData={setData}
-                        errors={errors}
-                        tyres={tyres}
-                        stores={stores}
-                        powerVehicles={powerVehicles}
-                        trailers={trailers}
-                        destinationTypes={destinationTypes}
-                        readOnlyTyre={Boolean(tyreId)}
-                    />
-                    <DialogFooter className="mt-6">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleClose}
-                            disabled={processing}
-                        >
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? "Saving..." : "Save Movement"}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                {loadingOptions && (
+                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading movement options...
+                    </div>
+                )}
+                {optionsError && (
+                    <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        Movement options could not be loaded. Close and try again.
+                    </div>
+                )}
+                {options && (
+                    <form onSubmit={handleSubmit}>
+                        <TyreMovementFormFields
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            tyres={options.tyres}
+                            stores={options.stores}
+                            powerVehicles={options.powerVehicles}
+                            trailers={options.trailers}
+                            destinationTypes={options.destinationTypes}
+                            destinationTargets={options.destinationTargets}
+                            readOnlyTyre={Boolean(tyreId)}
+                            compact
+                        />
+                        <DialogFooter className="mt-5 border-t pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleClose}
+                                disabled={processing}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? "Saving..." : "Save draft voucher"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                )}
             </DialogContent>
         </Dialog>
     );

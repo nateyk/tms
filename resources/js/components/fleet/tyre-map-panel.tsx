@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { ChevronDown, Info } from "lucide-react";
 import { ModernTyreMap, type KonvaSlot } from "@/components/fleet/modern-tyre-map";
+import { TyreMovementDialog } from "@/components/fleet/tyre-movement-dialog";
 import { TyreDisposalDialog } from "@/components/fleet/tyre-disposal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,7 @@ type VehicleSummary = {
     vehicle_code: string;
     display_code?: string;
     plate_number?: string | null;
+    asset_type?: string;
     vehicle_type_name?: string | null;
     odometer?: number | null;
 };
@@ -343,6 +345,8 @@ export function VehicleTyreMapPanel({
     const [guideOpen, setGuideOpen] = useState(false);
     const [disposalDialogOpen, setDisposalDialogOpen] = useState(false);
     const [selectedTyreId, setSelectedTyreId] = useState<number | null>(null);
+    const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+    const [movementSlot, setMovementSlot] = useState<KonvaSlot | null>(null);
 
     const powerGuide = useMemo(
         () => buildGuideGroups(tyreMap.mapData, tyreMap.konvaConfig.assetType),
@@ -362,9 +366,8 @@ export function VehicleTyreMapPanel({
     };
 
     const handleMovementAction = (slot: KonvaSlot) => {
-        if (slot.create_movement_url) {
-            window.location.assign(slot.create_movement_url);
-        }
+        setMovementSlot(slot);
+        setMovementDialogOpen(true);
     };
 
     const handleDisposalAction = (slot: KonvaSlot) => {
@@ -476,6 +479,24 @@ export function VehicleTyreMapPanel({
             open={disposalDialogOpen}
             onOpenChange={setDisposalDialogOpen}
             tyreId={selectedTyreId}
+        />
+        <TyreMovementDialog
+            open={movementDialogOpen}
+            onOpenChange={(open) => {
+                setMovementDialogOpen(open);
+                if (!open) {
+                    setMovementSlot(null);
+                }
+            }}
+            tyreId={movementSlot?.tyre_id}
+            initialValues={movementSlot ? {
+                to_location_type: movementSlot.tyre_id ? undefined : vehicle.asset_type === "trailer" ? "trailer" : "power_vehicle",
+                to_location_id: movementSlot.tyre_id ? null : vehicle.id,
+                to_position_code: movementSlot.tyre_id ? "" : movementSlot.code,
+                reason: movementSlot.tyre_id
+                    ? `Move ${movementSlot.tyre_code ?? "tyre"} from ${movementSlot.display_code}`
+                    : `Mount tyre at ${movementSlot.display_code} on ${vehicle.display_code ?? vehicle.vehicle_code}`,
+            } : undefined}
         />
         </>
     );
