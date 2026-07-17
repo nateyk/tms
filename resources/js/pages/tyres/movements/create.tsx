@@ -65,6 +65,7 @@ export default function MovementsCreate({
                     description="Create a movement voucher. The tyre location changes only after completion."
                     backHref={route("tyres.movements.index")}
                     backLabel="Back to Movements"
+                    maxWidth="max-w-5xl"
                     footer={(
                         <>
                             <Button variant="outline" asChild>
@@ -86,6 +87,7 @@ export default function MovementsCreate({
                         trailers={trailers}
                         destinationTypes={destinationTypes}
                         destinationTargets={destinationTargets}
+                        compact
                         onTyreSelected={setSelectedTyreId}
                     />
                 </TyreFormShell>
