@@ -65,6 +65,7 @@ class TyreConditionAuditTest extends TestCase
         $this->actingAs($this->user)->post(route('tyres.condition-audits.store', $tyre), [
             'audited_remaining_percentage' => 90,
             'inspection_date' => now()->toDateString(),
+            'audit_odometer' => 1200,
             'tread_depth' => 12.5,
             'condition' => 'Watch',
             'reason' => 'Uneven wear',
@@ -76,7 +77,8 @@ class TyreConditionAuditTest extends TestCase
         $this->assertSame($this->user->id, $audit->inspected_by);
         $this->assertSame($vehicle->id, $audit->vehicle_id);
         $this->assertSame('A', $audit->position_code);
-        $this->assertSame(1000, $audit->audit_odometer);
+        $this->assertSame(1200, $audit->audit_odometer);
+        $this->assertEquals(1200, $vehicle->fresh()->odometer);
         $this->assertSame(94.0, (float) $audit->calculated_remaining_percentage_at_audit);
         $this->assertSame(-4.0, (float) $audit->variance_percentage);
         $this->assertSame(-4.0, round((float) $audit->audited_remaining_percentage - (float) $audit->calculated_remaining_percentage_at_audit, 2));
@@ -87,9 +89,16 @@ class TyreConditionAuditTest extends TestCase
         $this->assertSame(90.0, $usage['effective_remaining_percentage']);
         $this->assertSame(95.0, $usage['baseline_percentage']);
 
-        $vehicle->forceFill(['odometer' => 4600])->save();
+        app(\App\Services\VehicleOdometerService::class)->updateOdometer(
+            $vehicle->fresh(),
+            4600,
+            'manual',
+            null,
+            $this->user->id,
+            'Follow-up vehicle KM reading',
+        );
         $usageAfterKm = app(\App\Services\TyreUsageTrackingService::class)->calculateTyreUsage($tyre->fresh());
-        $this->assertSame(86.4, $usageAfterKm['effective_remaining_percentage']);
+        $this->assertSame(86.6, $usageAfterKm['effective_remaining_percentage']);
         $this->assertSame(95.0, $usageAfterKm['baseline_percentage']);
 
         $this->assertDatabaseHas('tyre_inspections', [
@@ -97,7 +106,7 @@ class TyreConditionAuditTest extends TestCase
             'audited_by' => $this->user->id,
             'vehicle_id' => $vehicle->id,
             'position_code' => 'A',
-            'audit_odometer' => 1000,
+            'audit_odometer' => 1200,
         ]);
     }
 }

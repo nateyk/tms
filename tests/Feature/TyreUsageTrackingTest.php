@@ -301,8 +301,10 @@ class TyreUsageTrackingTest extends TestCase
 
         $movement->refresh();
         $tyre->refresh();
+        $vehicle->refresh();
         $this->assertEquals('completed', $movement->status->value);
         $this->assertEquals(12500, $movement->to_odometer);
+        $this->assertEquals(12500, $vehicle->odometer);
         $this->assertEquals('power_vehicle', $tyre->current_location_type->value);
         $this->assertEquals($vehicle->id, $tyre->current_location_id);
         $this->assertEquals('A', $tyre->current_position_code);

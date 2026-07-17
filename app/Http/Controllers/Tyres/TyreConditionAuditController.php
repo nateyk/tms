@@ -7,6 +7,7 @@ use App\Http\Requests\Tyres\StoreTyreConditionAuditRequest;
 use App\Models\Tyre;
 use App\Models\TyreInspection;
 use App\Models\Vehicle;
+use App\Services\VehicleOdometerService;
 use App\Services\TyreUsageTrackingService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -16,6 +17,7 @@ class TyreConditionAuditController extends Controller
 {
     public function __construct(
         private readonly TyreUsageTrackingService $usageTrackingService,
+        private readonly VehicleOdometerService $odometerService,
     ) {}
 
     public function create(Tyre $tyre): Response
@@ -66,6 +68,21 @@ class TyreConditionAuditController extends Controller
             $currentVehicle = Vehicle::query()->find($tyre->current_location_id);
         }
 
+        $auditOdometer = array_key_exists('audit_odometer', $validated) && $validated['audit_odometer'] !== null
+            ? (int) $validated['audit_odometer']
+            : $usage['current_vehicle_odometer'];
+
+        if ($currentVehicle && $auditOdometer !== null) {
+            $this->odometerService->updateOdometer(
+                $currentVehicle,
+                $auditOdometer,
+                'manual',
+                $tyre->id,
+                (int) $request->user()->id,
+                'Tyre condition audit reading',
+            );
+        }
+
         TyreInspection::query()->create([
             'tyre_id' => $tyre->id,
             'vehicle_id' => $currentVehicle?->id,
@@ -75,7 +92,7 @@ class TyreConditionAuditController extends Controller
             'pressure' => null,
             'audited_remaining_percentage' => $validated['audited_remaining_percentage'],
             'calculated_remaining_percentage_at_audit' => $usage['calculated_remaining_percentage'],
-            'audit_odometer' => $usage['current_vehicle_odometer'],
+            'audit_odometer' => $auditOdometer,
             'variance_percentage' => $variance,
             'condition' => $validated['condition'] ?? null,
             'reason' => $validated['reason'] ?? null,

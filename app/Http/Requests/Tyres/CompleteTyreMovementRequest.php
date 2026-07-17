@@ -41,8 +41,8 @@ class CompleteTyreMovementRequest extends FormRequest
 
     protected function validateOdometerRequirements(Validator $validator, TyreMovement $movement): void
     {
-        $sourceType = $movement->source_location_type;
-        $destinationType = $movement->destination_location_type;
+        $sourceType = $movement->from_location_type;
+        $destinationType = $movement->to_location_type;
 
         // Require from_odometer if source is vehicle
         if (in_array($sourceType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {

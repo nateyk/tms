@@ -69,6 +69,7 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
     const { data, setData, post, processing, errors } = useForm({
         audited_remaining_percentage: "" as string | number,
         inspection_date: new Date().toISOString().slice(0, 10),
+        audit_odometer: tyre.usage_summary.current_vehicle_odometer ?? "",
         tread_depth: tyre.current_tread_depth ?? "",
         condition: "",
         reason: "Routine inspection",
@@ -138,6 +139,17 @@ export default function ConditionAuditCreate({ tyre }: { tyre: TyreAuditContext 
                                         value={data.inspection_date}
                                         onChange={(event) => setData("inspection_date", event.target.value)}
                                     />
+                                </Field>
+                                <Field label="Audit Odometer (KM)" error={errors.audit_odometer}>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value={data.audit_odometer}
+                                        onChange={(event) => setData("audit_odometer", event.target.value)}
+                                        placeholder={formatKm(tyre.usage_summary.current_vehicle_odometer)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Prefilled from the vehicle. It cannot be lower than the current KM.</p>
                                 </Field>
                                 <Field label="Tread Depth MM" error={errors.tread_depth}>
                                     <Input
