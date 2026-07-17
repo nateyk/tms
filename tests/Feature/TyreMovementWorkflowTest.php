@@ -123,6 +123,27 @@ class TyreMovementWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_tyre_detail_movement_url_prefills_source_vehicle_odometer(): void
+    {
+        $source = $this->vehicle('DETAIL-SOURCE', 'power_vehicle', 'active', 175842);
+        $tyre = $this->mountedTyre($source, 'A', 170000);
+
+        $this->actingAs($this->adminUser)
+            ->get(route('tyres.movements.create', [
+                'source_location_type' => 'power_vehicle',
+                'source_position' => 'A',
+                'source_vehicle_id' => $source->id,
+                'tyre_id' => $tyre->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('tyres/movements/create')
+                ->where('prefilled.tyre_id', $tyre->id)
+                ->where('prefilled.from_odometer', 175842)
+                ->where('prefilled.reason', 'Move tyre from A')
+            );
+    }
+
     public function test_destination_positions_return_empty_occupied_and_spare_status(): void
     {
         $vehicle = $this->vehicle('MOVE-POSITIONS', 'power_vehicle', 'active', 130000, 24, 6);

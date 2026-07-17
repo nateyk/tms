@@ -282,6 +282,17 @@ export function TyreMovementFormFields({
     }, [data.to_location_id, data.to_location_type, data.to_position_code, data.tyre_id, initialUnitId]);
 
     useEffect(() => {
+        if (
+            selectedTyre?.position_type === "running"
+            && selectedTyre.current_vehicle_odometer !== null
+            && selectedTyre.current_vehicle_odometer !== undefined
+            && data.from_odometer === null
+        ) {
+            setData("from_odometer", selectedTyre.current_vehicle_odometer);
+        }
+    }, [data.from_odometer, selectedTyre?.current_vehicle_odometer, selectedTyre?.id, selectedTyre?.position_type]);
+
+    useEffect(() => {
         if (destinationTarget !== "vehicle_unit" || !selectedUnitId) {
             setPositionOptions([]);
             return;

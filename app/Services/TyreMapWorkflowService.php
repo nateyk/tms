@@ -269,6 +269,7 @@ class TyreMapWorkflowService
             return array_filter([
                 'tyre_id' => $tyreId,
                 'movement_date' => now()->toDateString(),
+                'from_odometer' => $this->sourceVehicleOdometer($tyre),
                 'reason' => $sourceVehicleId > 0 && $sourcePosition !== ''
                     ? "Move tyre from {$sourcePosition}"
                     : "Create movement for {$tyre->tyre_code}",
@@ -298,10 +299,25 @@ class TyreMapWorkflowService
                     : (string) $tyre->current_location_type;
                 $data['from_location_id'] = $tyre->current_location_id;
                 $data['from_position_code'] = $tyre->current_position_code;
+                $data['from_odometer'] = $this->sourceVehicleOdometer($tyre);
             }
         }
 
         return $data;
+    }
+
+    private function sourceVehicleOdometer(Tyre $tyre): ?int
+    {
+        if (! $tyre->current_location_id || ! in_array($tyre->current_location_type, [
+            TyreLocationType::PowerVehicle,
+            TyreLocationType::Trailer,
+        ], true)) {
+            return null;
+        }
+
+        return Vehicle::query()
+            ->whereKey($tyre->current_location_id)
+            ->value('odometer');
     }
 
     private function assetTypeValue(Vehicle $vehicle): string

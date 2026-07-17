@@ -16,6 +16,7 @@ type FormOptions = {
     prefilled: Partial<{
         tyre_id: number;
         movement_date: string;
+        from_odometer: number | null;
         to_location_type: string;
         to_location_id: number;
         to_position_code: string;
@@ -32,39 +33,45 @@ export default function MovementsCreate({
     destinationTargets,
     prefilled,
 }: FormOptions) {
+    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(prefilled.tyre_id ?? null);
+    const selectedTyre = tyres.find((tyre) => Number(tyre.id) === Number(selectedTyreId));
+    const fromTyreDetail = Boolean(selectedTyre);
     const form = useForm({
         tyre_id: prefilled.tyre_id ? Number(prefilled.tyre_id) : (null as number | null),
         movement_date: prefilled.movement_date ?? new Date().toISOString().slice(0, 10),
+        from_odometer: prefilled.from_odometer ?? (null as number | null),
         to_location_type: prefilled.to_location_type ?? "",
         to_location_id: prefilled.to_location_id ?? (null as number | null),
         to_position_code: prefilled.to_position_code ?? "",
-        from_odometer: null as number | null,
         to_odometer: null as number | null,
         reason: prefilled.reason ?? "",
         notes: "",
     });
-    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(form.data.tyre_id);
     const { data, setData, processing, errors } = form;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        form.transform((payload) => ({
-            ...payload,
-            tyre_id: selectedTyreId ? Number(selectedTyreId) : null,
-        }));
         form.post(route("tyres.movements.store"));
     };
 
+    const sourceInfo = selectedTyre ? {
+        location_label: selectedTyre.source_label,
+        position_label: selectedTyre.source_position_label ?? selectedTyre.current_position_code ?? "-",
+        movement_type_label: "Current source",
+    } : undefined;
+
     return (
-        <AuthenticatedLayout header="New Tyre Movement">
-            <Head title="New Tyre Movement" />
+        <AuthenticatedLayout header={fromTyreDetail ? `Move ${selectedTyre?.tyre_code}` : "New Tyre Movement"}>
+            <Head title={fromTyreDetail ? `Move ${selectedTyre?.tyre_code}` : "New Tyre Movement"} />
 
             <form onSubmit={submit}>
                 <TyreFormShell
-                    title="New tyre movement"
-                    description="Create a movement voucher. The tyre location changes only after completion."
-                    backHref={route("tyres.movements.index")}
-                    backLabel="Back to Movements"
+                    title={fromTyreDetail ? `Move ${selectedTyre?.tyre_code}` : "New tyre movement"}
+                    description={fromTyreDetail
+                        ? `Move this tyre from ${selectedTyre?.source_label} at position ${selectedTyre?.source_position_label ?? selectedTyre?.current_position_code ?? "-"}. Choose the destination below.`
+                        : "Create a movement voucher. The tyre location changes only after completion."}
+                    backHref={fromTyreDetail ? route("tyres.show", selectedTyre?.id) : route("tyres.movements.index")}
+                    backLabel={fromTyreDetail ? "Back to tyre" : "Back to Movements"}
                     maxWidth="max-w-5xl"
                     footer={(
                         <>
@@ -89,6 +96,7 @@ export default function MovementsCreate({
                         destinationTargets={destinationTargets}
                         compact
                         onTyreSelected={setSelectedTyreId}
+                        sourceInfo={sourceInfo}
                     />
                 </TyreFormShell>
             </form>
