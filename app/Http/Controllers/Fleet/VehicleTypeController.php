@@ -21,6 +21,8 @@ class VehicleTypeController extends Controller
 
     public function index(): Response
     {
+        $this->authorize('vehicle.view');
+
         $vehicleTypes = VehicleType::query()
             ->orderBy('name')
             ->paginate(15)
@@ -42,6 +44,8 @@ class VehicleTypeController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('vehicle.create');
+
         return Inertia::render('fleet/vehicle-types/create', $this->formOptions());
     }
 
@@ -58,6 +62,8 @@ class VehicleTypeController extends Controller
 
     public function edit(VehicleType $vehicleType): Response
     {
+        $this->authorize('vehicle.update');
+
         $preset = PredefinedTyreLayout::tryFromTyreCount($vehicleType->tyre_count);
 
         return Inertia::render('fleet/vehicle-types/edit', [
@@ -85,6 +91,8 @@ class VehicleTypeController extends Controller
 
     public function destroy(VehicleType $vehicleType): RedirectResponse
     {
+        $this->authorize('vehicle.update');
+
         if ($vehicleType->vehicles()->exists()) {
             return back()->with('error', 'Cannot delete a vehicle type that has vehicles assigned.');
         }

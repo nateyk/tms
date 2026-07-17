@@ -29,6 +29,8 @@ class VehicleController extends Controller
 
     public function index(): Response
     {
+        $this->authorize('viewAny', Vehicle::class);
+
         $vehicles = Vehicle::query()
             ->with([
                 'vehicleType:id,name',
@@ -51,6 +53,8 @@ class VehicleController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Vehicle::class);
+
         return Inertia::render('fleet/vehicles/create', $this->formOptions());
     }
 
@@ -82,6 +86,8 @@ class VehicleController extends Controller
 
     public function show(Vehicle $vehicle): Response|RedirectResponse
     {
+        $this->authorize('view', $vehicle);
+
         $vehicle->loadMissing('activeCombinationAsTrailer.powerVehicle');
 
         if ($vehicle->asset_type === AssetType::Trailer && $vehicle->activeCombinationAsTrailer?->powerVehicle) {
@@ -95,6 +101,8 @@ class VehicleController extends Controller
 
     public function edit(Vehicle $vehicle): Response
     {
+        $this->authorize('update', $vehicle);
+
         return Inertia::render('fleet/vehicles/edit', [
             ...$this->formOptions($vehicle),
             'vehicle' => [
@@ -142,6 +150,8 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle): RedirectResponse
     {
+        $this->authorize('delete', $vehicle);
+
         if ($vehicle->activeTyreAssignments()->exists()) {
             return back()->with('error', 'Cannot delete a vehicle with active tyre assignments.');
         }

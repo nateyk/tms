@@ -14,6 +14,8 @@ class StoreController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('vehicle.view');
+
         $stores = Store::query()
             ->orderBy('name')
             ->paginate(15)
@@ -35,6 +37,8 @@ class StoreController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('vehicle.create');
+
         return Inertia::render('fleet/stores/create');
     }
 
@@ -56,6 +60,8 @@ class StoreController extends Controller
 
     public function edit(Store $store): Response
     {
+        $this->authorize('vehicle.update');
+
         return Inertia::render('fleet/stores/edit', [
             'store' => [
                 'id' => $store->id,
@@ -88,6 +94,8 @@ class StoreController extends Controller
 
     public function destroy(Store $store): RedirectResponse
     {
+        $this->authorize('vehicle.update');
+
         if ($store->tyres()->exists()) {
             return back()->with('error', 'Cannot delete a store that has tyres assigned.');
         }

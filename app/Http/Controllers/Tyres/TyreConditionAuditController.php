@@ -10,6 +10,7 @@ use App\Models\Vehicle;
 use App\Services\VehicleOdometerService;
 use App\Services\TyreUsageTrackingService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -55,56 +56,71 @@ class TyreConditionAuditController extends Controller
 
     public function store(StoreTyreConditionAuditRequest $request, Tyre $tyre): RedirectResponse
     {
-        $tyre->load(['activeAssignment.vehicle', 'baseline', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->limit(1)]);
-        $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
         $validated = $request->validated();
-        $currentVehicle = $tyre->activeAssignment?->vehicle;
-        $calculatedRemaining = $usage['calculated_remaining_percentage'];
-        $variance = $calculatedRemaining !== null
-            ? round((float) $validated['audited_remaining_percentage'] - (float) $calculatedRemaining, 2)
-            : null;
+        $user = $request->user();
 
-        if (! $currentVehicle && in_array($tyre->current_location_type?->value, ['power_vehicle', 'trailer'], true)) {
-            $currentVehicle = Vehicle::query()->find($tyre->current_location_id);
-        }
+        DB::transaction(function () use ($tyre, $validated, $user): void {
+            $tyre = Tyre::query()->whereKey($tyre->id)->lockForUpdate()->firstOrFail();
+            $tyre->load([
+                'activeAssignment.vehicle',
+                'baseline',
+                'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->limit(1),
+            ]);
 
-        $auditOdometer = array_key_exists('audit_odometer', $validated) && $validated['audit_odometer'] !== null
-            ? (int) $validated['audit_odometer']
-            : $usage['current_vehicle_odometer'];
+            $currentVehicle = $tyre->activeAssignment?->vehicle;
 
-        if ($currentVehicle && $auditOdometer !== null) {
-            $this->odometerService->updateOdometer(
-                $currentVehicle,
-                $auditOdometer,
-                'manual',
-                $tyre->id,
-                (int) $request->user()->id,
-                'Tyre condition audit reading',
-            );
-        }
+            if (! $currentVehicle && in_array($tyre->current_location_type?->value, ['power_vehicle', 'trailer'], true)) {
+                $currentVehicle = Vehicle::query()->find($tyre->current_location_id);
+            }
 
-        TyreInspection::query()->create([
-            'tyre_id' => $tyre->id,
-            'vehicle_id' => $currentVehicle?->id,
-            'position_code' => $tyre->current_position_code,
-            'inspection_date' => $validated['inspection_date'],
-            'tread_depth' => $validated['tread_depth'] ?? null,
-            'pressure' => null,
-            'audited_remaining_percentage' => $validated['audited_remaining_percentage'],
-            'calculated_remaining_percentage_at_audit' => $usage['calculated_remaining_percentage'],
-            'audit_odometer' => $auditOdometer,
-            'variance_percentage' => $variance,
-            'condition' => $validated['condition'] ?? null,
-            'reason' => $validated['reason'] ?? null,
-            'inspector' => $request->user()?->name,
-            'inspected_by' => $request->user()?->id,
-            'audited_by' => $request->user()?->id,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+            if ($currentVehicle) {
+                $currentVehicle = Vehicle::query()->lockForUpdate()->find($currentVehicle->id);
+            }
 
-        if (array_key_exists('tread_depth', $validated) && $validated['tread_depth'] !== null) {
-            $tyre->forceFill(['current_tread_depth' => $validated['tread_depth']])->save();
-        }
+            $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+
+            $calculatedRemaining = $usage['calculated_remaining_percentage'];
+            $variance = $calculatedRemaining !== null
+                ? round((float) $validated['audited_remaining_percentage'] - (float) $calculatedRemaining, 2)
+                : null;
+            $auditOdometer = array_key_exists('audit_odometer', $validated) && $validated['audit_odometer'] !== null
+                ? (int) $validated['audit_odometer']
+                : $usage['current_vehicle_odometer'];
+
+            if ($currentVehicle && $auditOdometer !== null) {
+                $this->odometerService->updateOdometer(
+                    $currentVehicle,
+                    $auditOdometer,
+                    'manual',
+                    $tyre->id,
+                    (int) $user->id,
+                    'Tyre condition audit reading',
+                );
+            }
+
+            TyreInspection::query()->create([
+                'tyre_id' => $tyre->id,
+                'vehicle_id' => $currentVehicle?->id,
+                'position_code' => $tyre->current_position_code,
+                'inspection_date' => $validated['inspection_date'],
+                'tread_depth' => $validated['tread_depth'] ?? null,
+                'pressure' => null,
+                'audited_remaining_percentage' => $validated['audited_remaining_percentage'],
+                'calculated_remaining_percentage_at_audit' => $usage['calculated_remaining_percentage'],
+                'audit_odometer' => $auditOdometer,
+                'variance_percentage' => $variance,
+                'condition' => $validated['condition'] ?? null,
+                'reason' => $validated['reason'] ?? null,
+                'inspector' => $user->name,
+                'inspected_by' => $user->id,
+                'audited_by' => $user->id,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            if (array_key_exists('tread_depth', $validated) && $validated['tread_depth'] !== null) {
+                $tyre->forceFill(['current_tread_depth' => $validated['tread_depth']])->save();
+            }
+        });
 
         return redirect()
             ->route('tyres.show', $tyre)
