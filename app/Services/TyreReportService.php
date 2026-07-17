@@ -168,17 +168,22 @@ class TyreReportService
      */
     public function completedMovementsTrend(int $weeks = 8): array
     {
+        $currentWeek = Carbon::now()->startOfWeek();
+        $firstWeek = $currentWeek->copy()->subWeeks($weeks - 1);
+        $weeklyCounts = TyreMovement::query()
+            ->selectRaw('YEARWEEK(completed_at, 1) as week_key, COUNT(*) as total')
+            ->where('status', VoucherStatus::Completed)
+            ->whereBetween('completed_at', [$firstWeek, $currentWeek->copy()->endOfWeek()])
+            ->groupBy('week_key')
+            ->pluck('total', 'week_key');
+
         $labels = [];
         $data = [];
 
         for ($i = $weeks - 1; $i >= 0; $i--) {
-            $start = Carbon::now()->startOfWeek()->subWeeks($i);
-            $end = $start->copy()->endOfWeek();
+            $start = $currentWeek->copy()->subWeeks($i);
             $labels[] = $start->format('d M');
-            $data[] = TyreMovement::query()
-                ->where('status', VoucherStatus::Completed)
-                ->whereBetween('completed_at', [$start, $end])
-                ->count();
+            $data[] = (int) ($weeklyCounts[(int) $start->format('oW')] ?? 0);
         }
 
         return ['labels' => $labels, 'data' => $data];
@@ -226,6 +231,13 @@ class TyreReportService
             ->with('vehicleType')
             ->get();
 
+        $assignedCounts = TyreAssignment::query()
+            ->where('status', TyreAssignmentStatus::Active)
+            ->whereIn('asset_id', $vehicles->pluck('id'))
+            ->selectRaw('asset_id, count(*) as total')
+            ->groupBy('asset_id')
+            ->pluck('total', 'asset_id');
+
         $filled = 0;
         $total = 0;
 
@@ -238,10 +250,7 @@ class TyreReportService
                 continue;
             }
 
-            $assigned = TyreAssignment::query()
-                ->where('asset_id', $vehicle->id)
-                ->where('status', TyreAssignmentStatus::Active)
-                ->count();
+            $assigned = (int) ($assignedCounts[$vehicle->id] ?? 0);
 
             $total += $positionCount;
             $filled += min($assigned, $positionCount);

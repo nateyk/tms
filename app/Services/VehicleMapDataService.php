@@ -135,25 +135,29 @@ class VehicleMapDataService
             ]);
         })->values();
 
-        $spareMapSlots = $spareTyres->map(fn (array $spare): array => [
-            'code' => $spare['position'],
-            'display_code' => $spare['display_code'],
-            'label' => $spare['owner_label'].' '.$spare['display_code'],
-            'axle' => null,
-            'side' => 'center',
-            'dual' => 'spare',
-            'x' => 0,
-            'y' => 0,
-            'tyre_code' => $spare['tyre_code'],
-            'tyre_id' => $spare['tyre_id'],
-            'color' => $spare['tyre_code'] ? 'blue' : 'gray',
-            'view_tyre_url' => $spare['tyre_id'] ? $this->workflow->viewTyreUrl($spare['tyre_id']) : null,
-            'create_movement_url' => $this->movementUrl($vehicle, $spare['position'], $spare['tyre_id'] ? Tyre::query()->find($spare['tyre_id']) : null),
-            'create_baseline_url' => $spare['tyre_id'] ? route('tyres.baselines.create', ['tyre_id' => $spare['tyre_id']]) : null,
-            'record_audit_url' => $spare['tyre_id'] ? route('tyres.condition-audits.create', $spare['tyre_id']) : null,
-            'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
-            'baseline_required' => false,
-        ]);
+        $spareMapSlots = $spareTyres->map(function (array $spare) use ($assignedSpareTyres, $vehicle): array {
+            $spareTyre = $assignedSpareTyres->get($spare['display_code']);
+
+            return [
+                'code' => $spare['position'],
+                'display_code' => $spare['display_code'],
+                'label' => $spare['owner_label'].' '.$spare['display_code'],
+                'axle' => null,
+                'side' => 'center',
+                'dual' => 'spare',
+                'x' => 0,
+                'y' => 0,
+                'tyre_code' => $spare['tyre_code'],
+                'tyre_id' => $spare['tyre_id'],
+                'color' => $spare['tyre_code'] ? 'blue' : 'gray',
+                'view_tyre_url' => $spare['tyre_id'] ? $this->workflow->viewTyreUrl($spare['tyre_id']) : null,
+                'create_movement_url' => $this->movementUrl($vehicle, $spare['position'], $spareTyre),
+                'create_baseline_url' => $spare['tyre_id'] ? route('tyres.baselines.create', ['tyre_id' => $spare['tyre_id']]) : null,
+                'record_audit_url' => $spare['tyre_id'] ? route('tyres.condition-audits.create', $spare['tyre_id']) : null,
+                'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
+                'baseline_required' => false,
+            ];
+        });
 
         $konvaSlots = $mapData->map(fn (array $slot) => [
             'code' => $slot['code'],

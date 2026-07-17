@@ -23,6 +23,7 @@ use App\Services\VehicleOdometerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -243,7 +244,7 @@ class TyreMovementController extends Controller
     /** @return array<string, mixed> */
     private function formOptions(): array
     {
-        $tyres = Tyre::query()
+        $tyreRecords = Tyre::query()
             ->with(['brand:id,name', 'size:id,size_label', 'activeAssignment'])
             ->whereIn('status', [
                 TyreStatus::Available,
@@ -251,25 +252,47 @@ class TyreMovementController extends Controller
                 TyreStatus::Maintenance,
             ])
             ->orderBy('tyre_code')
-            ->get(['id', 'tyre_code', 'serial_number', 'brand_id', 'size_id', 'status', 'current_location_type', 'current_location_id', 'current_position_code'])
-            ->map(fn (Tyre $tyre) => [
-                'id' => $tyre->id,
-                'tyre_code' => $tyre->tyre_code,
-                'serial_number' => $tyre->serial_number,
-                'brand' => $tyre->brand?->name,
-                'size' => $tyre->size?->size_label,
-                'status_label' => $tyre->status->label(),
-                'status' => $tyre->status->value,
-                'current_location_type' => $tyre->current_location_type?->value,
-                'current_location_id' => $tyre->current_location_id,
-                'current_position_code' => $tyre->current_position_code,
-                'source_label' => $this->tyreSourceLabel($tyre),
-                'source_position_label' => $tyre->currentPositionDisplay(),
-                'position_type' => $this->tyrePositionType($tyre),
-                'current_vehicle_odometer' => $this->tyreVehicle($tyre)?->odometer,
-                'installed_odometer' => $tyre->activeAssignment?->installed_odometer,
-                'has_pending_movement' => $this->tyreHasPendingMovement($tyre),
-            ]);
+            ->get(['id', 'tyre_code', 'serial_number', 'brand_id', 'size_id', 'status', 'current_location_type', 'current_location_id', 'current_position_code']);
+
+        $sourceLocationIds = $tyreRecords->pluck('current_location_id')->filter()->unique()->values();
+        $sourceStores = Store::query()
+            ->whereIn('id', $sourceLocationIds)
+            ->get(['id', 'name'])
+            ->keyBy('id');
+        $sourceVehicles = Vehicle::query()
+            ->with('vehicleType:id,name,tyre_count,axle_count,layout_json')
+            ->whereIn('id', $sourceLocationIds)
+            ->get(['id', 'vehicle_code', 'plate_number', 'asset_type', 'vehicle_type_id', 'odometer'])
+            ->keyBy('id');
+        $pendingTyreIds = TyreMovement::query()
+            ->whereIn('tyre_id', $tyreRecords->pluck('id'))
+            ->whereIn('status', [
+                VoucherStatus::Draft,
+                VoucherStatus::Submitted,
+                VoucherStatus::Checked,
+                VoucherStatus::Approved,
+            ])
+            ->pluck('tyre_id')
+            ->flip();
+
+        $tyres = $tyreRecords->map(fn (Tyre $tyre) => [
+            'id' => $tyre->id,
+            'tyre_code' => $tyre->tyre_code,
+            'serial_number' => $tyre->serial_number,
+            'brand' => $tyre->brand?->name,
+            'size' => $tyre->size?->size_label,
+            'status_label' => $tyre->status->label(),
+            'status' => $tyre->status->value,
+            'current_location_type' => $tyre->current_location_type?->value,
+            'current_location_id' => $tyre->current_location_id,
+            'current_position_code' => $tyre->current_position_code,
+            'source_label' => $this->tyreSourceLabel($tyre, $sourceStores, $sourceVehicles),
+            'source_position_label' => $tyre->currentPositionDisplay(),
+            'position_type' => $this->tyrePositionType($tyre, $sourceVehicles),
+            'current_vehicle_odometer' => $this->tyreVehicle($tyre, $sourceVehicles)?->odometer,
+            'installed_odometer' => $tyre->activeAssignment?->installed_odometer,
+            'has_pending_movement' => $pendingTyreIds->has($tyre->id),
+        ]);
 
         return [
             'tyres' => $tyres,
@@ -399,15 +422,15 @@ class TyreMovementController extends Controller
         ];
     }
 
-    private function tyreSourceLabel(Tyre $tyre): string
+    private function tyreSourceLabel(Tyre $tyre, Collection $stores, Collection $vehicles): string
     {
         if (! $tyre->current_location_type || ! $tyre->current_location_id) {
             return 'Unknown location';
         }
 
         return match ($tyre->current_location_type) {
-            TyreLocationType::Store => Store::query()->find($tyre->current_location_id)?->name ?? "Store #{$tyre->current_location_id}",
-            TyreLocationType::PowerVehicle, TyreLocationType::Trailer => Vehicle::query()->find($tyre->current_location_id)?->displayCodeWithPlate() ?? "Vehicle #{$tyre->current_location_id}",
+            TyreLocationType::Store => $stores->get($tyre->current_location_id)?->name ?? "Store #{$tyre->current_location_id}",
+            TyreLocationType::PowerVehicle, TyreLocationType::Trailer => $vehicles->get($tyre->current_location_id)?->displayCodeWithPlate() ?? "Vehicle #{$tyre->current_location_id}",
             TyreLocationType::MaintenanceCenter => "Maintenance center #{$tyre->current_location_id}",
             TyreLocationType::DisposalYard => "Disposal yard #{$tyre->current_location_id}",
         };
@@ -484,18 +507,19 @@ class TyreMovementController extends Controller
             ->all();
     }
 
-    private function tyreVehicle(Tyre $tyre): ?Vehicle
+    private function tyreVehicle(Tyre $tyre, ?Collection $vehicles = null): ?Vehicle
     {
         if (! $tyre->current_location_id || ! in_array($tyre->current_location_type, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {
             return null;
         }
 
-        return Vehicle::query()->find($tyre->current_location_id);
+        return $vehicles?->get($tyre->current_location_id)
+            ?? Vehicle::query()->find($tyre->current_location_id);
     }
 
-    private function tyrePositionType(Tyre $tyre): ?string
+    private function tyrePositionType(Tyre $tyre, ?Collection $vehicles = null): ?string
     {
-        $vehicle = $this->tyreVehicle($tyre);
+        $vehicle = $this->tyreVehicle($tyre, $vehicles);
         if (! $vehicle || ! $tyre->current_position_code) {
             return null;
         }
@@ -503,19 +527,6 @@ class TyreMovementController extends Controller
         return $this->mapWorkflow->isSparePositionForVehicle($vehicle, $tyre->current_position_code)
             ? 'spare'
             : 'running';
-    }
-
-    private function tyreHasPendingMovement(Tyre $tyre): bool
-    {
-        return TyreMovement::query()
-            ->where('tyre_id', $tyre->id)
-            ->whereIn('status', [
-                VoucherStatus::Draft,
-                VoucherStatus::Submitted,
-                VoucherStatus::Checked,
-                VoucherStatus::Approved,
-            ])
-            ->exists();
     }
 
     private function movementVehicle(?TyreLocationType $locationType, ?int $locationId): ?Vehicle

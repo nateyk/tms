@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\OdometerReadingSource;
+use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
 use App\Models\Tyre;
 use App\Models\TyreAssignment;
@@ -13,6 +14,12 @@ use App\Support\TyrePositionHelper;
 
 class TyreUsageTrackingService
 {
+    /** @var array<int, ?int> */
+    private array $latestVehicleOdometerCache = [];
+
+    /** @var array<int, ?int> */
+    private array $vehicleBaselineOdometerCache = [];
+
     public function calculateTyreUsage(Tyre $tyre): array
     {
         $baseline = $this->getBaselineForTyre($tyre);
@@ -137,9 +144,19 @@ class TyreUsageTrackingService
             return 0;
         }
 
-        return TyreAssignment::query()
+        if ($tyre->relationLoaded('assignments')) {
+            return (int) $tyre->assignments
+                ->filter(fn (TyreAssignment $assignment): bool => $assignment->status !== TyreAssignmentStatus::Active)
+                ->filter(fn (TyreAssignment $assignment): bool =>
+                    $assignment->installed_date === null
+                    || $assignment->installed_date->greaterThanOrEqualTo($baseline->baseline_date)
+                )
+                ->sum(fn (TyreAssignment $assignment): int => (int) $assignment->km_used);
+        }
+
+        return (int) TyreAssignment::query()
             ->where('tyre_id', $tyre->id)
-            ->where('status', '!=', 'active')
+            ->where('status', '!=', TyreAssignmentStatus::Active)
             ->where(function ($query) use ($baseline) {
                 $query->where('installed_date', '>=', $baseline->baseline_date)
                     ->orWhereNull('installed_date');
@@ -169,7 +186,9 @@ class TyreUsageTrackingService
             return 0;
         }
 
-        $vehicle = Vehicle::query()->find($tyre->current_location_id);
+        $vehicle = $activeAssignment->relationLoaded('vehicle')
+            ? $activeAssignment->vehicle
+            : Vehicle::query()->find($tyre->current_location_id);
 
         if (!$vehicle) {
             return 0;
@@ -269,6 +288,10 @@ class TyreUsageTrackingService
 
     public function getLatestVehicleOdometer(Vehicle $vehicle): ?int
     {
+        if (array_key_exists($vehicle->id, $this->latestVehicleOdometerCache)) {
+            return $this->latestVehicleOdometerCache[$vehicle->id];
+        }
+
         // Prefer latest reading from vehicle_odometer_readings
         $latestReading = VehicleOdometerReading::query()
             ->forVehicle($vehicle->id)
@@ -276,16 +299,20 @@ class TyreUsageTrackingService
             ->first();
 
         if ($latestReading) {
-            return $latestReading->odometer;
+            return $this->latestVehicleOdometerCache[$vehicle->id] = $latestReading->odometer;
         }
 
         // Fallback to vehicles.odometer
-        return $vehicle->odometer;
+        return $this->latestVehicleOdometerCache[$vehicle->id] = $vehicle->odometer;
     }
 
     public function getVehicleBaselineOdometer(Vehicle $vehicle): ?int
     {
-        return VehicleOdometerReading::query()
+        if (array_key_exists($vehicle->id, $this->vehicleBaselineOdometerCache)) {
+            return $this->vehicleBaselineOdometerCache[$vehicle->id];
+        }
+
+        return $this->vehicleBaselineOdometerCache[$vehicle->id] = VehicleOdometerReading::query()
             ->forVehicle($vehicle->id)
             ->where('source', OdometerReadingSource::Baseline->value)
             ->latestReading()
@@ -319,6 +346,10 @@ class TyreUsageTrackingService
 
     public function getBaselineForTyre(Tyre $tyre): ?TyreBaseline
     {
+        if ($tyre->relationLoaded('baseline')) {
+            return $tyre->baseline;
+        }
+
         return TyreBaseline::query()->forTyre($tyre->id)->first();
     }
 

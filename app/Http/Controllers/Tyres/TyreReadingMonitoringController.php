@@ -9,6 +9,7 @@ use App\Services\TyreUsageTrackingService;
 use App\Support\TyrePositionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -104,12 +105,7 @@ class TyreReadingMonitoringController extends Controller
             $attachedTrailer->load('vehicleType');
         }
 
-        $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
-            ->where('current_location_id', $vehicle->id)
-            ->where('current_location_type', '!=', 'store')
-            ->orderBy('current_position_code')
-            ->get();
+        $tyres = $this->tyresForVehicle($vehicle);
 
         $tyreData = $tyres->map(fn (Tyre $tyre) => $this->serializeTyreForMap($tyre, $vehicle));
 
@@ -144,12 +140,7 @@ class TyreReadingMonitoringController extends Controller
     {
         $this->authorize('tyre.view');
 
-        $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
-            ->where('current_location_id', $vehicle->id)
-            ->where('current_location_type', '!=', 'store')
-            ->orderBy('current_position_code')
-            ->get();
+        $tyres = $this->tyresForVehicle($vehicle);
 
         $mapData = $tyres->map(fn (Tyre $tyre) => $this->serializeTyreForMap($tyre, $vehicle));
 
@@ -162,12 +153,7 @@ class TyreReadingMonitoringController extends Controller
     {
         $this->authorize('tyre.view');
 
-        $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'baseline', 'activeAssignment.vehicle', 'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(1)])
-            ->where('current_location_id', $trailer->id)
-            ->where('current_location_type', '!=', 'store')
-            ->orderBy('current_position_code')
-            ->get();
+        $tyres = $this->tyresForVehicle($trailer);
 
         $mapData = $tyres->map(fn (Tyre $tyre) => $this->serializeTyreForMap($tyre, $trailer));
 
@@ -260,6 +246,34 @@ class TyreReadingMonitoringController extends Controller
                 'movement_context' => 'vehicle_map',
             ]),
         ];
+    }
+
+    /** @return Collection<int, Tyre> */
+    private function tyresForVehicle(Vehicle $vehicle): Collection
+    {
+        return Tyre::query()
+            ->with([
+                'brand:id,name',
+                'size:id,size_label',
+                'baseline',
+                'assignments:id,tyre_id,installed_date,installed_odometer,km_used,status',
+                'activeAssignment.vehicle:id,vehicle_code,plate_number,odometer',
+                'inspections' => fn ($query) => $query
+                    ->select([
+                        'id', 'tyre_id', 'vehicle_id', 'position_code', 'inspection_date',
+                        'tread_depth', 'condition', 'inspector', 'audited_by', 'notes',
+                        'audited_remaining_percentage', 'calculated_remaining_percentage_at_audit',
+                        'audit_odometer', 'reason', 'created_at',
+                    ])
+                    ->with(['auditedBy:id,name', 'vehicle:id,vehicle_code,plate_number'])
+                    ->latest('inspection_date')
+                    ->latest('created_at')
+                    ->limit(1),
+            ])
+            ->where('current_location_id', $vehicle->id)
+            ->whereIn('current_location_type', ['power_vehicle', 'trailer'])
+            ->orderBy('current_position_code')
+            ->get();
     }
 
     private function calculateSummary($tyreData): array
