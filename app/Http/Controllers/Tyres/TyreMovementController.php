@@ -215,7 +215,6 @@ class TyreMovementController extends Controller
         $this->authorize('complete', $movement);
 
         try {
-            $movement->update($request->validated());
             $this->approvalService->completeMovement($movement);
         } catch (TyreBusinessException $e) {
             return back()->with('error', $e->getMessage());
@@ -396,13 +395,20 @@ class TyreMovementController extends Controller
             'approved_at' => $movement->approved_at?->toDateTimeString(),
             'completed_at' => $movement->completed_at?->toDateTimeString(),
             'pdf_url' => route('vouchers.movement.pdf', $movement),
-            'requires_source_odometer' => $sourceVehicle !== null,
-            'requires_destination_odometer' => $destinationVehicle !== null,
+            'requires_source_odometer' => $this->requiresMovementOdometer($sourceVehicle, $movement->from_position_code),
+            'requires_destination_odometer' => $this->requiresMovementOdometer($destinationVehicle, $movement->to_position_code),
             'source_odometer_label' => $movement->fromLocationDisplay(),
             'destination_odometer_label' => $movement->toLocationDisplay(),
             'source_vehicle_latest_odometer' => $sourceVehicle ? $this->odometerService->getLatestOdometer($sourceVehicle) : null,
             'destination_vehicle_latest_odometer' => $destinationVehicle ? $this->odometerService->getLatestOdometer($destinationVehicle) : null,
         ];
+    }
+
+    private function requiresMovementOdometer(?Vehicle $vehicle, ?string $positionCode): bool
+    {
+        return $vehicle !== null
+            && filled($positionCode)
+            && ! $this->mapWorkflow->isSparePositionForVehicle($vehicle, $positionCode);
     }
 
     /** @return array<string, bool> */

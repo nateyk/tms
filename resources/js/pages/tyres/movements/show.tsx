@@ -39,8 +39,6 @@ type MovementDetail = {
     requires_destination_odometer: boolean;
     source_odometer_label: string;
     destination_odometer_label: string;
-    source_vehicle_latest_odometer: number | null;
-    destination_vehicle_latest_odometer: number | null;
 };
 
 type Permissions = {

@@ -257,7 +257,7 @@ class TyreUsageTrackingTest extends TestCase
         $this->assertEquals(7000, $latestOdometer);
     }
 
-    public function test_movement_completion_saves_destination_odometer_and_assignment_km()
+    public function test_movement_completion_uses_saved_voucher_odometer_and_assignment_km()
     {
         $tyre = $this->createAvailableTyre();
         $store = Store::query()->firstOrFail();
@@ -287,6 +287,7 @@ class TyreUsageTrackingTest extends TestCase
             'to_location_type' => 'power_vehicle',
             'to_location_id' => $vehicle->id,
             'to_position_code' => 'A',
+            'to_odometer' => 12500,
             'movement_date' => now()->toDateString(),
             'reason' => 'Fit tyre',
             'status' => 'approved',
@@ -296,7 +297,7 @@ class TyreUsageTrackingTest extends TestCase
         ]);
 
         $this->actingAs($this->user)->post(route('tyres.movements.complete', $movement), [
-            'to_odometer' => 12500,
+            'to_odometer' => 13000,
         ])->assertRedirect(route('tyres.movements.show', $movement));
 
         $movement->refresh();

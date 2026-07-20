@@ -1,6 +1,5 @@
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -9,12 +8,9 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "@inertiajs/react";
 import { Info } from "lucide-react";
-import { useEffect } from "react";
 
 type MovementCompletionDialogProps = {
     open: boolean;
@@ -29,8 +25,8 @@ type MovementCompletionDialogProps = {
         requires_destination_odometer: boolean;
         source_odometer_label: string;
         destination_odometer_label: string;
-        source_vehicle_latest_odometer: number | null;
-        destination_vehicle_latest_odometer: number | null;
+        from_odometer: number | null;
+        to_odometer: number | null;
     } | null;
 };
 
@@ -39,21 +35,7 @@ export function MovementCompletionDialog({
     onOpenChange,
     movement,
 }: MovementCompletionDialogProps) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        from_odometer: "",
-        to_odometer: "",
-    });
-
-    useEffect(() => {
-        if (!open || !movement) {
-            return;
-        }
-
-        setData({
-            from_odometer: movement.source_vehicle_latest_odometer?.toString() ?? "",
-            to_odometer: movement.destination_vehicle_latest_odometer?.toString() ?? "",
-        });
-    }, [open, movement]);
+    const { post, processing, reset } = useForm({});
 
     if (!movement) {
         return null;
@@ -80,7 +62,7 @@ export function MovementCompletionDialog({
                 <AlertDialogHeader>
                     <AlertDialogTitle>Complete Movement with Odometer</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Capture odometer readings at physical completion time for tyre KM usage calculation.
+                        Review the odometer readings saved on this voucher, then apply them to the vehicle and tyre record.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
@@ -107,60 +89,16 @@ export function MovementCompletionDialog({
                     <Alert>
                         <Info className="h-4 w-4" />
                         <AlertDescription>
-                            Odometer is captured at physical completion time and will be used for tyre KM usage calculation.
+                            Voucher odometer readings are locked after approval. Completion applies these saved values to vehicle KM and tyre usage.
                         </AlertDescription>
                     </Alert>
 
                     {movement!.requires_source_odometer && (
-                        <div className="space-y-2">
-                            <Label htmlFor="from_odometer">
-                                Source Odometer (KM) - {movement!.source_odometer_label}
-                            </Label>
-                            <Input
-                                id="from_odometer"
-                                type="number"
-                                min="0"
-                                step="1"
-                                value={data.from_odometer}
-                                onChange={(e) => setData("from_odometer", e.target.value)}
-                                placeholder="Enter source odometer"
-                                className={errors.from_odometer ? "border-destructive" : ""}
-                            />
-                            {errors.from_odometer && (
-                                <p className="text-sm text-destructive">{errors.from_odometer}</p>
-                            )}
-                            {movement!.source_vehicle_latest_odometer !== null && (
-                                <p className="text-xs text-muted-foreground">
-                                    Latest known odometer: {movement!.source_vehicle_latest_odometer.toLocaleString()} KM
-                                </p>
-                            )}
-                        </div>
+                        <OdometerReview label="Odometer out" location={movement!.source_odometer_label} value={movement!.from_odometer} />
                     )}
 
                     {movement!.requires_destination_odometer && (
-                        <div className="space-y-2">
-                            <Label htmlFor="to_odometer">
-                                Destination Odometer (KM) - {movement!.destination_odometer_label}
-                            </Label>
-                            <Input
-                                id="to_odometer"
-                                type="number"
-                                min="0"
-                                step="1"
-                                value={data.to_odometer}
-                                onChange={(e) => setData("to_odometer", e.target.value)}
-                                placeholder="Enter destination odometer"
-                                className={errors.to_odometer ? "border-destructive" : ""}
-                            />
-                            {errors.to_odometer && (
-                                <p className="text-sm text-destructive">{errors.to_odometer}</p>
-                            )}
-                            {movement!.destination_vehicle_latest_odometer !== null && (
-                                <p className="text-xs text-muted-foreground">
-                                    Latest known odometer: {movement!.destination_vehicle_latest_odometer.toLocaleString()} KM
-                                </p>
-                            )}
-                        </div>
+                        <OdometerReview label="Odometer in" location={movement!.destination_odometer_label} value={movement!.to_odometer} />
                     )}
 
                     <AlertDialogFooter>
@@ -174,5 +112,16 @@ export function MovementCompletionDialog({
                 </form>
             </AlertDialogContent>
         </AlertDialog>
+    );
+}
+
+function OdometerReview({ label, location, value }: { label: string; location: string; value: number | null }) {
+    return (
+        <div className="rounded-md border bg-muted/20 px-3 py-2.5">
+            <p className="text-xs text-muted-foreground">{label} - {location}</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums">
+                {value === null ? "Not recorded" : `${value.toLocaleString()} KM`}
+            </p>
+        </div>
     );
 }

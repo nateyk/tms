@@ -6,6 +6,7 @@ use App\Enums\TyreLocationType;
 use App\Exceptions\TyreBusinessException;
 use App\Models\TyreMovement;
 use App\Models\Vehicle;
+use App\Services\TyreMapWorkflowService;
 use App\Services\VehicleOdometerService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -19,10 +20,7 @@ class CompleteTyreMovementRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'from_odometer' => ['nullable', 'integer', 'min:0'],
-            'to_odometer' => ['nullable', 'integer', 'min:0'],
-        ];
+        return [];
     }
 
     public function withValidator(Validator $validator): void
@@ -44,16 +42,14 @@ class CompleteTyreMovementRequest extends FormRequest
         $sourceType = $movement->from_location_type;
         $destinationType = $movement->to_location_type;
 
-        // Require from_odometer if source is vehicle
-        if (in_array($sourceType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {
-            if (!$this->filled('from_odometer')) {
+        if ($this->requiresOdometer($sourceType, $movement->from_location_id, $movement->from_position_code)) {
+            if ($movement->from_odometer === null) {
                 $validator->errors()->add('from_odometer', 'Source odometer is required when moving from a vehicle.');
             }
         }
 
-        // Require to_odometer if destination is vehicle
-        if (in_array($destinationType, [TyreLocationType::PowerVehicle, TyreLocationType::Trailer], true)) {
-            if (!$this->filled('to_odometer')) {
+        if ($this->requiresOdometer($destinationType, $movement->to_location_id, $movement->to_position_code)) {
+            if ($movement->to_odometer === null) {
                 $validator->errors()->add('to_odometer', 'Destination odometer is required when moving to a vehicle.');
             }
         }
@@ -62,8 +58,8 @@ class CompleteTyreMovementRequest extends FormRequest
     protected function validateOdometerValues(Validator $validator, TyreMovement $movement): void
     {
         $tyre = $movement->tyre;
-        $fromOdometer = $this->input('from_odometer');
-        $toOdometer = $this->input('to_odometer');
+        $fromOdometer = $movement->from_odometer;
+        $toOdometer = $movement->to_odometer;
         $odometerService = app(VehicleOdometerService::class);
 
         // Validate from_odometer against active assignment
@@ -125,13 +121,20 @@ class CompleteTyreMovementRequest extends FormRequest
         return Vehicle::query()->find($locationId);
     }
 
+    private function requiresOdometer(?TyreLocationType $locationType, ?int $locationId, ?string $positionCode): bool
+    {
+        $vehicle = $this->movementVehicle($locationType, $locationId);
+
+        return $vehicle !== null
+            && filled($positionCode)
+            && ! app(TyreMapWorkflowService::class)->isSparePositionForVehicle($vehicle, $positionCode);
+    }
+
     public function messages(): array
     {
         return [
-            'from_odometer.integer' => 'Source odometer must be a valid number.',
-            'from_odometer.min' => 'Source odometer cannot be negative.',
-            'to_odometer.integer' => 'Destination odometer must be a valid number.',
-            'to_odometer.min' => 'Destination odometer cannot be negative.',
+            'from_odometer.integer' => 'Saved source odometer must be a valid number.',
+            'to_odometer.integer' => 'Saved destination odometer must be a valid number.',
         ];
     }
 }
