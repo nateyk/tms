@@ -100,21 +100,12 @@ class TyreMovementService
                 $movement->id
             );
 
-            if ($sourceVehicle && $movement->from_odometer !== null) {
-                $this->odometerService->recordMovementOdometer($sourceVehicle, $movement->from_odometer, $movement->id, $approvedBy);
-            }
+            $this->syncVoucherOdometers($movement, $approvedBy);
 
             [$locationType, $locationId, $position, $status, $assetType] = $this->resolveDestination($movement);
 
             if ($assetType && $locationId && $position) {
                 $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($locationId);
-                if ($movement->to_odometer !== null && ! (
-                    $sourceVehicle?->id === $vehicle->id
-                    && $movement->from_odometer === $movement->to_odometer
-                )) {
-                    $this->odometerService->recordMovementOdometer($vehicle, $movement->to_odometer, $movement->id, $approvedBy);
-                }
-
                 $this->assignmentService->createActiveAssignment(
                     $tyre,
                     $assetType,
@@ -191,25 +182,54 @@ class TyreMovementService
 
     public function createDraft(array $data, int $preparedBy): TyreMovement
     {
-        $tyre = Tyre::query()->findOrFail($data['tyre_id']);
-        $this->assertCanCreateMovement($tyre);
+        return DB::transaction(function () use ($data, $preparedBy) {
+            $tyre = Tyre::query()->findOrFail($data['tyre_id']);
+            $this->assertCanCreateMovement($tyre);
 
-        $toLocationType = $this->normalizeLocationType($data['to_location_type'] ?? null);
-        $data['movement_type'] = $this->deriveMovementType(
-            $tyre->current_location_type,
-            $tyre->current_location_id,
-            $toLocationType,
-            isset($data['to_location_id']) ? (int) $data['to_location_id'] : null,
-        );
+            $toLocationType = $this->normalizeLocationType($data['to_location_type'] ?? null);
+            $data['movement_type'] = $this->deriveMovementType(
+                $tyre->current_location_type,
+                $tyre->current_location_id,
+                $toLocationType,
+                isset($data['to_location_id']) ? (int) $data['to_location_id'] : null,
+            );
 
-        return TyreMovement::query()->create(array_merge($data, [
-            'movement_no' => $this->numberGenerator->generate('MOV', new TyreMovement, 'movement_no'),
-            'status' => VoucherStatus::Draft,
-            'prepared_by' => $preparedBy,
-            'from_location_type' => $tyre->current_location_type,
-            'from_location_id' => $tyre->current_location_id,
-            'from_position_code' => $tyre->current_position_code,
-        ]));
+            $movement = TyreMovement::query()->create(array_merge($data, [
+                'movement_no' => $this->numberGenerator->generate('MOV', new TyreMovement, 'movement_no'),
+                'status' => VoucherStatus::Draft,
+                'prepared_by' => $preparedBy,
+                'from_location_type' => $tyre->current_location_type,
+                'from_location_id' => $tyre->current_location_id,
+                'from_position_code' => $tyre->current_position_code,
+            ]));
+
+            $this->syncVoucherOdometers($movement, $preparedBy);
+
+            return $movement;
+        });
+    }
+
+    public function updateDraft(TyreMovement $movement, array $data, int $updatedBy): TyreMovement
+    {
+        return DB::transaction(function () use ($movement, $data, $updatedBy) {
+            $movement->update($data);
+            $this->syncVoucherOdometers($movement, $updatedBy);
+
+            return $movement->fresh();
+        });
+    }
+
+    public function syncVoucherOdometers(TyreMovement $movement, int $recordedBy): void
+    {
+        $sourceVehicle = $this->movementVehicle($movement->from_location_type, $movement->from_location_id);
+        if ($sourceVehicle && $movement->from_odometer !== null) {
+            $this->odometerService->recordMovementOdometer($sourceVehicle, $movement->from_odometer, $movement->id, $recordedBy);
+        }
+
+        $destinationVehicle = $this->movementVehicle($movement->to_location_type, $movement->to_location_id);
+        if ($destinationVehicle && $movement->to_odometer !== null) {
+            $this->odometerService->recordMovementOdometer($destinationVehicle, $movement->to_odometer, $movement->id, $recordedBy);
+        }
     }
 
     protected function deriveMovementType(

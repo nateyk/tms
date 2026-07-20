@@ -335,6 +335,7 @@ class TyreMovementWorkflowTest extends TestCase
             ->assertRedirect();
 
         $tyre->refresh();
+        $source->refresh();
 
         $this->assertEquals('power_vehicle', $tyre->current_location_type->value);
         $this->assertEquals($source->id, $tyre->current_location_id);
@@ -344,6 +345,12 @@ class TyreMovementWorkflowTest extends TestCase
             'asset_id' => $source->id,
             'position_code' => 'A',
             'status' => 'active',
+        ]);
+        $this->assertSame(170500, $source->odometer);
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $source->id,
+            'odometer' => 170500,
+            'source' => 'movement',
         ]);
     }
 

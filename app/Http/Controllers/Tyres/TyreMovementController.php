@@ -126,7 +126,11 @@ class TyreMovementController extends Controller
 
     public function update(UpdateTyreMovementRequest $request, TyreMovement $movement): RedirectResponse
     {
-        $movement->update($request->validated());
+        try {
+            $this->movementService->updateDraft($movement, $request->validated(), (int) auth()->id());
+        } catch (TyreBusinessException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('tyres.movements.show', $movement)

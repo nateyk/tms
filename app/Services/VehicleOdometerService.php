@@ -72,6 +72,34 @@ class VehicleOdometerService
         int $movementId,
         int $userId
     ): VehicleOdometerReading {
+        $existing = VehicleOdometerReading::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->where('source', OdometerReadingSource::Movement->value)
+            ->where('source_id', $movementId)
+            ->first();
+
+        if ($existing) {
+            if ((int) $existing->odometer === $odometer) {
+                return $existing;
+            }
+
+            $this->validateOdometerNotLower($vehicle, $odometer);
+
+            $existing->update([
+                'odometer' => $odometer,
+                'reading_date' => now()->toDateString(),
+                'recorded_by' => $userId,
+            ]);
+
+            $vehicle->forceFill([
+                'odometer' => $odometer,
+                'odometer_last_updated_at' => now(),
+                'odometer_last_updated_by' => $userId,
+            ])->save();
+
+            return $existing->fresh();
+        }
+
         return $this->updateOdometer(
             $vehicle,
             $odometer,
