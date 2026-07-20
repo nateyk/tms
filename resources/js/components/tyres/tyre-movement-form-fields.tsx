@@ -88,9 +88,14 @@ type MovementFormData = {
     notes: string;
 };
 
+type MovementFormSetter = {
+    <K extends keyof MovementFormData>(key: K, value: MovementFormData[K]): void;
+    (data: MovementFormData): void;
+};
+
 type TyreMovementFormFieldsProps = {
     data: MovementFormData;
-    setData: <K extends keyof MovementFormData>(key: K, value: MovementFormData[K]) => void;
+    setData: MovementFormSetter;
     errors: Partial<Record<keyof MovementFormData, string>>;
     tyres: TyreOption[];
     stores: LocationOption[];
@@ -169,6 +174,10 @@ export function TyreMovementFormFields({
     const [tyreSearch, setTyreSearch] = useState("");
     const [tyrePickerOpen, setTyrePickerOpen] = useState(false);
     const [loadingPositions, setLoadingPositions] = useState(false);
+
+    const updateData = (updates: Partial<MovementFormData>) => {
+        setData({ ...data, ...updates });
+    };
 
     const selectedTyre = useMemo(
         () => tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id)) ?? null,
@@ -315,19 +324,20 @@ export function TyreMovementFormFields({
     const handleTyreChange = (value: string) => {
         const tyreId = Number.parseInt(value, 10);
         const nextTyreId = Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null;
-        setData("tyre_id", nextTyreId);
+        updateData({ tyre_id: nextTyreId, from_odometer: null });
         onTyreSelected?.(nextTyreId);
-        setData("from_odometer", null);
         setTyreSearch("");
         setTyrePickerOpen(false);
     };
 
     const handleDestinationTypeChange = (value: string) => {
         setDestinationTarget(value);
-        setData("to_location_type", value === "store" ? "store" : "power_vehicle");
-        setData("to_location_id", null);
-        setData("to_position_code", "");
-        setData("to_odometer", null);
+        updateData({
+            to_location_type: value === "store" ? "store" : "power_vehicle",
+            to_location_id: null,
+            to_position_code: "",
+            to_odometer: null,
+        });
         setSelectedUnitId(null);
         setSelectedPositionValue("");
     };
@@ -338,22 +348,26 @@ export function TyreMovementFormFields({
         const destinationType = destination?.asset_type === "trailer" ? "trailer" : "power_vehicle";
 
         setSelectedUnitId(Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
-        setData("to_location_type", destinationType);
-        setData("to_location_id", Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null);
-        setData("to_position_code", "");
         const currentOdometer = destination && "current_odometer" in destination
             ? (typeof destination.current_odometer === "number" ? destination.current_odometer : null)
             : null;
-        setData("to_odometer", currentOdometer);
+        updateData({
+            to_location_type: destinationType,
+            to_location_id: Number.isFinite(destinationId) && destinationId > 0 ? destinationId : null,
+            to_position_code: "",
+            to_odometer: currentOdometer,
+        });
         setSelectedPositionValue("");
     };
 
     const handlePositionChange = (position: PositionOption) => {
         setSelectedPositionValue(position.value);
-        setData("to_location_type", position.owner_type);
-        setData("to_location_id", position.owner_vehicle_id);
-        setData("to_position_code", position.code);
-        setData("to_odometer", position.owner_current_odometer ?? null);
+        updateData({
+            to_location_type: position.owner_type,
+            to_location_id: position.owner_vehicle_id,
+            to_position_code: position.code,
+            to_odometer: position.owner_current_odometer ?? null,
+        });
     };
 
     const preview = buildPreview(selectedTyre, selectedDestinationVehicle, selectedPosition, data, stores);
@@ -520,9 +534,11 @@ export function TyreMovementFormFields({
                             <Select
                                 value={data.to_location_id ? String(data.to_location_id) : undefined}
                                 onValueChange={(value) => {
-                                    setData("to_location_id", Number(value));
-                                    setData("to_position_code", "");
-                                    setData("to_odometer", null);
+                                    updateData({
+                                        to_location_id: Number(value),
+                                        to_position_code: "",
+                                        to_odometer: null,
+                                    });
                                 }}
                                 disabled={destinationTarget !== "store"}
                             >
