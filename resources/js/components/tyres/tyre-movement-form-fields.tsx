@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -371,12 +370,14 @@ export function TyreMovementFormFields({
                         {readOnlyTyre ? (
                             <Input value={selectedTyre ? tyreOptionLabel(selectedTyre) : ""} disabled />
                         ) : (
-                            <Popover open={tyrePickerOpen} onOpenChange={setTyrePickerOpen}>
-                                <PopoverTrigger asChild>
+                            <div className="relative">
                                     <button
                                         type="button"
+                                        onClick={() => setTyrePickerOpen((open) => !open)}
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                         aria-label="Choose tyre"
+                                        aria-expanded={tyrePickerOpen}
+                                        aria-haspopup="listbox"
                                     >
                                         <span className={cn("flex min-w-0 items-center gap-2 truncate", !selectedTyre && "text-muted-foreground")}>
                                             <Search className="h-4 w-4 shrink-0" />
@@ -384,8 +385,11 @@ export function TyreMovementFormFields({
                                         </span>
                                         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                                     </button>
-                                </PopoverTrigger>
-                                <PopoverContent align="start" className="w-[min(520px,calc(100vw-2rem))] p-2">
+                                {tyrePickerOpen && (
+                                    <div
+                                        role="listbox"
+                                        className="absolute z-50 mt-2 w-full rounded-md border bg-popover p-2 shadow-md"
+                                    >
                                     <div className="relative">
                                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
@@ -422,8 +426,9 @@ export function TyreMovementFormFields({
                                             </p>
                                         )}
                                     </div>
-                                </PopoverContent>
-                            </Popover>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </Field>
 
@@ -758,7 +763,10 @@ function TyreOptionGroup({
                     <button
                         key={tyre.id}
                         type="button"
-                        onClick={() => onSelect(String(tyre.id))}
+                        onPointerDown={(event) => {
+                            event.preventDefault();
+                            onSelect(String(tyre.id));
+                        }}
                         className={cn(
                             "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition",
                             selected && "border-primary bg-primary/10 ring-1 ring-primary/30",
