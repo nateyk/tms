@@ -79,9 +79,9 @@ class TyreConditionAuditTest extends TestCase
         $this->assertSame('A', $audit->position_code);
         $this->assertSame(1200, $audit->audit_odometer);
         $this->assertEquals(1200, $vehicle->fresh()->odometer);
-        $this->assertSame(94.0, (float) $audit->calculated_remaining_percentage_at_audit);
-        $this->assertSame(-4.0, (float) $audit->variance_percentage);
-        $this->assertSame(-4.0, round((float) $audit->audited_remaining_percentage - (float) $audit->calculated_remaining_percentage_at_audit, 2));
+        $this->assertSame(93.8, (float) $audit->calculated_remaining_percentage_at_audit);
+        $this->assertSame(-3.8, (float) $audit->variance_percentage);
+        $this->assertSame(-3.8, round((float) $audit->audited_remaining_percentage - (float) $audit->calculated_remaining_percentage_at_audit, 2));
         $this->assertSame('Uneven wear', $audit->reason);
         $this->assertNotNull($audit->created_at);
 

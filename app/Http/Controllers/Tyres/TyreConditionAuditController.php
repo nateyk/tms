@@ -77,15 +77,9 @@ class TyreConditionAuditController extends Controller
                 $currentVehicle = Vehicle::query()->lockForUpdate()->find($currentVehicle->id);
             }
 
-            $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
-
-            $calculatedRemaining = $usage['calculated_remaining_percentage'];
-            $variance = $calculatedRemaining !== null
-                ? round((float) $validated['audited_remaining_percentage'] - (float) $calculatedRemaining, 2)
-                : null;
             $auditOdometer = array_key_exists('audit_odometer', $validated) && $validated['audit_odometer'] !== null
                 ? (int) $validated['audit_odometer']
-                : $usage['current_vehicle_odometer'];
+                : $this->usageTrackingService->calculateTyreUsage($tyre)['current_vehicle_odometer'];
 
             if ($currentVehicle && $auditOdometer !== null) {
                 $this->odometerService->updateOdometer(
@@ -97,6 +91,14 @@ class TyreConditionAuditController extends Controller
                     'Tyre condition audit reading',
                 );
             }
+
+            // Calculate after saving the audit KM so the variance is measured at
+            // the mechanic's exact checkpoint, never against an older reading.
+            $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+            $calculatedRemaining = $usage['calculated_remaining_percentage'];
+            $variance = $calculatedRemaining !== null
+                ? round((float) $validated['audited_remaining_percentage'] - (float) $calculatedRemaining, 2)
+                : null;
 
             TyreInspection::query()->create([
                 'tyre_id' => $tyre->id,
