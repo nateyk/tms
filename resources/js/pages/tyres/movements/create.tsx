@@ -4,7 +4,6 @@ import { TyreFormShell } from "@/components/tyres/tyre-form-shell";
 import { Button } from "@/components/ui/button";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
-import { useState } from "react";
 
 type FormOptions = {
     tyres: Parameters<typeof TyreMovementFormFields>[0]["tyres"];
@@ -33,9 +32,6 @@ export default function MovementsCreate({
     destinationTargets,
     prefilled,
 }: FormOptions) {
-    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(prefilled.tyre_id ?? null);
-    const selectedTyre = tyres.find((tyre) => Number(tyre.id) === Number(selectedTyreId));
-    const fromTyreDetail = Boolean(selectedTyre);
     const form = useForm({
         tyre_id: prefilled.tyre_id ? Number(prefilled.tyre_id) : (null as number | null),
         movement_date: prefilled.movement_date ?? new Date().toISOString().slice(0, 10),
@@ -48,6 +44,8 @@ export default function MovementsCreate({
         notes: "",
     });
     const { data, setData, processing, errors } = form;
+    const selectedTyre = tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id));
+    const fromTyreDetail = Boolean(selectedTyre);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -95,7 +93,11 @@ export default function MovementsCreate({
                         destinationTypes={destinationTypes}
                         destinationTargets={destinationTargets}
                         compact
-                        onTyreSelected={setSelectedTyreId}
+                        onTyreSelected={(tyreId) => {
+                            if (tyreId !== null) {
+                                form.clearErrors("tyre_id");
+                            }
+                        }}
                         sourceInfo={sourceInfo}
                     />
                 </TyreFormShell>

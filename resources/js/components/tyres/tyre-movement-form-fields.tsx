@@ -169,12 +169,11 @@ export function TyreMovementFormFields({
     const [positionOptions, setPositionOptions] = useState<PositionOption[]>([]);
     const [tyreSearch, setTyreSearch] = useState("");
     const [tyrePickerOpen, setTyrePickerOpen] = useState(false);
-    const [selectedTyreId, setSelectedTyreId] = useState<number | null>(data.tyre_id);
     const [loadingPositions, setLoadingPositions] = useState(false);
 
     const selectedTyre = useMemo(
-        () => tyres.find((tyre) => Number(tyre.id) === Number(selectedTyreId)) ?? null,
-        [selectedTyreId, tyres],
+        () => tyres.find((tyre) => Number(tyre.id) === Number(data.tyre_id)) ?? null,
+        [data.tyre_id, tyres],
     );
     const filteredTyres = useMemo(() => {
         const query = tyreSearch.trim().toLowerCase();
@@ -275,11 +274,10 @@ export function TyreMovementFormFields({
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
 
     useEffect(() => {
-        setSelectedTyreId(data.tyre_id);
         setSelectedPositionValue(data.to_position_code || "");
         setDestinationTarget(data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "");
         setSelectedUnitId(initialUnitId);
-    }, [data.to_location_id, data.to_location_type, data.to_position_code, data.tyre_id, initialUnitId]);
+    }, [data.to_location_id, data.to_location_type, data.to_position_code, initialUnitId]);
 
     useEffect(() => {
         if (
@@ -318,7 +316,6 @@ export function TyreMovementFormFields({
     const handleTyreChange = (value: string) => {
         const tyreId = Number.parseInt(value, 10);
         const nextTyreId = Number.isFinite(tyreId) && tyreId > 0 ? tyreId : null;
-        setSelectedTyreId(nextTyreId);
         setData("tyre_id", nextTyreId);
         onTyreSelected?.(nextTyreId);
         setData("from_odometer", null);
@@ -405,7 +402,7 @@ export function TyreMovementFormFields({
                                             <TyreOptionGroup
                                                 title="Available"
                                                 tyres={availableTyres}
-                                                selectedId={selectedTyreId}
+                                                selectedId={data.tyre_id}
                                                 onSelect={handleTyreChange}
                                             />
                                         )}
@@ -414,7 +411,7 @@ export function TyreMovementFormFields({
                                                 title="Mounted"
                                                 description="Muted but selectable for relocation"
                                                 tyres={mountedTyres}
-                                                selectedId={selectedTyreId}
+                                                selectedId={data.tyre_id}
                                                 onSelect={handleTyreChange}
                                                 muted
                                             />
