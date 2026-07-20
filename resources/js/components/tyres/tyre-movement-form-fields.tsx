@@ -282,12 +282,6 @@ export function TyreMovementFormFields({
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
 
     useEffect(() => {
-        setSelectedPositionValue(data.to_position_code || "");
-        setDestinationTarget(data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "");
-        setSelectedUnitId(initialUnitId);
-    }, [data.to_location_id, data.to_location_type, data.to_position_code, initialUnitId]);
-
-    useEffect(() => {
         if (
             selectedTyre?.position_type === "running"
             && selectedTyre.current_vehicle_odometer !== null
@@ -340,6 +334,7 @@ export function TyreMovementFormFields({
         });
         setSelectedUnitId(null);
         setSelectedPositionValue("");
+        setPositionOptions([]);
     };
 
     const handleDestinationChange = (value: string) => {
@@ -358,6 +353,7 @@ export function TyreMovementFormFields({
             to_odometer: currentOdometer,
         });
         setSelectedPositionValue("");
+        setPositionOptions([]);
     };
 
     const handlePositionChange = (position: PositionOption) => {
@@ -587,6 +583,9 @@ export function TyreMovementFormFields({
                                             ))}
                                     </SelectContent>
                                 </Select>
+                                {destinationUnits.filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0).length === 0 && (
+                                    <HelperText>No active vehicle unit currently has an open tyre position.</HelperText>
+                                )}
                             </Field>
                         )}
 
@@ -601,6 +600,9 @@ export function TyreMovementFormFields({
                         {destinationTarget === "vehicle_unit" && (
                             <Field label="Destination position" error={errors.to_position_code}>
                                 <div className="space-y-4">
+                                    {!selectedUnitId && (
+                                        <InfoText>Select a vehicle or attached trailer first.</InfoText>
+                                    )}
                                     {positionGroups.map((group) => (
                                         <section key={group.title} className="space-y-2">
                                             <div className="flex items-center justify-between gap-2">
@@ -670,8 +672,12 @@ export function TyreMovementFormFields({
                                 />
                                 <HelperText>Required because the destination is a running position.</HelperText>
                             </Field>
-                        ) : (
+                        ) : destinationTarget === "store" ? (
                             <InfoText>Odometer in is not required for store or spare destinations.</InfoText>
+                        ) : destinationTarget === "vehicle_unit" && selectedPosition?.type === "spare" ? (
+                            <InfoText>Odometer in is not required for a spare position.</InfoText>
+                        ) : (
+                            <InfoText>Select an open destination position to determine whether vehicle KM is required.</InfoText>
                         )}
                     </CardContent>
                 </Card>
