@@ -95,7 +95,7 @@ export default function MovementsCreate({
                         compact
                         onTyreSelected={(tyreId) => {
                             if (tyreId !== null) {
-                                form.clearErrors("tyre_id");
+                                form.clearErrors("tyre_id", "from_odometer");
                             }
                         }}
                         sourceInfo={sourceInfo}

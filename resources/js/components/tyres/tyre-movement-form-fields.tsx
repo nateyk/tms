@@ -2,13 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, ChevronDown, Circle, MapPin, Search } from "lucide-react";
@@ -174,6 +167,7 @@ export function TyreMovementFormFields({
     const [tyreSearch, setTyreSearch] = useState("");
     const [tyrePickerOpen, setTyrePickerOpen] = useState(false);
     const [loadingPositions, setLoadingPositions] = useState(false);
+    const [positionLoadError, setPositionLoadError] = useState(false);
 
     const updateData = (updates: Partial<MovementFormData>) => {
         setData({ ...data, ...updates });
@@ -232,7 +226,7 @@ export function TyreMovementFormFields({
                 : null);
     }, [data.to_location_id, data.to_location_type, destinationUnits, powerVehicles]);
     const [destinationTarget, setDestinationTarget] = useState(
-        data.to_location_type === "store" ? "store" : data.to_location_id ? "vehicle_unit" : "",
+        data.to_location_type === "store" ? "store" : (data.to_location_id || data.tyre_id ? "vehicle_unit" : ""),
     );
     const [selectedUnitId, setSelectedUnitId] = useState<number | null>(initialUnitId);
     const [selectedPositionValue, setSelectedPositionValue] = useState(data.to_position_code || "");
@@ -240,6 +234,10 @@ export function TyreMovementFormFields({
     const selectedUnit = useMemo(
         () => destinationUnits.find((vehicle) => vehicle.id === selectedUnitId) ?? null,
         [destinationUnits, selectedUnitId],
+    );
+    const availableDestinationUnits = useMemo(
+        () => destinationUnits.filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0),
+        [destinationUnits],
     );
 
     const selectedDestinationVehicle = useMemo(
@@ -281,6 +279,20 @@ export function TyreMovementFormFields({
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
 
+    // Map actions populate Inertia form data after this component has mounted.
+    // Keep the local destination controls aligned with that prefilled voucher.
+    useEffect(() => {
+        if (!destinationTarget && data.tyre_id) {
+            setDestinationTarget("vehicle_unit");
+        }
+    }, [data.tyre_id, destinationTarget]);
+
+    useEffect(() => {
+        if (destinationTarget === "vehicle_unit" && !selectedUnitId && initialUnitId) {
+            setSelectedUnitId(initialUnitId);
+        }
+    }, [destinationTarget, initialUnitId, selectedUnitId]);
+
     useEffect(() => {
         if (
             selectedTyre?.position_type === "running"
@@ -295,13 +307,27 @@ export function TyreMovementFormFields({
     useEffect(() => {
         if (destinationTarget !== "vehicle_unit" || !selectedUnitId) {
             setPositionOptions([]);
+            setPositionLoadError(false);
             return;
         }
 
+        let cancelled = false;
         setLoadingPositions(true);
-        fetch(route("tyres.movements.position-options", selectedUnitId))
-            .then((response) => response.json())
+        setPositionLoadError(false);
+
+        fetch(route("tyres.movements.position-options", selectedUnitId), { headers: { Accept: "application/json" } })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Unable to load destination positions");
+                }
+
+                return response.json() as Promise<PositionOption[]>;
+            })
             .then((options: PositionOption[]) => {
+                if (cancelled) {
+                    return;
+                }
+
                 setPositionOptions(options);
                 const preselected = options.find((position) =>
                     position.code === data.to_position_code
@@ -312,7 +338,21 @@ export function TyreMovementFormFields({
                     setSelectedPositionValue(preselected.value);
                 }
             })
-            .finally(() => setLoadingPositions(false));
+            .catch(() => {
+                if (!cancelled) {
+                    setPositionOptions([]);
+                    setPositionLoadError(true);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoadingPositions(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [destinationTarget, selectedUnitId]);
 
     const handleTyreChange = (value: string) => {
@@ -505,31 +545,27 @@ export function TyreMovementFormFields({
                     </CardHeader>
                     <CardContent className={cn("space-y-4", compact && "px-4 py-3") }>
                         <Field label="Destination target" error={errors.to_location_type}>
-                            <Select
-                                value={destinationTarget || undefined}
-                                onValueChange={handleDestinationTypeChange}
+                            <select
+                                value={destinationTarget}
+                                onChange={(event) => handleDestinationTypeChange(event.target.value)}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose store or vehicle unit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {(destinationTargets ?? [
-                                        { value: "store", label: "Store" },
-                                        { value: "vehicle_unit", label: "Vehicle / Attached Unit" },
-                                    ]).map((type) => (
-                                        <SelectItem key={type.value} value={type.value}>
-                                            {type.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <option value="" disabled>Choose store or vehicle unit</option>
+                                {(destinationTargets ?? [
+                                    { value: "store", label: "Store" },
+                                    { value: "vehicle_unit", label: "Vehicle / Attached Unit" },
+                                ]).map((type) => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                ))}
+                            </select>
                         </Field>
 
                         {destinationTarget === "store" && (
                             <Field label="Destination store" error={errors.to_location_id}>
-                            <Select
-                                value={data.to_location_id ? String(data.to_location_id) : undefined}
-                                onValueChange={(value) => {
+                            <select
+                                value={data.to_location_id ? String(data.to_location_id) : ""}
+                                onChange={(event) => {
+                                    const value = event.target.value;
                                     updateData({
                                         to_location_id: Number(value),
                                         to_position_code: "",
@@ -537,53 +573,31 @@ export function TyreMovementFormFields({
                                     });
                                 }}
                                 disabled={destinationTarget !== "store"}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select destination store" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {stores.map((location) => (
-                                        <SelectItem key={location.id} value={String(location.id)}>
-                                            {location.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <option value="" disabled>Select destination store</option>
+                                {stores.map((location) => (
+                                    <option key={location.id} value={String(location.id)}>{location.label}</option>
+                                ))}
+                            </select>
                             </Field>
                         )}
 
                         {destinationTarget === "vehicle_unit" && (
                             <Field label="Vehicle / attached unit" error={errors.to_location_id}>
-                                <Select
-                                    value={selectedUnitId ? String(selectedUnitId) : undefined}
-                                    onValueChange={handleDestinationChange}
+                                <select
+                                    value={selectedUnitId ? String(selectedUnitId) : ""}
+                                    onChange={(event) => handleDestinationChange(event.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select power unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {destinationUnits
-                                            .filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0)
-                                            .map((vehicle) => (
-                                                <SelectItem key={vehicle.id} value={String(vehicle.id)}>
-                                                    <div className="py-0.5">
-                                                        <p>{vehicle.label}</p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {vehicle.asset_type === "trailer" ? "Standalone trailer" : vehicle.vehicle_type_name ?? "Power unit"} - Odo {formatKm(vehicle.current_odometer)}
-                                                            {vehicle.attached_trailer ? ` - Trailer: ${vehicle.attached_trailer.label}` : ""}
-                                                        </p>
-                                                        <p className="text-[11px] text-muted-foreground">
-                                                            {vehicle.asset_type === "trailer"
-                                                                ? `${vehicle.available_position_count ?? 0} positions open`
-                                                                : `Power ${vehicle.power_available_count ?? vehicle.available_position_count ?? 0} open`}
-                                                            {vehicle.attached_trailer ? ` - Trailer ${vehicle.trailer_available_count ?? 0} open` : ""}
-                                                        </p>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                                {destinationUnits.filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0).length === 0 && (
+                                    <option value="" disabled>Select vehicle or attached unit</option>
+                                    {availableDestinationUnits.map((vehicle) => (
+                                        <option key={vehicle.id} value={String(vehicle.id)}>
+                                            {vehicle.label}{vehicle.attached_trailer ? ` | Trailer: ${vehicle.attached_trailer.label}` : ""}
+                                        </option>
+                                    ))}
+                                </select>
+                                {availableDestinationUnits.length === 0 && (
                                     <HelperText>No active vehicle unit currently has an open tyre position.</HelperText>
                                 )}
                             </Field>
@@ -651,6 +665,7 @@ export function TyreMovementFormFields({
                                     ))}
                                 </div>
                                 {loadingPositions && <HelperText>Loading destination positions...</HelperText>}
+                                {positionLoadError && <WarningText>Destination positions could not be loaded. Choose the unit again or refresh the page.</WarningText>}
                                 {!loadingPositions && selectedUnitId && positionOptions.length === 0 && (
                                     <WarningText>No tyre positions are configured for this destination.</WarningText>
                                 )}
