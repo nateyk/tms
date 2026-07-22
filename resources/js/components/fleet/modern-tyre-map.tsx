@@ -854,10 +854,29 @@ function TyreActionMenu({
         onClose();
     };
 
-    const copyTyreCode = () => {
-        if (menu.slot.tyre_code) {
-            void navigator.clipboard?.writeText(menu.slot.tyre_code);
+    const copyTyreCode = async () => {
+        const tyreCode = menu.slot.tyre_code;
+        if (!tyreCode) {
+            return;
         }
+
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(tyreCode);
+                return;
+            } catch {
+                // Older or restricted browser contexts can still use the legacy copy path.
+            }
+        }
+
+        const input = document.createElement("textarea");
+        input.value = tyreCode;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
     };
 
     return (
@@ -950,7 +969,7 @@ function TyreActionMenu({
                         <button
                             type="button"
                             className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
-                            onClick={() => run(copyTyreCode)}
+                            onClick={() => run(() => { void copyTyreCode(); })}
                         >
                             <Clipboard className="h-4 w-4" />
                             Copy Tyre Code

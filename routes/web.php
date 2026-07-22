@@ -16,6 +16,7 @@ use App\Http\Controllers\TyreScanController;
 use App\Http\Controllers\Tyres\TyreBaselineController;
 use App\Http\Controllers\Tyres\TyreConditionAuditController;
 use App\Http\Controllers\Tyres\TyreController;
+use App\Http\Controllers\Tyres\TyreDisposalController;
 use App\Http\Controllers\Tyres\TyreMovementController;
 use App\Http\Controllers\Tyres\TyreReadingMonitoringController;
 use App\Http\Controllers\VoucherPdfController;
@@ -87,10 +88,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/movements/{movement}/complete', [TyreMovementController::class, 'complete'])->name('movements.complete');
         Route::post('/movements/{movement}/cancel', [TyreMovementController::class, 'cancel'])->name('movements.cancel');
 
-        Route::get('/disposals', fn () => Inertia::render('modules/placeholder', [
-            'title' => 'Tyre Disposals',
-            'description' => 'Coming in next phase.',
-        ]))->name('disposals.index');
+        Route::get('/disposals', [TyreDisposalController::class, 'index'])->name('disposals.index');
+        Route::post('/disposals', [TyreDisposalController::class, 'store'])->name('disposals.store');
+        Route::get('/disposals/{disposal}', [TyreDisposalController::class, 'show'])->name('disposals.show');
+        Route::post('/disposals/{disposal}/submit', [TyreDisposalController::class, 'submit'])->name('disposals.submit');
+        Route::post('/disposals/{disposal}/check', [TyreDisposalController::class, 'check'])->name('disposals.check');
+        Route::post('/disposals/{disposal}/approve', [TyreDisposalController::class, 'approve'])->name('disposals.approve');
+        Route::post('/disposals/{disposal}/complete', [TyreDisposalController::class, 'complete'])->name('disposals.complete');
+        Route::post('/disposals/{disposal}/void', [TyreDisposalController::class, 'void'])->name('disposals.void');
 
         Route::get('/{tyre}/condition-audits/create', [TyreConditionAuditController::class, 'create'])
             ->name('condition-audits.create');

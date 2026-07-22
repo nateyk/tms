@@ -59,15 +59,19 @@ export function TyreMovementDialog({
             return;
         }
 
-        setData("tyre_id", initialValues?.tyre_id ?? tyreId ?? null);
-        setData("movement_date", initialValues?.movement_date ?? new Date().toISOString().split("T")[0]);
-        setData("to_location_type", initialValues?.to_location_type ?? "");
-        setData("to_location_id", initialValues?.to_location_id ?? null);
-        setData("to_position_code", initialValues?.to_position_code ?? "");
-        setData("from_odometer", initialValues?.from_odometer ?? null);
-        setData("to_odometer", initialValues?.to_odometer ?? null);
-        setData("reason", initialValues?.reason ?? "");
-        setData("notes", initialValues?.notes ?? "");
+        // Inertia's key/value setter is asynchronous. A single update keeps the
+        // prefilled tyre and destination together when the map opens this dialog.
+        setData({
+            tyre_id: initialValues?.tyre_id ?? tyreId ?? null,
+            movement_date: initialValues?.movement_date ?? new Date().toISOString().split("T")[0],
+            to_location_type: initialValues?.to_location_type ?? "",
+            to_location_id: initialValues?.to_location_id ?? null,
+            to_position_code: initialValues?.to_position_code ?? "",
+            from_odometer: initialValues?.from_odometer ?? null,
+            to_odometer: initialValues?.to_odometer ?? null,
+            reason: initialValues?.reason ?? "",
+            notes: initialValues?.notes ?? "",
+        });
     }, [initialSignature, open]);
 
     useEffect(() => {

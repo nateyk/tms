@@ -69,7 +69,7 @@ class VehicleMapDataService
             ->where('current_location_type', TyreLocationType::PowerVehicle->value)
             ->where('current_location_id', $spareOwner->id)
             ->whereIn('current_position_code', array_map(fn (string $code): string => 'SPARE-'.$code, $spareCodes))
-            ->with('brand')
+            ->with(['brand', 'baseline'])
             ->orderBy('current_position_code')
             ->get()
             ->keyBy(fn (Tyre $tyre): string => str_replace('SPARE-', '', (string) $tyre->current_position_code));
@@ -122,7 +122,7 @@ class VehicleMapDataService
                 'view_tyre_url' => $tyre ? $this->workflow->viewTyreUrl($tyre->id) : null,
                 'create_movement_url' => $this->movementUrl($vehicle, $position['code'], $tyre),
                 'create_baseline_url' => $tyre ? route('tyres.baselines.create', ['tyre_id' => $tyre->id]) : null,
-                'view_baseline_url' => $tyre?->baseline?->id ? route('tyres.baselines.show', $tyre->baseline->id) : null,
+                'view_baseline_url' => $tyre?->baseline?->id ? route('tyres.baselines.edit', $tyre->baseline->id) : null,
                 'record_audit_url' => $tyre ? route('tyres.condition-audits.create', $tyre->id) : null,
                 'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
                 'baseline_required' => $tyre ? $tyre->baseline === null : false,
@@ -153,6 +153,7 @@ class VehicleMapDataService
                 'view_tyre_url' => $spare['tyre_id'] ? $this->workflow->viewTyreUrl($spare['tyre_id']) : null,
                 'create_movement_url' => $this->movementUrl($vehicle, $spare['position'], $spareTyre),
                 'create_baseline_url' => $spare['tyre_id'] ? route('tyres.baselines.create', ['tyre_id' => $spare['tyre_id']]) : null,
+                'view_baseline_url' => $spareTyre?->baseline?->id ? route('tyres.baselines.edit', $spareTyre->baseline->id) : null,
                 'record_audit_url' => $spare['tyre_id'] ? route('tyres.condition-audits.create', $spare['tyre_id']) : null,
                 'record_km_url' => route('fleet.vehicles.odometer', $vehicle->id),
                 'baseline_required' => false,

@@ -17,6 +17,7 @@ class TyreDisposalService
     public function __construct(
         protected TyreAssignmentService $assignmentService,
         protected VoucherNumberGenerator $numberGenerator,
+        protected TyreUsageTrackingService $usageTrackingService,
     ) {}
 
     public function complete(TyreDisposal $disposal, int $approvedBy): TyreDisposal
@@ -62,6 +63,15 @@ class TyreDisposalService
             throw new TyreBusinessException('Tyre is already disposed.');
         }
 
+        if (TyreDisposal::query()
+            ->where('tyre_id', $tyre->id)
+            ->whereIn('status', [VoucherStatus::Draft, VoucherStatus::Submitted, VoucherStatus::Checked, VoucherStatus::Approved])
+            ->exists()) {
+            throw new TyreBusinessException('This tyre already has an active disposal voucher.');
+        }
+
+        $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+
         return TyreDisposal::query()->create(array_merge($data, [
             'disposal_no' => $this->numberGenerator->generate('DSP', new TyreDisposal, 'disposal_no'),
             'status' => VoucherStatus::Draft,
@@ -69,6 +79,7 @@ class TyreDisposalService
             'last_location_type' => $tyre->current_location_type,
             'last_location_id' => $tyre->current_location_id,
             'last_position_code' => $tyre->current_position_code,
+            'final_km_used' => $usage['total_used_km'],
         ]));
     }
 }
