@@ -275,7 +275,7 @@ export default function ReadingMonitoringVehicle({
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[980px]">
+                            <table className="w-full min-w-[1080px]">
                                 <thead>
                                     <tr className="border-b bg-muted/40">
                                         <ReportHead>Tyre</ReportHead>
@@ -284,6 +284,7 @@ export default function ReadingMonitoringVehicle({
                                         <ReportHead>Used KM</ReportHead>
                                         <ReportHead>Calculated Remaining</ReportHead>
                                         <ReportHead>Latest Audit</ReportHead>
+                                        <ReportHead>Audit Difference</ReportHead>
                                         <ReportHead>Effective Remaining</ReportHead>
                                         <ReportHead>Status</ReportHead>
                                         <ReportHead align="right">Actions</ReportHead>
@@ -310,6 +311,18 @@ export default function ReadingMonitoringVehicle({
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 {tyre.latest_audit ? <div><div className="flex items-center gap-2"><span>{formatPercent(tyre.latest_audited_remaining_percentage)}</span><span className="h-2 w-2 rounded-full bg-blue-600" /></div><div className="text-[11px] text-muted-foreground">{tyre.latest_audit.audit_date || "Audit date unavailable"}</div></div> : <div><div>—</div><div className="text-[11px] text-muted-foreground">No audit</div></div>}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                {tyre.latest_audit ? (
+                                                    <div>
+                                                        <div className={cn("font-medium", getVarianceClass(tyre.audit_variance_percentage))}>
+                                                            {formatVariance(tyre.audit_variance_percentage)}
+                                                        </div>
+                                                        <div className="text-[11px] text-muted-foreground">audit vs system</div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-muted-foreground">No audit</div>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3 text-sm">
                                                 <div className="min-w-28">
@@ -712,6 +725,22 @@ function HealthBar({ value, color, large = false }: { value: number | null | und
 
 function formatPercent(value: number | null | undefined): string {
     return typeof value === "number" ? `${value.toFixed(1)}%` : "-";
+}
+
+function formatVariance(value: number | null | undefined): string {
+    if (typeof value !== "number") {
+        return "-";
+    }
+
+    return `${value > 0 ? "+" : ""}${value.toFixed(1)} pp`;
+}
+
+function getVarianceClass(value: number | null | undefined): string {
+    if (typeof value !== "number" || value === 0) {
+        return "text-muted-foreground";
+    }
+
+    return value > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400";
 }
 
 function formatKm(value: number | null | undefined): string {

@@ -108,5 +108,16 @@ class TyreConditionAuditTest extends TestCase
             'position_code' => 'A',
             'audit_odometer' => 1200,
         ]);
+
+        $this->actingAs($this->user)
+            ->get(route('tyres.reading-monitoring.show', $vehicle))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tyres', fn ($tyres) => collect($tyres)->contains(
+                    fn (array $reportedTyre) => $reportedTyre['id'] === $tyre->id
+                        && (float) $reportedTyre['latest_audited_remaining_percentage'] === 90.0
+                        && (float) $reportedTyre['audit_variance_percentage'] === -3.8
+                ))
+            );
     }
 }
