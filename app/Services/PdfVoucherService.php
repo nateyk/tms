@@ -14,7 +14,7 @@ class PdfVoucherService
 {
     public function movement(TyreMovement $movement): Response
     {
-        $movement->load(['tyre.brand', 'tyre.size', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
+        $movement->load(['tyre.brand', 'tyre.size', 'preparedByUser', 'checkedByUser', 'approvedByUser', 'voidedByUser']);
 
         return $this->download(
             'pdf.vouchers.movement',
