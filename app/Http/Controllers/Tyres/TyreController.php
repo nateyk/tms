@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tyres\StoreTyreRequest;
 use App\Http\Requests\Tyres\UpdateTyreRequest;
 use App\Models\Tyre;
+use App\Models\TyreAssignment;
 use App\Models\TyreBrand;
 use App\Models\TyreSize;
 use App\Services\TyreQrCodeService;
@@ -76,6 +77,13 @@ class TyreController extends Controller
             'size',
             'movements' => fn ($q) => $q->latest()->limit(10),
             'activeAssignment.vehicle',
+            'assignments' => fn ($q) => $q
+                ->with([
+                    'vehicle:id,vehicle_code,plate_number,asset_type',
+                    'movement:id,movement_no',
+                ])
+                ->orderByDesc('installed_date')
+                ->orderByDesc('id'),
             'baseline',
             'inspections' => fn ($q) => $q->with(['auditedBy', 'vehicle'])->latest('inspection_date')->latest('created_at')->limit(10),
         ]);
@@ -232,6 +240,39 @@ class TyreController extends Controller
             ]),
             'recent_maintenance' => [],
             'usage_summary' => $usage,
+            'placement_history' => $tyre->assignments->map(function (TyreAssignment $assignment) use ($usage): array {
+                $isActive = $assignment->status->value === 'active';
+                $isSpare = in_array(strtoupper($assignment->position_code), ['W', 'X'], true);
+                $currentVehicleOdometer = $isActive ? $usage['current_vehicle_odometer'] : null;
+                $travelledKm = $assignment->km_used;
+
+                if ($isActive && ! $isSpare && $assignment->installed_odometer !== null && $currentVehicleOdometer !== null) {
+                    $travelledKm = max(0, $currentVehicleOdometer - $assignment->installed_odometer);
+                }
+
+                if ($isActive && $isSpare) {
+                    $travelledKm = 0;
+                }
+
+                return [
+                    'id' => $assignment->id,
+                    'vehicle_label' => $assignment->vehicle?->displayCodeWithPlate() ?? 'Vehicle no longer available',
+                    'asset_type' => $assignment->asset_type->label(),
+                    'position_code' => $assignment->positionDisplay(),
+                    'position_type' => $isSpare ? 'Spare' : 'Running',
+                    'installed_date' => $assignment->installed_date?->format('Y-m-d'),
+                    'removed_date' => $assignment->removed_date?->format('Y-m-d'),
+                    'installed_odometer' => $assignment->installed_odometer,
+                    'removed_odometer' => $assignment->removed_odometer,
+                    'current_vehicle_odometer' => $currentVehicleOdometer,
+                    'travelled_km' => $travelledKm,
+                    'is_active' => $isActive,
+                    'status_label' => $isActive ? 'Current' : 'Removed',
+                    'km_note' => $isSpare ? 'Spare position - tyre KM does not accumulate.' : null,
+                    'movement_no' => $assignment->movement?->movement_no,
+                    'movement_url' => $assignment->movement_id ? route('tyres.movements.show', $assignment->movement_id) : null,
+                ];
+            })->values(),
             'baseline' => $baseline ? [
                 'id' => $baseline->id,
                 'baseline_percentage' => (float) $baseline->baseline_percentage,

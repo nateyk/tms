@@ -603,6 +603,64 @@ class TyreUsageTrackingTest extends TestCase
         $this->assertFalse($history->first()['is_active']);
     }
 
+    public function test_tyre_detail_exposes_complete_placement_history_with_active_km()
+    {
+        $tyre = $this->createAvailableTyre();
+        $firstVehicle = Vehicle::query()->where('asset_type', 'power_vehicle')->firstOrFail();
+        $currentVehicle = Vehicle::query()
+            ->where('asset_type', 'power_vehicle')
+            ->whereKeyNot($firstVehicle->id)
+            ->firstOrFail();
+        $currentVehicle->update(['odometer' => 18400]);
+
+        TyreAssignment::query()->create([
+            'tyre_id' => $tyre->id,
+            'asset_type' => 'power_vehicle',
+            'asset_id' => $firstVehicle->id,
+            'position_code' => 'D',
+            'installed_odometer' => 10000,
+            'removed_odometer' => 12500,
+            'km_used' => 2500,
+            'installed_date' => now()->subDays(12)->toDateString(),
+            'removed_date' => now()->subDays(4)->toDateString(),
+            'status' => 'removed',
+        ]);
+
+        TyreAssignment::query()->create([
+            'tyre_id' => $tyre->id,
+            'asset_type' => 'power_vehicle',
+            'asset_id' => $currentVehicle->id,
+            'position_code' => 'F',
+            'installed_odometer' => 13000,
+            'installed_date' => now()->subDays(3)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $tyre->update([
+            'current_location_type' => 'power_vehicle',
+            'current_location_id' => $currentVehicle->id,
+            'current_position_code' => 'F',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('tyres.show', $tyre))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('tyres/show')
+                ->has('tyre.placement_history', 2)
+                ->where('tyre.placement_history.0.position_code', 'F')
+                ->where('tyre.placement_history.0.installed_odometer', 13000)
+                ->where('tyre.placement_history.0.current_vehicle_odometer', 18400)
+                ->where('tyre.placement_history.0.travelled_km', 5400)
+                ->where('tyre.placement_history.0.is_active', true)
+                ->where('tyre.placement_history.1.position_code', 'D')
+                ->where('tyre.placement_history.1.removed_odometer', 12500)
+                ->where('tyre.placement_history.1.travelled_km', 2500)
+                ->where('tyre.placement_history.1.is_active', false)
+            );
+    }
+
     private function createAvailableTyre(): Tyre
     {
         $store = Store::query()->firstOrFail();

@@ -77,6 +77,24 @@ type TyreDetail = {
         problem_type: string;
         status: string;
     }[];
+    placement_history: {
+        id: number;
+        vehicle_label: string;
+        asset_type: string;
+        position_code: string;
+        position_type: string;
+        installed_date: string | null;
+        removed_date: string | null;
+        installed_odometer: number | null;
+        removed_odometer: number | null;
+        current_vehicle_odometer: number | null;
+        travelled_km: number | null;
+        is_active: boolean;
+        status_label: string;
+        km_note: string | null;
+        movement_no: string | null;
+        movement_url: string | null;
+    }[];
     usage_summary: {
         has_baseline: boolean;
         baseline_percentage: number | null;
@@ -348,6 +366,63 @@ export default function TyresShow({ tyre, can }: { tyre: TyreDetail; can: Permis
                                     )}
                                 </section>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="border-b bg-muted/20 pb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2 text-lg"><History className="h-5 w-5" />Placement history</CardTitle>
+                                    <p className="mt-1 text-sm text-muted-foreground">Every vehicle position this tyre has occupied and the KM recorded for that placement.</p>
+                                </div>
+                                <Badge variant="outline">{tyre.placement_history.length} placements</Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {tyre.placement_history.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <Table className="min-w-[920px]">
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Mounted</TableHead>
+                                                <TableHead>Vehicle / Position</TableHead>
+                                                <TableHead>Mounted KM</TableHead>
+                                                <TableHead>Removed / Current KM</TableHead>
+                                                <TableHead>Tyre KM</TableHead>
+                                                <TableHead>Movement</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {tyre.placement_history.map((placement) => (
+                                                <TableRow key={placement.id} className={placement.is_active ? "bg-primary/5" : undefined}>
+                                                    <TableCell>
+                                                        <div>{placement.installed_date || "-"}</div>
+                                                        {!placement.is_active && <div className="text-xs text-muted-foreground">Removed {placement.removed_date || "-"}</div>}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">{placement.vehicle_label}</div>
+                                                        <div className="text-xs text-muted-foreground">{placement.asset_type} - Position {placement.position_code} ({placement.position_type})</div>
+                                                    </TableCell>
+                                                    <TableCell>{formatKm(placement.installed_odometer)}</TableCell>
+                                                    <TableCell>{formatKm(placement.is_active ? placement.current_vehicle_odometer : placement.removed_odometer)}</TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">{formatKm(placement.travelled_km)}</div>
+                                                        {placement.km_note && <div className="text-xs text-muted-foreground">{placement.km_note}</div>}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {placement.movement_url && placement.movement_no ? (
+                                                            <Link href={placement.movement_url} className="text-sm font-medium text-primary hover:underline">{placement.movement_no}</Link>
+                                                        ) : "-"}
+                                                    </TableCell>
+                                                    <TableCell><Badge variant={placement.is_active ? "default" : "outline"}>{placement.status_label}</Badge></TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : <div className="p-6 text-sm text-muted-foreground">This tyre has not yet been mounted on a vehicle.</div>}
                         </CardContent>
                     </Card>
 
