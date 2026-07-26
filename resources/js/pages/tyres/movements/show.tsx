@@ -34,6 +34,9 @@ type MovementDetail = {
     checked_at: string | null;
     approved_at: string | null;
     completed_at: string | null;
+    voided_by: string | null;
+    voided_at: string | null;
+    void_reason: string | null;
     pdf_url: string;
     requires_source_odometer: boolean;
     requires_destination_odometer: boolean;
@@ -63,6 +66,7 @@ export default function MovementsShow({
     const workflowCan = { ...can, complete: false };
     const hasWorkflowActions =
         Boolean(movement.pdf_url) || can.submit || can.check || can.approve || can.reject || can.cancel;
+    const isLocked = ["submitted", "checked", "approved", "completed", "rejected", "cancelled"].includes(movement.status);
 
     return (
         <AuthenticatedLayout header={`Movement ${movement.display_number}`}>
@@ -198,6 +202,12 @@ export default function MovementsShow({
                             {movement.completed_at && (
                                 <TimelineItem label="Completed" value={movement.completed_at} />
                             )}
+                            {movement.voided_at && (
+                                <TimelineItem
+                                    label={`Voided by ${movement.voided_by ?? "unknown"}`}
+                                    value={movement.voided_at}
+                                />
+                            )}
                             {!movement.submitted_at &&
                                 !movement.checked_at &&
                                 !movement.approved_at &&
@@ -205,6 +215,21 @@ export default function MovementsShow({
                                     <TimelineItem label="Workflow" value="Draft not submitted" />
                                 )}
                         </dl>
+
+                        {movement.void_reason && (
+                            <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">
+                                <p className="font-medium text-destructive">Void reason</p>
+                                <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{movement.void_reason}</p>
+                            </div>
+                        )}
+
+                        {isLocked && movement.status !== "draft" && (
+                            <p className="text-sm text-muted-foreground">
+                                {movement.status === "completed"
+                                    ? "Completed voucher. Create a new reversing movement to correct a completed transfer."
+                                    : "Voucher details are locked after submission to protect the approval record."}
+                            </p>
+                        )}
 
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
                             <Button variant="ghost" asChild>

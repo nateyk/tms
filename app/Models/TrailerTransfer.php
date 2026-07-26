@@ -26,7 +26,13 @@ class TrailerTransfer extends Model
         'prepared_by',
         'checked_by',
         'approved_by',
+        'submitted_at',
+        'checked_at',
+        'approved_at',
         'completed_at',
+        'voided_by',
+        'voided_at',
+        'void_reason',
         'notes',
     ];
 
@@ -36,6 +42,10 @@ class TrailerTransfer extends Model
             'status' => VoucherStatus::class,
             'transfer_date' => 'date',
             'completed_at' => 'datetime',
+            'submitted_at' => 'datetime',
+            'checked_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'voided_at' => 'datetime',
             'from_odometer' => 'integer',
             'to_odometer' => 'integer',
         ];
@@ -79,6 +89,11 @@ class TrailerTransfer extends Model
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function voidedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
     }
 
     public function displayNumber(): string

@@ -15,6 +15,7 @@
         .document {
             border: 1px solid #d7dce2;
             padding: 18px 20px 16px;
+            position: relative;
         }
         .header {
             border-bottom: 3px solid #b45309;
@@ -145,9 +146,38 @@
             padding-top: 8px;
             text-align: center;
         }
+        .voucher-watermark {
+            color: #64748b;
+            font-size: 56px;
+            font-weight: bold;
+            left: 8%;
+            letter-spacing: 4px;
+            opacity: .12;
+            position: fixed;
+            text-align: center;
+            top: 42%;
+            transform: rotate(-28deg);
+            width: 84%;
+        }
+        .voucher-watermark.status-void { color: #b91c1c; opacity: .18; }
+        .voucher-watermark.status-completed { color: #15803d; opacity: .14; }
+        .voucher-watermark.status-approved { color: #1d4ed8; opacity: .13; }
     </style>
 </head>
 <body>
+    @php
+        $watermark = trim($__env->yieldContent('voucher_status'));
+        $watermarkLabel = $watermark === 'Voided' ? 'VOID' : strtoupper($watermark);
+        $watermarkClass = match ($watermarkLabel) {
+            'VOID' => 'status-void',
+            'COMPLETED' => 'status-completed',
+            'APPROVED' => 'status-approved',
+            default => '',
+        };
+    @endphp
+    @if($watermarkLabel !== '')
+        <div class="voucher-watermark {{ $watermarkClass }}">{{ $watermarkLabel }}</div>
+    @endif
     <div class="document">
         <div class="header">
             <table class="header-table">

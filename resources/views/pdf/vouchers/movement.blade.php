@@ -2,6 +2,7 @@
 
 @section('title', $movement->movement_no)
 @section('document_title', 'Tyre Movement Voucher')
+@section('voucher_status', $movement->status->label())
 
 @section('prepared_by', $movement->preparedByUser?->name ?: '-')
 @section('checked_by', $movement->checkedByUser?->name ?: '-')
@@ -62,5 +63,9 @@
 
 @if($movement->notes)
     <div class="notes-box"><span class="label">Notes:</span> {{ $movement->notes }}</div>
+@endif
+
+@if($movement->void_reason)
+    <div class="notes-box"><span class="label">Void reason:</span> {{ $movement->void_reason }}</div>
 @endif
 @endsection

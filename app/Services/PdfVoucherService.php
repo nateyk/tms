@@ -25,7 +25,7 @@ class PdfVoucherService
 
     public function trailerTransfer(TrailerTransfer $transfer): Response
     {
-        $transfer->load(['trailer', 'fromPowerVehicle', 'toPowerVehicle', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
+        $transfer->load(['trailer', 'fromPowerVehicle', 'toPowerVehicle', 'preparedByUser', 'checkedByUser', 'approvedByUser', 'voidedByUser']);
 
         return $this->download(
             'pdf.vouchers.trailer-transfer',
@@ -36,7 +36,7 @@ class PdfVoucherService
 
     public function disposal(TyreDisposal $disposal): Response
     {
-        $disposal->load(['tyre', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
+        $disposal->load(['tyre', 'preparedByUser', 'checkedByUser', 'approvedByUser', 'voidedByUser']);
 
         return $this->download(
             'pdf.vouchers.disposal',

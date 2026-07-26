@@ -2,6 +2,7 @@
 
 @section('title', $transfer->transfer_no)
 @section('document_title', 'Trailer Transfer Voucher')
+@section('voucher_status', $transfer->status->label())
 
 @section('prepared_by', $transfer->preparedByUser?->name)
 @section('checked_by', $transfer->checkedByUser?->name ?? '—')
@@ -25,4 +26,5 @@
 </table>
 
 @if($transfer->reason)<p><strong>Reason:</strong> {{ $transfer->reason }}</p>@endif
+@if($transfer->void_reason)<p><strong>Void reason:</strong> {{ $transfer->void_reason }}</p>@endif
 @endsection

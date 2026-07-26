@@ -25,7 +25,9 @@ class TyreMovementPolicy
 
     public function update(User $user, TyreMovement $tyreMovement): bool
     {
-        return $user->can('movement.create') && $tyreMovement->status === VoucherStatus::Draft;
+        return $user->can('movement.create')
+            && $tyreMovement->status === VoucherStatus::Draft
+            && $user->id === $tyreMovement->prepared_by;
     }
 
     public function delete(User $user, TyreMovement $tyreMovement): bool
@@ -36,19 +38,23 @@ class TyreMovementPolicy
     public function submit(User $user, TyreMovement $tyreMovement): bool
     {
         return $user->can('movement.create')
-            && $tyreMovement->status === VoucherStatus::Draft;
+            && $tyreMovement->status === VoucherStatus::Draft
+            && $user->id === $tyreMovement->prepared_by;
     }
 
     public function check(User $user, TyreMovement $tyreMovement): bool
     {
         return $user->can('movement.check')
-            && $tyreMovement->status === VoucherStatus::Submitted;
+            && $tyreMovement->status === VoucherStatus::Submitted
+            && $user->id !== $tyreMovement->prepared_by;
     }
 
     public function approve(User $user, TyreMovement $tyreMovement): bool
     {
         return $user->can('movement.approve')
-            && in_array($tyreMovement->status, [VoucherStatus::Submitted, VoucherStatus::Checked], true);
+            && $tyreMovement->status === VoucherStatus::Checked
+            && $user->id !== $tyreMovement->prepared_by
+            && $user->id !== $tyreMovement->checked_by;
     }
 
     public function reject(User $user, TyreMovement $tyreMovement): bool
@@ -69,12 +75,10 @@ class TyreMovementPolicy
             return false;
         }
 
-        if ($tyreMovement->status === VoucherStatus::Draft) {
-            return $user->can('movement.create')
-                || $user->can('movement.reject')
-                || $user->can('movement.approve');
-        }
-
-        return $user->can('movement.reject') || $user->can('movement.approve');
+        return ($tyreMovement->status === VoucherStatus::Draft
+                && $user->id === $tyreMovement->prepared_by
+                && $user->can('movement.create'))
+            || $user->can('movement.reject')
+            || $user->can('movement.approve');
     }
 }

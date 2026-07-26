@@ -6,6 +6,7 @@ use App\Enums\VoucherStatus;
 use App\Exceptions\TyreBusinessException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tyres\StoreTyreDisposalRequest;
+use App\Http\Requests\Tyres\VoidVoucherRequest;
 use App\Models\TyreDisposal;
 use App\Services\ApprovalService;
 use App\Services\TyreDisposalService;
@@ -57,7 +58,7 @@ class TyreDisposalController extends Controller
     public function show(TyreDisposal $disposal): Response
     {
         $this->authorizeAnyDisposalAction();
-        $disposal->load(['tyre.brand', 'tyre.size', 'preparedByUser:id,name']);
+        $disposal->load(['tyre.brand', 'tyre.size', 'preparedByUser:id,name', 'voidedByUser:id,name']);
 
         $status = $disposal->status instanceof VoucherStatus
             ? $disposal->status
@@ -76,8 +77,12 @@ class TyreDisposalController extends Controller
             ],
             'actions' => [
                 'can_submit' => $status === VoucherStatus::Draft && ($user?->can('disposal.create') ?? false),
-                'can_check' => $status === VoucherStatus::Submitted && ($user?->can('disposal.check') ?? false),
-                'can_approve' => in_array($status, [VoucherStatus::Submitted, VoucherStatus::Checked], true) && ($user?->can('disposal.approve') ?? false),
+                'can_check' => $status === VoucherStatus::Submitted
+                    && $user?->id !== $disposal->prepared_by
+                    && ($user?->can('disposal.check') ?? false),
+                'can_approve' => $status === VoucherStatus::Checked
+                    && ! in_array($user?->id, [$disposal->prepared_by, $disposal->checked_by], true)
+                    && ($user?->can('disposal.approve') ?? false),
                 'can_complete' => $status === VoucherStatus::Approved && ($user?->can('disposal.approve') ?? false),
                 'can_void' => ! $status->isTerminal() && (($user?->id === $disposal->prepared_by && $user?->can('disposal.create')) || ($user?->can('disposal.approve') ?? false)),
             ],
@@ -104,7 +109,7 @@ class TyreDisposalController extends Controller
         return $this->transition($disposal, 'disposal.approve', fn (): mixed => $this->approvalService->completeDisposal($disposal), 'Tyre disposal completed.');
     }
 
-    public function void(TyreDisposal $disposal): RedirectResponse
+    public function void(VoidVoucherRequest $request, TyreDisposal $disposal): RedirectResponse
     {
         $status = $disposal->status instanceof VoucherStatus ? $disposal->status : VoucherStatus::from((string) $disposal->status);
         $canVoidOwnDraft = auth()->id() === $disposal->prepared_by && auth()->user()?->can('disposal.create');
@@ -112,7 +117,7 @@ class TyreDisposalController extends Controller
         abort_unless($canVoidOwnDraft || auth()->user()?->can('disposal.approve'), 403);
 
         try {
-            $this->approvalService->cancel($disposal);
+            $this->approvalService->cancel($disposal, $request->validated('reason'));
         } catch (TyreBusinessException $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -156,6 +161,9 @@ class TyreDisposalController extends Controller
             'status' => $status->value,
             'status_label' => $status->label(),
             'prepared_by' => $disposal->preparedByUser?->name,
+            'voided_by' => $disposal->voidedByUser?->name,
+            'voided_at' => $disposal->voided_at?->toDateTimeString(),
+            'void_reason' => $disposal->void_reason,
             'created_at' => $disposal->created_at?->toDateString(),
             'view_url' => route('tyres.disposals.show', $disposal),
         ];

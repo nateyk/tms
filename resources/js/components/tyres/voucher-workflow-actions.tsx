@@ -34,6 +34,7 @@ type VoucherWorkflowActionsProps = {
 
 export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: VoucherWorkflowActionsProps) {
     const [rejectReason, setRejectReason] = useState("");
+    const [voidReason, setVoidReason] = useState("");
     const [processing, setProcessing] = useState(false);
 
     const postAction = (action: string, payload: Record<string, string> = {}) => {
@@ -201,18 +202,34 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Void voucher?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This stops the voucher workflow. No tyre location changes will be applied.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Keep voucher</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => postAction("cancel")}>
-                                Void voucher
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                postAction("cancel", { reason: voidReason });
+                            }}
+                        >
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Void voucher</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This ends the voucher workflow. A voided voucher is retained for audit and cannot be reopened.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="space-y-2 py-4">
+                                <Label htmlFor="void_reason">Reason</Label>
+                                <Textarea
+                                    id="void_reason"
+                                    required
+                                    value={voidReason}
+                                    onChange={(event) => setVoidReason(event.target.value)}
+                                />
+                            </div>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel type="button">Keep voucher</AlertDialogCancel>
+                                <AlertDialogAction type="submit" disabled={!voidReason.trim() || processing}>
+                                    Void voucher
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </form>
                     </AlertDialogContent>
                 </AlertDialog>
             )}

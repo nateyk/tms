@@ -15,6 +15,7 @@ class ApprovalService
     public function submit(Model $voucher): Model
     {
         $this->assertStatus($voucher, VoucherStatus::Draft);
+        $this->assertPreparedByCurrentUser($voucher);
 
         $voucher->update([
             'status' => VoucherStatus::Submitted,
@@ -27,10 +28,15 @@ class ApprovalService
     public function check(Model $voucher): Model
     {
         $this->assertStatus($voucher, VoucherStatus::Submitted);
+        $actorId = $this->actorId();
+
+        if ((int) $voucher->prepared_by === $actorId) {
+            throw new TyreBusinessException('The voucher preparer cannot check their own voucher.');
+        }
 
         $voucher->update([
             'status' => VoucherStatus::Checked,
-            'checked_by' => Auth::id(),
+            'checked_by' => $actorId,
             'checked_at' => now(),
         ]);
 
@@ -39,26 +45,18 @@ class ApprovalService
 
     public function approve(Model $voucher): Model
     {
-        $current = $voucher->status;
+        $this->assertStatus($voucher, VoucherStatus::Checked);
+        $actorId = $this->actorId();
 
-        if (! in_array($current, [VoucherStatus::Submitted, VoucherStatus::Checked], true)) {
-            $currentValue = $current instanceof VoucherStatus ? $current->value : (string) $current;
-
-            throw new TyreBusinessException(
-                "Invalid status transition. Expected [submitted] or [checked], got [{$currentValue}]."
-            );
+        if (in_array($actorId, [(int) $voucher->prepared_by, (int) $voucher->checked_by], true)) {
+            throw new TyreBusinessException('The approver must be different from both the preparer and checker.');
         }
 
         $update = [
             'status' => VoucherStatus::Approved,
-            'approved_by' => Auth::id(),
+            'approved_by' => $actorId,
             'approved_at' => now(),
         ];
-
-        if ($current === VoucherStatus::Submitted) {
-            $update['checked_by'] = Auth::id();
-            $update['checked_at'] = now();
-        }
 
         $voucher->update($update);
 
@@ -84,15 +82,23 @@ class ApprovalService
         return $voucher->fresh();
     }
 
-    public function cancel(Model $voucher): Model
+    public function cancel(Model $voucher, ?string $reason = null): Model
     {
         if ($voucher->status->isTerminal()) {
             throw new TyreBusinessException('Cannot void a terminal voucher.');
         }
 
-        $voucher->update([
+        $update = [
             'status' => VoucherStatus::Cancelled,
-        ]);
+        ];
+
+        $update += [
+            'voided_by' => $this->actorId(),
+            'voided_at' => now(),
+            'void_reason' => $reason,
+        ];
+
+        $voucher->update($update);
 
         return $voucher->fresh();
     }
@@ -126,6 +132,24 @@ class ApprovalService
             throw new TyreBusinessException(
                 "Invalid status transition. Expected [{$expected->value}], got [{$current->value}]."
             );
+        }
+    }
+
+    private function actorId(): int
+    {
+        $actorId = Auth::id();
+
+        if (! $actorId) {
+            throw new TyreBusinessException('An authenticated user is required for voucher workflow actions.');
+        }
+
+        return (int) $actorId;
+    }
+
+    private function assertPreparedByCurrentUser(Model $voucher): void
+    {
+        if ((int) $voucher->prepared_by !== $this->actorId()) {
+            throw new TyreBusinessException('Only the voucher preparer can submit this draft.');
         }
     }
 }

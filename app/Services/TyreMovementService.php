@@ -212,6 +212,14 @@ class TyreMovementService
     public function updateDraft(TyreMovement $movement, array $data, int $updatedBy): TyreMovement
     {
         return DB::transaction(function () use ($movement, $data, $updatedBy) {
+            if ($movement->status !== VoucherStatus::Draft) {
+                throw new TyreBusinessException('Only draft movement vouchers can be edited.');
+            }
+
+            if ((int) $movement->prepared_by !== $updatedBy) {
+                throw new TyreBusinessException('Only the voucher preparer can edit this draft.');
+            }
+
             $movement->update($data);
             $this->syncVoucherOdometers($movement, $updatedBy);
 

@@ -12,6 +12,7 @@ use App\Http\Requests\Tyres\CompleteTyreMovementRequest;
 use App\Http\Requests\Tyres\RejectVoucherRequest;
 use App\Http\Requests\Tyres\StoreTyreMovementRequest;
 use App\Http\Requests\Tyres\UpdateTyreMovementRequest;
+use App\Http\Requests\Tyres\VoidTyreMovementRequest;
 use App\Models\Store;
 use App\Models\Tyre;
 use App\Models\TyreMovement;
@@ -104,6 +105,7 @@ class TyreMovementController extends Controller
             'preparedByUser',
             'checkedByUser',
             'approvedByUser',
+            'voidedByUser',
         ]);
 
         return Inertia::render('tyres/movements/show', [
@@ -229,12 +231,12 @@ class TyreMovementController extends Controller
             ->with('success', 'Movement completed. Tyre location updated.');
     }
 
-    public function cancel(TyreMovement $movement): RedirectResponse
+    public function cancel(VoidTyreMovementRequest $request, TyreMovement $movement): RedirectResponse
     {
         $this->authorize('cancel', $movement);
 
         try {
-            $this->approvalService->cancel($movement);
+            $this->approvalService->cancel($movement, $request->validated('reason'));
         } catch (TyreBusinessException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -398,6 +400,9 @@ class TyreMovementController extends Controller
             'checked_at' => $movement->checked_at?->toDateTimeString(),
             'approved_at' => $movement->approved_at?->toDateTimeString(),
             'completed_at' => $movement->completed_at?->toDateTimeString(),
+            'voided_by' => $movement->voidedByUser?->name,
+            'voided_at' => $movement->voided_at?->toDateTimeString(),
+            'void_reason' => $movement->void_reason,
             'pdf_url' => route('vouchers.movement.pdf', $movement),
             'requires_source_odometer' => $this->requiresMovementOdometer($sourceVehicle, $movement->from_position_code),
             'requires_destination_odometer' => $this->requiresMovementOdometer($destinationVehicle, $movement->to_position_code),

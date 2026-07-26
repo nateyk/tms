@@ -2,6 +2,7 @@
 
 @section('title', $disposal->disposal_no)
 @section('document_title', 'Tyre Disposal Voucher')
+@section('voucher_status', $disposal->status->label())
 
 @section('prepared_by', $disposal->preparedByUser?->name)
 @section('checked_by', $disposal->checkedByUser?->name ?? '—')
@@ -26,4 +27,5 @@
     <tr><th>Scrap Value</th><td>{{ $disposal->estimated_scrap_value }}</td></tr>
     <tr><th>Sold Amount</th><td>{{ $disposal->sold_amount }}</td></tr>
 </table>
+@if($disposal->void_reason)<p><strong>Void reason:</strong> {{ $disposal->void_reason }}</p>@endif
 @endsection

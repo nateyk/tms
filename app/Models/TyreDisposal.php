@@ -30,7 +30,13 @@ class TyreDisposal extends Model
         'prepared_by',
         'checked_by',
         'approved_by',
+        'submitted_at',
+        'checked_at',
+        'approved_at',
         'completed_at',
+        'voided_by',
+        'voided_at',
+        'void_reason',
         'notes',
     ];
 
@@ -41,6 +47,10 @@ class TyreDisposal extends Model
             'disposal_reason' => DisposalReason::class,
             'status' => VoucherStatus::class,
             'completed_at' => 'datetime',
+            'submitted_at' => 'datetime',
+            'checked_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'voided_at' => 'datetime',
             'estimated_scrap_value' => 'decimal:2',
             'sold_amount' => 'decimal:2',
             'final_km_used' => 'integer',
@@ -60,6 +70,21 @@ class TyreDisposal extends Model
     public function preparedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'prepared_by');
+    }
+
+    public function checkedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_by');
+    }
+
+    public function approvedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function voidedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
     }
 
     public function lastPositionDisplay(): string

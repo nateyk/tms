@@ -37,6 +37,9 @@ class TyreMovement extends Model
         'checked_at',
         'approved_at',
         'completed_at',
+        'voided_by',
+        'voided_at',
+        'void_reason',
         'notes',
     ];
 
@@ -52,6 +55,7 @@ class TyreMovement extends Model
             'checked_at' => 'datetime',
             'approved_at' => 'datetime',
             'completed_at' => 'datetime',
+            'voided_at' => 'datetime',
             'from_odometer' => 'integer',
             'to_odometer' => 'integer',
         ];
@@ -80,6 +84,11 @@ class TyreMovement extends Model
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function voidedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
     }
 
     public function isCompleted(): bool
