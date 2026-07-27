@@ -37,7 +37,13 @@ class FleetAuditAdditionsSeeder extends Seeder
                     $brand = TyreBrand::query()->firstOrCreate(['name' => $brandName], ['code' => strtoupper(substr($brandName, 0, 3)), 'status' => 'active']);
                     $locationType = $isPower ? TyreLocationType::PowerVehicle : TyreLocationType::Trailer;
                     $assignmentType = $isPower ? AssignmentAssetType::PowerVehicle : AssignmentAssetType::Trailer;
-                    $tyre = Tyre::query()->firstOrCreate(['serial_number' => $serial], ['tyre_code' => $this->nextCode(), 'brand_id' => $brand->id, 'size_id' => $size->id, 'pattern' => 'Imported fleet audit', 'supplier' => 'Existing fleet fitment', 'initial_tread_depth' => 20, 'current_tread_depth' => $percentage / 5, 'source' => TyreSource::ExistingVehicle, 'current_location_type' => $locationType, 'current_location_id' => $owner->id, 'current_position_code' => $pos, 'status' => TyreStatus::Active, 'notes' => $remark ?: 'Imported from audited fleet sheet.']);
+                    $existingTyre = Tyre::query()->where('serial_number', $serial)->first();
+
+                    if ($existingTyre && ($existingTyre->current_location_id !== $owner->id || $existingTyre->current_position_code !== $pos)) {
+                        continue;
+                    }
+
+                    $tyre = $existingTyre ?? Tyre::query()->create(['tyre_code' => $this->nextCode(), 'serial_number' => $serial, 'brand_id' => $brand->id, 'size_id' => $size->id, 'pattern' => 'Imported fleet audit', 'supplier' => 'Existing fleet fitment', 'initial_tread_depth' => 20, 'current_tread_depth' => $percentage / 5, 'source' => TyreSource::ExistingVehicle, 'current_location_type' => $locationType, 'current_location_id' => $owner->id, 'current_position_code' => $pos, 'status' => TyreStatus::Active, 'notes' => $remark ?: 'Imported from audited fleet sheet.']);
                     $tyre->update(['brand_id' => $brand->id, 'size_id' => $size->id, 'current_tread_depth' => $percentage / 5, 'current_location_type' => $locationType, 'current_location_id' => $owner->id, 'current_position_code' => $pos, 'status' => TyreStatus::Active, 'notes' => $remark ?: 'Imported from audited fleet sheet.']);
                     TyreAssignment::query()->updateOrCreate(['asset_type' => $assignmentType, 'asset_id' => $owner->id, 'position_code' => $pos, 'status' => TyreAssignmentStatus::Active], ['tyre_id' => $tyre->id, 'installed_date' => '2026-07-07', 'installed_odometer' => $audit['km'], 'installed_by' => $admin->id, 'notes' => 'Imported audited fitment.']);
                     TyreBaseline::query()->updateOrCreate(['tyre_id' => $tyre->id], ['baseline_location_type' => $locationType, 'baseline_location_id' => $owner->id, 'baseline_position_code' => $pos, 'baseline_odometer' => $audit['km'], 'baseline_percentage' => $percentage, 'expected_life_km' => 80000, 'baseline_date' => '2026-07-07', 'created_by' => $admin->id, 'notes' => 'Opening baseline from audit.']);
