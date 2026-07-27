@@ -164,6 +164,13 @@ class TyreReadingMonitoringController extends Controller
 
     private function serializeTyreForMap(Tyre $tyre, Vehicle $vehicle): array
     {
+        $sourceVehicle = $vehicle;
+        $attachedTrailer = $vehicle->attachedTrailer();
+
+        if ($attachedTrailer instanceof Vehicle && $tyre->current_location_id === $attachedTrailer->id) {
+            $sourceVehicle = $attachedTrailer;
+        }
+
         $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
         $latestInspection = $tyre->inspections->first();
 
@@ -240,9 +247,9 @@ class TyreReadingMonitoringController extends Controller
             'record_audit_url' => route('tyres.condition-audits.create', $tyre->id),
             'create_movement_url' => route('tyres.movements.create', [
                 'tyre_id' => $tyre->id,
-                'source_vehicle_id' => $vehicle->id,
+                'source_vehicle_id' => $sourceVehicle->id,
                 'source_position' => $tyre->current_position_code,
-                'source_location_type' => 'vehicle',
+                'source_location_type' => $sourceVehicle->asset_type?->value,
                 'movement_context' => 'vehicle_map',
             ]),
         ];
@@ -251,6 +258,16 @@ class TyreReadingMonitoringController extends Controller
     /** @return Collection<int, Tyre> */
     private function tyresForVehicle(Vehicle $vehicle): Collection
     {
+        $locationIds = [$vehicle->id];
+
+        if ($vehicle->asset_type?->value === 'power_vehicle') {
+            $attachedTrailer = $vehicle->attachedTrailer();
+
+            if ($attachedTrailer instanceof Vehicle) {
+                $locationIds[] = $attachedTrailer->id;
+            }
+        }
+
         return Tyre::query()
             ->with([
                 'brand:id,name',
@@ -270,7 +287,7 @@ class TyreReadingMonitoringController extends Controller
                     ->latest('created_at')
                     ->limit(1),
             ])
-            ->where('current_location_id', $vehicle->id)
+            ->whereIn('current_location_id', $locationIds)
             ->whereIn('current_location_type', ['power_vehicle', 'trailer'])
             ->orderBy('current_position_code')
             ->get();
