@@ -46,7 +46,6 @@ class AuditedFleetA14766Seeder extends Seeder
                 ->firstOrFail();
             $trailerType = $this->trailerType();
             $brand = TyreBrand::query()->where('name', 'Triangle')->firstOrFail();
-            $dupro = TyreBrand::query()->where('name', 'DUPRO')->firstOrFail();
             $size = TyreSize::query()->where('size_label', '315/80R22.5')->firstOrFail();
 
             $power = $this->powerVehicle($powerType, $admin->id);
@@ -81,10 +80,6 @@ class AuditedFleetA14766Seeder extends Seeder
             );
 
             foreach ($this->tyres() as $row) {
-                if ($row['serial'] === null) {
-                    continue;
-                }
-
                 $vehicle = $row['owner'] === 'trailer' ? $trailer : $power;
                 $assetType = $row['owner'] === 'trailer'
                     ? AssignmentAssetType::Trailer
@@ -92,7 +87,7 @@ class AuditedFleetA14766Seeder extends Seeder
                 $locationType = $row['owner'] === 'trailer'
                     ? TyreLocationType::Trailer
                     : TyreLocationType::PowerVehicle;
-                $tyreBrand = $row['brand'] === 'DUPRO' ? $dupro : $brand;
+                $tyreBrand = $brand;
 
                 $tyre = Tyre::query()->firstOrCreate(
                     ['serial_number' => $row['serial']],
@@ -109,7 +104,7 @@ class AuditedFleetA14766Seeder extends Seeder
                         'current_location_id' => $vehicle->id,
                         'current_position_code' => $row['position'],
                         'status' => TyreStatus::Active,
-                        'notes' => 'Imported from the ET-3-A14766 / ET-3-34055 tyre audit sheet.',
+                        'notes' => $this->tyreNotes($row),
                     ],
                 );
 
@@ -121,6 +116,7 @@ class AuditedFleetA14766Seeder extends Seeder
                     'current_location_id' => $vehicle->id,
                     'current_position_code' => $row['position'],
                     'status' => TyreStatus::Active,
+                    'notes' => $this->tyreNotes($row),
                 ]);
 
                 TyreAssignment::query()->updateOrCreate(
@@ -257,35 +253,41 @@ class AuditedFleetA14766Seeder extends Seeder
         );
     }
 
-    /** @return list<array{owner: 'power'|'trailer', position: string, brand: string, serial: string|null, percentage: int}> */
+    /** @return list<array{owner: 'power'|'trailer', position: string, serial: string, percentage: int, source_serial_note?: string}> */
     private function tyres(): array
     {
         return [
-            ['owner' => 'power', 'position' => 'A', 'brand' => 'TRIANGLE', 'serial' => 'RF05022U109', 'percentage' => 60],
-            ['owner' => 'power', 'position' => 'B', 'brand' => 'TRIANGLE', 'serial' => 'RF05122I715', 'percentage' => 60],
-            ['owner' => 'power', 'position' => 'C', 'brand' => 'TRIANGLE', 'serial' => 'KF03256K501', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'D', 'brand' => 'TRIANGLE', 'serial' => 'KF03225F503', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'E', 'brand' => 'TRIANGLE', 'serial' => 'KF03257F508', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'F', 'brand' => 'TRIANGLE', 'serial' => 'KF03225N704', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'G', 'brand' => 'TRIANGLE', 'serial' => 'KF09195J501', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'H', 'brand' => 'TRIANGLE', 'serial' => 'KF03236J705', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'I', 'brand' => 'TRIANGLE', 'serial' => 'KF03227M511', 'percentage' => 90],
-            ['owner' => 'power', 'position' => 'J', 'brand' => 'TRIANGLE', 'serial' => 'KF03226L203', 'percentage' => 90],
-            ['owner' => 'trailer', 'position' => 'K', 'brand' => 'TRIANGLE', 'serial' => 'KC06157M406', 'percentage' => 30],
-            ['owner' => 'trailer', 'position' => 'L', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'M', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'N', 'brand' => 'TRIANGLE', 'serial' => 'KB04065P704', 'percentage' => 25],
-            ['owner' => 'trailer', 'position' => 'O', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'P', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'Q', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'R', 'brand' => 'TRIANGLE', 'serial' => 'KE04157H807', 'percentage' => 25],
-            ['owner' => 'trailer', 'position' => 'S', 'brand' => 'TRIANGLE', 'serial' => 'KC06027D305', 'percentage' => 25],
-            ['owner' => 'trailer', 'position' => 'T', 'brand' => 'TRIANGLE', 'serial' => null, 'percentage' => 0],
-            ['owner' => 'trailer', 'position' => 'U', 'brand' => 'TRIANGLE', 'serial' => 'E563248', 'percentage' => 25],
-            ['owner' => 'trailer', 'position' => 'V', 'brand' => 'TRIANGLE', 'serial' => 'KC06195J302', 'percentage' => 25],
-            ['owner' => 'trailer', 'position' => 'W', 'brand' => 'TRIANGLE', 'serial' => 'KE04156I512', 'percentage' => 30],
-            ['owner' => 'power', 'position' => 'X', 'brand' => 'DUPRO', 'serial' => 'S104C25090', 'percentage' => 25],
+            ['owner' => 'power', 'position' => 'A', 'serial' => 'RF05022U109', 'percentage' => 60],
+            ['owner' => 'power', 'position' => 'B', 'serial' => 'RF05122T175', 'percentage' => 60],
+            ['owner' => 'power', 'position' => 'C', 'serial' => 'KF03256KS01', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'D', 'serial' => 'KF03225F503', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'E', 'serial' => 'KF03257F508', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'F', 'serial' => 'KF03225N704', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'G', 'serial' => 'KF09195J501', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'H', 'serial' => 'KF03236J705', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'I', 'serial' => 'KF03227M511', 'percentage' => 90],
+            ['owner' => 'power', 'position' => 'J', 'serial' => 'KF03226L203', 'percentage' => 90],
+            ['owner' => 'trailer', 'position' => 'K', 'serial' => 'KE10296E210', 'percentage' => 40],
+            ['owner' => 'trailer', 'position' => 'L', 'serial' => 'KD07157P909', 'percentage' => 40],
+            ['owner' => 'trailer', 'position' => 'M', 'serial' => 'UNIDENTIFIED-ET-3-34055-M', 'percentage' => 25, 'source_serial_note' => 'Source audit tyre number: NO NU MBER. Replace this system placeholder when the physical serial is confirmed.'],
+            ['owner' => 'trailer', 'position' => 'N', 'serial' => 'KE04156R707', 'percentage' => 25],
+            ['owner' => 'trailer', 'position' => 'O', 'serial' => 'KC06157M406', 'percentage' => 20],
+            ['owner' => 'trailer', 'position' => 'P', 'serial' => 'KB04065P704', 'percentage' => 20],
+            ['owner' => 'trailer', 'position' => 'Q', 'serial' => 'BP07013I115', 'percentage' => 25],
+            ['owner' => 'trailer', 'position' => 'R', 'serial' => 'RD12162O609', 'percentage' => 25],
+            ['owner' => 'trailer', 'position' => 'S', 'serial' => 'E651838', 'percentage' => 25],
+            ['owner' => 'trailer', 'position' => 'T', 'serial' => 'KD07157E605', 'percentage' => 25],
+            ['owner' => 'trailer', 'position' => 'U', 'serial' => 'E563248', 'percentage' => 20],
+            ['owner' => 'trailer', 'position' => 'V', 'serial' => 'KC06195J302', 'percentage' => 20],
+            ['owner' => 'trailer', 'position' => 'W', 'serial' => 'KC06027D305', 'percentage' => 20],
         ];
+    }
+
+    /** @param array{source_serial_note?: string} $row */
+    private function tyreNotes(array $row): string
+    {
+        return $row['source_serial_note']
+            ?? 'Imported from the ET-3-A14766 / ET-3-34055 tyre audit sheet.';
     }
 
     private function nextTyreCode(): string
