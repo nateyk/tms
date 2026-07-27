@@ -11,6 +11,8 @@ class RealFleetAuditSeeder extends Seeder
         $this->call([
             AuditedFleetA14766Seeder::class,
             AuditedFleetA17808Seeder::class,
+            AuditedFleetA14761Seeder::class,
+            AuditedFleetA14763Seeder::class,
         ]);
     }
 }
