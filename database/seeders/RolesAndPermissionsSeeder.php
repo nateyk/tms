@@ -34,7 +34,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'Admin' => $permissions,
             'Store Keeper' => [
                 'tyre.view', 'tyre.create', 'tyre.update',
-                'vehicle.view', 'vehicle.odometer.update', 'movement.create',
+                'vehicle.view', 'vehicle.tyre-map', 'vehicle.odometer.update',
+                'movement.create', 'disposal.create',
+                'trailer.assign', 'trailer.transfer',
                 'report.view',
             ],
             'Store Manager' => [
@@ -57,8 +59,11 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
             'Technic and Maintenance Head' => [
                 'tyre.view', 'tyre.update', 'vehicle.view', 'vehicle.tyre-map', 'vehicle.update',
-                'movement.create', 'movement.check', 'movement.approve',
-                'report.view', 'report.export',
+                'vehicle.odometer.update',
+                'movement.create', 'movement.check', 'movement.reject',
+                'disposal.create', 'disposal.check', 'disposal.reject',
+                'trailer.assign', 'trailer.transfer',
+                'report.view', 'report.export', 'audit.view',
             ],
             'Auditor' => [
                 'tyre.view', 'vehicle.view', 'movement.check', 'disposal.check',
@@ -74,46 +79,24 @@ class RolesAndPermissionsSeeder extends Seeder
             $role->syncPermissions($perms);
         }
 
-        $admin = User::query()->firstOrCreate(
-            ['email' => 'admin@menkem.com'],
+        $this->seedUser('admin@menkem.com', 'TMS Super Admin', 'Super Admin');
+        $this->seedUser('store@menkem.com', 'Store Manager', 'Store Manager');
+        $this->seedUser('storekeeper@menkem.com', 'Store Keeper', 'Store Keeper');
+        $this->seedUser('technical.head@menkem.com', 'Technic and Maintenance Head', 'Technic and Maintenance Head');
+        $this->seedUser('manager@menkem.com', 'Company Manager', 'Company Manager');
+    }
+
+    private function seedUser(string $email, string $name, string $role): void
+    {
+        $user = User::query()->firstOrCreate(
+            ['email' => $email],
             [
-                'name' => 'TMS Super Admin',
+                'name' => $name,
                 'password' => Hash::make('password'),
-            ]
+            ],
         );
-        $admin->forceFill([
-            'name' => 'TMS Super Admin',
-            'password' => Hash::make('password'),
-        ])->save();
 
-        $admin->syncRoles(['Super Admin']);
-
-        $storeManager = User::query()->firstOrCreate(
-            ['email' => 'store@menkem.com'],
-            [
-                'name' => 'Store Manager',
-                'password' => Hash::make('password'),
-            ]
-        );
-        $storeManager->forceFill([
-            'name' => 'Store Manager',
-            'password' => Hash::make('password'),
-        ])->save();
-
-        $storeManager->syncRoles(['Store Manager']);
-
-        $companyManager = User::query()->firstOrCreate(
-            ['email' => 'manager@menkem.com'],
-            [
-                'name' => 'Company Manager',
-                'password' => Hash::make('password'),
-            ]
-        );
-        $companyManager->forceFill([
-            'name' => 'Company Manager',
-            'password' => Hash::make('password'),
-        ])->save();
-
-        $companyManager->syncRoles(['Company Manager']);
+        $user->forceFill(['name' => $name])->save();
+        $user->syncRoles([$role]);
     }
 }

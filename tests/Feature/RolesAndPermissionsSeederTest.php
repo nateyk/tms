@@ -1,0 +1,44 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class RolesAndPermissionsSeederTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_operational_accounts_have_separated_voucher_permissions(): void
+    {
+        $this->seed();
+
+        $storeKeeper = User::query()->where('email', 'storekeeper@menkem.com')->firstOrFail();
+        $technicalHead = User::query()->where('email', 'technical.head@menkem.com')->firstOrFail();
+        $companyManager = User::query()->where('email', 'manager@menkem.com')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'admin@menkem.com')->firstOrFail();
+
+        $this->assertTrue($storeKeeper->hasRole('Store Keeper'));
+        $this->assertTrue($storeKeeper->can('tyre.create'));
+        $this->assertTrue($storeKeeper->can('vehicle.odometer.update'));
+        $this->assertTrue($storeKeeper->can('movement.create'));
+        $this->assertFalse($storeKeeper->can('movement.check'));
+        $this->assertFalse($storeKeeper->can('movement.approve'));
+
+        $this->assertTrue($technicalHead->hasRole('Technic and Maintenance Head'));
+        $this->assertTrue($technicalHead->can('movement.create'));
+        $this->assertTrue($technicalHead->can('movement.check'));
+        $this->assertTrue($technicalHead->can('disposal.check'));
+        $this->assertFalse($technicalHead->can('movement.approve'));
+
+        $this->assertTrue($companyManager->hasRole('Company Manager'));
+        $this->assertTrue($companyManager->can('movement.approve'));
+        $this->assertTrue($companyManager->can('movement.reject'));
+        $this->assertFalse($companyManager->can('movement.create'));
+        $this->assertFalse($companyManager->can('tyre.update'));
+
+        $this->assertTrue($superAdmin->hasRole('Super Admin'));
+        $this->assertTrue($superAdmin->can('settings.manage'));
+    }
+}
