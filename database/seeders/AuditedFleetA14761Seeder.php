@@ -30,8 +30,6 @@ class AuditedFleetA14761Seeder extends Seeder
 {
     private const AUDIT_DATE = '2026-07-08';
     private const AUDIT_ODOMETER = 171742;
-    private const LATEST_ODOMETER = 184142;
-    private const LATEST_ODOMETER_DATE = '2026-10-10';
     private const EXPECTED_LIFE_KM = 80000;
 
     public function run(): void
@@ -53,6 +51,12 @@ class AuditedFleetA14761Seeder extends Seeder
 
             $power = $this->powerVehicle($powerType, $admin->id);
             $trailer = $this->trailerVehicle($trailerType);
+
+            VehicleOdometerReading::query()
+                ->where('vehicle_id', $power->id)
+                ->where('odometer', 184142)
+                ->where('source', OdometerReadingSource::Import)
+                ->delete();
 
             VehicleCombination::query()->updateOrCreate(
                 [
@@ -79,19 +83,6 @@ class AuditedFleetA14761Seeder extends Seeder
                     'reading_date' => self::AUDIT_DATE,
                     'recorded_by' => $admin->id,
                     'notes' => 'Imported from the 8 Jul 2026 tyre audit sheet.',
-                ],
-            );
-
-            VehicleOdometerReading::query()->updateOrCreate(
-                [
-                    'vehicle_id' => $power->id,
-                    'odometer' => self::LATEST_ODOMETER,
-                    'source' => OdometerReadingSource::Import,
-                ],
-                [
-                    'reading_date' => self::LATEST_ODOMETER_DATE,
-                    'recorded_by' => $admin->id,
-                    'notes' => 'Imported from the 10 Oct 2026 vehicle KM reading.',
                 ],
             );
 
@@ -199,7 +190,7 @@ class AuditedFleetA14761Seeder extends Seeder
                 'asset_type' => AssetType::PowerVehicle,
                 'vehicle_type_id' => $type->id,
                 'status' => VehicleStatus::Active,
-                'odometer' => self::LATEST_ODOMETER,
+                'odometer' => 0,
                 'notes' => 'Imported from the 7 Jul 2026 audited fleet sheet.',
             ],
         );
@@ -207,9 +198,9 @@ class AuditedFleetA14761Seeder extends Seeder
         $vehicle->forceFill([
             'vehicle_type_id' => $type->id,
             'status' => VehicleStatus::Active,
-            'odometer' => self::LATEST_ODOMETER,
-            'odometer_last_updated_at' => self::LATEST_ODOMETER_DATE.' 00:00:00',
-            'odometer_last_updated_by' => $adminId,
+            'odometer' => 0,
+            'odometer_last_updated_at' => null,
+            'odometer_last_updated_by' => null,
         ])->save();
 
         return $vehicle;
