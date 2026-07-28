@@ -142,6 +142,34 @@ class TyreMapWorkflowService
     }
 
     /**
+     * Movement vouchers for an attached power/trailer pair follow the paper audit
+     * layout: A-J belong to the power unit, K-X belong to the attached trailer.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function movementOwnerPositionStatuses(Vehicle $vehicle, string $ownerType): array
+    {
+        $vehicle->loadMissing('activeCombinationAsPower');
+
+        $positions = collect($this->positionStatusForVehicle($vehicle));
+
+        if ($ownerType === TyreLocationType::PowerVehicle->value && $vehicle->attachedTrailer() instanceof Vehicle) {
+            $positions = $positions->filter(fn (array $position): bool => $this->isPaperPowerPosition($position));
+        }
+
+        return $positions->values()->all();
+    }
+
+    public function isValidMovementOwnerPosition(Vehicle $vehicle, string $ownerType, string $positionCode): bool
+    {
+        return collect($this->movementOwnerPositionStatuses($vehicle, $ownerType))
+            ->contains(fn (array $position): bool => in_array($positionCode, [
+                $position['code'],
+                $position['display_code'],
+            ], true));
+    }
+
+    /**
      * @return list<string>
      */
     public function positionAliasesForVehicle(Vehicle $vehicle, string $positionCode): array
@@ -197,6 +225,18 @@ class TyreMapWorkflowService
         return in_array($displayCode, ['W', 'X'], true)
             || ($position['side'] ?? null) === 'center'
             || str_contains($label, 'spare');
+    }
+
+    /**
+     * @param  array<string, mixed>  $position
+     */
+    private function isPaperPowerPosition(array $position): bool
+    {
+        $displayCode = strtoupper((string) ($position['display_code'] ?? $position['code'] ?? ''));
+
+        return strlen($displayCode) === 1
+            && $displayCode >= 'A'
+            && $displayCode <= 'J';
     }
 
     public function assignmentAssetTypeForVehicle(Vehicle $vehicle): ?AssignmentAssetType

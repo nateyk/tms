@@ -238,7 +238,7 @@ export function TyreMovementFormFields({
         [destinationUnits, selectedUnitId],
     );
     const availableDestinationUnits = useMemo(
-        () => destinationUnits.filter((vehicle) => (vehicle.total_available_count ?? vehicle.available_position_count ?? 0) > 0),
+        () => destinationUnits,
         [destinationUnits],
     );
 
@@ -277,9 +277,11 @@ export function TyreMovementFormFields({
         [data.to_position_code, positionOptions, selectedPositionValue],
     );
     const positionGroups = useMemo(
-        () => groupPositionOptions(positionOptions)
-            .map((group) => ({ ...group, positions: group.positions.filter((position) => position.is_empty && !position.disabled) }))
-            .filter((group) => group.positions.length > 0),
+        () => groupPositionOptions(positionOptions).filter((group) => group.positions.length > 0),
+        [positionOptions],
+    );
+    const openPositionCount = useMemo(
+        () => positionOptions.filter((position) => position.is_empty && !position.disabled).length,
         [positionOptions],
     );
 
@@ -408,6 +410,10 @@ export function TyreMovementFormFields({
     };
 
     const handlePositionChange = (position: PositionOption) => {
+        if (position.disabled || !position.is_empty) {
+            return;
+        }
+
         setSelectedPositionValue(position.value);
         updateData({
             to_location_type: position.owner_type,
@@ -606,15 +612,17 @@ export function TyreMovementFormFields({
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
                                     <option value="" disabled>Select vehicle or attached unit</option>
-                                    {availableDestinationUnits.map((vehicle) => (
+                                    {availableDestinationUnits.map((vehicle) => {
+                                        const openCount = vehicle.total_available_count ?? vehicle.available_position_count ?? 0;
+                                        const mountedCount = (vehicle.mounted_count ?? 0) + (vehicle.trailer_mounted_count ?? 0);
+
+                                        return (
                                         <option key={vehicle.id} value={String(vehicle.id)}>
-                                            {vehicle.label}{vehicle.attached_trailer ? ` | Trailer: ${vehicle.attached_trailer.label}` : ""}
+                                            {vehicle.label}{vehicle.attached_trailer ? ` | Trailer: ${vehicle.attached_trailer.label}` : ""} | {openCount} open / {mountedCount} mounted
                                         </option>
-                                    ))}
+                                        );
+                                    })}
                                 </select>
-                                {availableDestinationUnits.length === 0 && (
-                                    <HelperText>No active vehicle unit currently has an open tyre position.</HelperText>
-                                )}
                             </Field>
                         )}
 
@@ -638,7 +646,7 @@ export function TyreMovementFormFields({
                         )}
 
                         {destinationTarget === "vehicle_unit" && (
-                            <Field label="Open destination position" error={errors.to_position_code}>
+                            <Field label="Destination positions" error={errors.to_position_code}>
                                 <div className="space-y-4">
                                     {!selectedUnitId && (
                                         <InfoText>Select a vehicle or attached trailer first.</InfoText>
@@ -650,7 +658,9 @@ export function TyreMovementFormFields({
                                                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
                                                     {group.subtitle && <p className="text-[11px] text-muted-foreground">{group.subtitle}</p>}
                                                 </div>
-                                                <span className="text-[11px] text-muted-foreground">{group.positions.length} selectable</span>
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    {group.positions.filter((position) => position.is_empty && !position.disabled).length} open / {group.positions.filter((position) => position.is_occupied || position.disabled).length} occupied
+                                                </span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                 {group.positions.map((position) => {
@@ -658,20 +668,22 @@ export function TyreMovementFormFields({
                                                         || (data.to_position_code === position.code
                                                             && data.to_location_type === position.owner_type
                                                             && data.to_location_id === position.owner_vehicle_id);
-                                                    const disabled = position.disabled;
+                                                    const disabled = position.disabled || !position.is_empty;
 
                                                     return (
                                                         <button
                                                             key={position.value}
                                                             type="button"
                                                             disabled={disabled}
-                                                            title={`${position.display_code} - ${position.label}${position.mounted_tyre_code ? ` - ${position.mounted_tyre_code}` : ""}`}
+                                                            title={disabled
+                                                                ? `${position.display_code} - ${position.label} is occupied by ${position.mounted_tyre_code ?? "another tyre"}`
+                                                                : `${position.display_code} - ${position.label}`}
                                                             onClick={() => handlePositionChange(position)}
                                                             className={cn(
                                                                 "min-h-16 rounded-md border p-2 text-left text-sm transition",
                                                                 selected && "border-primary bg-primary text-primary-foreground shadow-sm",
                                                                 !selected && !disabled && "bg-background hover:border-primary/60 hover:bg-primary/5",
-                                                                disabled && "cursor-not-allowed border-dashed bg-muted/40 text-muted-foreground",
+                                                                disabled && "cursor-not-allowed border-dashed bg-muted/40 text-muted-foreground opacity-80",
                                                             )}
                                                         >
                                                             <div className="flex items-center justify-between gap-1">
@@ -681,7 +693,7 @@ export function TyreMovementFormFields({
                                                             <p className="mt-1 line-clamp-1 text-[11px]">{position.label}</p>
                                                             <p className="mt-1 flex items-center gap-1 text-[11px]">
                                                                 {position.is_empty ? <CheckCircle2 className="h-3 w-3 text-emerald-500" /> : <Circle className="h-3 w-3" />}
-                                                                <span className="truncate">{position.is_empty ? "Open" : position.mounted_tyre_code}</span>
+                                                                <span className="truncate">{position.is_empty ? "Open" : `Occupied: ${position.mounted_tyre_code ?? "tyre"}`}</span>
                                                             </p>
                                                         </button>
                                                     );
@@ -693,7 +705,10 @@ export function TyreMovementFormFields({
                                 {loadingPositions && <HelperText>Loading destination positions...</HelperText>}
                                 {positionLoadError && <WarningText>Destination positions could not be loaded. Choose the unit again or refresh the page.</WarningText>}
                                 {!loadingPositions && selectedUnitId && positionOptions.length === 0 && (
-                                    <WarningText>This unit has no open tyre positions. Choose another destination.</WarningText>
+                                    <WarningText>This unit has no configured tyre positions. Choose another destination.</WarningText>
+                                )}
+                                {!loadingPositions && selectedUnitId && positionOptions.length > 0 && openPositionCount === 0 && (
+                                    <WarningText>All positions on this unit are occupied. Move one tyre to store first, then mount this tyre into the released position.</WarningText>
                                 )}
                                 {selectedPosition?.type === "spare" && (
                                     <InfoText>Spare positions do not gain running KM. Odometer in is optional for audit.</InfoText>

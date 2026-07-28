@@ -454,12 +454,12 @@ class TyreMovementController extends Controller
     /** @return array<string, mixed> */
     private function serializeDestinationVehicle(Vehicle $vehicle): array
     {
-        $positions = collect($this->mapWorkflow->positionStatusForVehicle($vehicle));
+        $positions = collect($this->mapWorkflow->movementOwnerPositionStatuses($vehicle, TyreLocationType::PowerVehicle->value));
         $available = $positions->where('is_empty', true)->count();
         $mounted = $positions->where('is_occupied', true)->count();
         $attachedTrailer = $vehicle->attachedTrailer();
         $trailerPositions = $attachedTrailer
-            ? collect($this->mapWorkflow->positionStatusForVehicle($attachedTrailer))
+            ? collect($this->mapWorkflow->movementOwnerPositionStatuses($attachedTrailer, TyreLocationType::Trailer->value))
             : collect();
         $trailerAvailable = $trailerPositions->where('is_empty', true)->count();
         $trailerMounted = $trailerPositions->where('is_occupied', true)->count();
@@ -467,10 +467,11 @@ class TyreMovementController extends Controller
         return [
             'id' => $vehicle->id,
             'label' => sprintf(
-                '%s - %s - %d positions available - Odo %s KM',
+                '%s - %s - %d open / %d mounted - Odo %s KM',
                 $vehicle->displayCodeWithPlate(),
                 $vehicle->vehicleType?->name ?? 'Vehicle',
                 $available,
+                $mounted,
                 $vehicle->odometer !== null ? number_format((int) $vehicle->odometer) : 'not set'
             ),
             'vehicle_code' => $vehicle->vehicle_code,
@@ -501,8 +502,7 @@ class TyreMovementController extends Controller
     /** @return list<array<string, mixed>> */
     private function ownerPositionOptions(Vehicle $vehicle, string $ownerType): array
     {
-        return collect($this->mapWorkflow->positionStatusForVehicle($vehicle))
-            ->filter(fn (array $position): bool => $position['is_empty'])
+        return collect($this->mapWorkflow->movementOwnerPositionStatuses($vehicle, $ownerType))
             ->map(fn (array $position) => [
                 'value' => sprintf('%s:%d:%s', $ownerType, $vehicle->id, $position['code']),
                 'owner_type' => $ownerType,
@@ -519,7 +519,7 @@ class TyreMovementController extends Controller
                 'is_occupied' => $position['is_occupied'],
                 'mounted_tyre_id' => $position['mounted_tyre_id'],
                 'mounted_tyre_code' => $position['mounted_tyre_code'],
-                'disabled' => false,
+                'disabled' => ! $position['is_empty'],
                 'disabled_reason' => $position['disabled_reason'],
             ])
             ->values()

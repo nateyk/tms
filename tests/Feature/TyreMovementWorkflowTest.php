@@ -170,18 +170,24 @@ class TyreMovementWorkflowTest extends TestCase
             ->assertOk();
 
         $response
-            ->assertJsonMissing(['code' => 'A'])
+            ->assertJsonFragment([
+                'code' => 'A',
+                'is_empty' => false,
+                'is_occupied' => true,
+                'disabled' => true,
+            ])
             ->assertJsonFragment([
                 'code' => 'W',
                 'type' => 'spare',
                 'is_empty' => true,
+                'disabled' => false,
             ]);
 
-        collect($response->json())->each(function (array $position): void {
-            $this->assertTrue($position['is_empty']);
-            $this->assertFalse($position['is_occupied']);
-            $this->assertFalse($position['disabled']);
-        });
+        $this->assertTrue(collect($response->json())->contains(
+            fn (array $position): bool => $position['code'] === 'A'
+                && $position['is_occupied']
+                && $position['disabled']
+        ));
     }
 
     public function test_combined_destination_returns_power_and_attached_trailer_positions(): void
@@ -217,6 +223,60 @@ class TyreMovementWorkflowTest extends TestCase
                 'owner_type' => 'trailer',
                 'owner_vehicle_id' => $trailer->id,
             ]);
+    }
+
+    public function test_combined_destination_splits_power_a_to_j_from_attached_trailer_k_to_x(): void
+    {
+        $power = $this->vehicle('COMBINED-SPLIT-POWER', 'power_vehicle', 'active', 175842, 24, 6);
+        $trailer = $this->vehicle('COMBINED-SPLIT-TRAILER', 'trailer', 'active', 90000, 14, 4);
+        $trailer->vehicleType()->update(['layout_json' => $this->attachedTrailerAuditLayout()]);
+        VehicleCombination::query()->create([
+            'power_vehicle_id' => $power->id,
+            'trailer_vehicle_id' => $trailer->id,
+            'attached_date' => now()->toDateString(),
+            'odometer_at_attach' => $power->odometer,
+            'status' => 'active',
+            'attached_by' => $this->adminUser->id,
+        ]);
+
+        foreach (range('A', 'J') as $code) {
+            $this->mountedTyre($power, $code);
+        }
+
+        $this->mountedTyre($trailer, 'K');
+
+        $response = $this->actingAs($this->adminUser)
+            ->getJson(route('tyres.movements.position-options', $power))
+            ->assertOk();
+
+        $positions = collect($response->json());
+
+        $this->assertFalse($positions->contains(
+            fn (array $position): bool => $position['owner_type'] === 'power_vehicle' && $position['code'] === 'K'
+        ));
+        $this->assertTrue($positions->contains(
+            fn (array $position): bool => $position['owner_type'] === 'power_vehicle'
+                && $position['code'] === 'A'
+                && $position['disabled'] === true
+        ));
+        $this->assertTrue($positions->contains(
+            fn (array $position): bool => $position['owner_type'] === 'trailer'
+                && $position['code'] === 'K'
+                && $position['disabled'] === true
+        ));
+
+        $storeTyre = $this->storeTyre('COMBINED-SPLIT-STORE');
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $storeTyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'power_vehicle',
+                'to_location_id' => $power->id,
+                'to_position_code' => 'K',
+                'to_odometer' => 175842,
+            ])
+            ->assertSessionHasErrors('to_position_code');
     }
 
     public function test_same_vehicle_position_change_can_be_drafted_without_moving_tyre(): void
@@ -331,7 +391,11 @@ class TyreMovementWorkflowTest extends TestCase
         $this->actingAs($this->adminUser)
             ->getJson(route('tyres.movements.position-options', $vehicle))
             ->assertOk()
-            ->assertJsonMissing(['code' => 'A']);
+            ->assertJsonFragment([
+                'code' => 'A',
+                'is_empty' => false,
+                'disabled' => true,
+            ]);
 
         $this->actingAs($this->adminUser)
             ->post(route('tyres.movements.store'), [
@@ -527,5 +591,29 @@ class TyreMovementWorkflowTest extends TestCase
         ]);
 
         return $tyre;
+    }
+
+    private function attachedTrailerAuditLayout(): array
+    {
+        $positions = collect(range('K', 'X'))->map(function (string $code, int $index): array {
+            $running = ! in_array($code, ['W', 'X'], true);
+
+            return [
+                'code' => $code,
+                'display_code' => $code,
+                'legacy_code' => null,
+                'label' => $running ? "Trailer position {$code}" : "Trailer spare {$code}",
+                'axle' => (int) floor($index / 4) + 1,
+                'side' => $running ? ($index % 4 < 2 ? 'left' : 'right') : 'center',
+                'dual' => $running ? ($index % 2 === 0 ? 'outer' : 'inner') : 'single',
+                'x' => 100 + (($index % 4) * 80),
+                'y' => 90 + ((int) floor($index / 4) * 80),
+            ];
+        })->values()->all();
+
+        return [
+            'layout_version' => 5,
+            'positions' => $positions,
+        ];
     }
 }

@@ -178,7 +178,7 @@ class StoreTyreMovementRequest extends FormRequest
         }
 
         $mapWorkflow = app(TyreMapWorkflowService::class);
-        $positions = collect($mapWorkflow->positionStatusForVehicle($vehicle));
+        $positions = collect($mapWorkflow->movementOwnerPositionStatuses($vehicle, $this->input('to_location_type')));
         $position = $positions->first(fn (array $option): bool => in_array($positionCode, [
             $option['code'],
             $option['display_code'],
