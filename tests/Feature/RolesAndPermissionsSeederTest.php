@@ -15,7 +15,7 @@ class RolesAndPermissionsSeederTest extends TestCase
         $this->seed();
 
         $storeKeeper = User::query()->where('email', 'storekeeper@menkem.com')->firstOrFail();
-        $technicalHead = User::query()->where('email', 'technical.head@menkem.com')->firstOrFail();
+        $technicalHead = User::query()->where('email', 'demmelash.fetene@menkemintl.com')->firstOrFail();
         $companyManager = User::query()->where('email', 'manager@menkem.com')->firstOrFail();
         $superAdmin = User::query()->where('email', 'admin@menkem.com')->firstOrFail();
 
@@ -31,6 +31,10 @@ class RolesAndPermissionsSeederTest extends TestCase
         $this->assertTrue($technicalHead->can('movement.check'));
         $this->assertTrue($technicalHead->can('disposal.check'));
         $this->assertFalse($technicalHead->can('movement.approve'));
+        $this->assertFalse($technicalHead->can('fleet.manage'));
+        $this->assertFalse($technicalHead->can('vehicle.update'));
+        $this->assertFalse($technicalHead->can('trailer.transfer'));
+        $this->assertFalse($technicalHead->can('settings.manage'));
 
         $this->assertTrue($companyManager->hasRole('Company Manager'));
         $this->assertTrue($companyManager->can('movement.approve'));

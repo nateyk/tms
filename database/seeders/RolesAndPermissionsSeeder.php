@@ -18,6 +18,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             'tyre.view', 'tyre.create', 'tyre.update', 'tyre.delete', 'tyre.approve',
             'vehicle.view', 'vehicle.create', 'vehicle.update', 'vehicle.tyre-map', 'vehicle.odometer.update',
+            'fleet.manage',
             'trailer.assign', 'trailer.transfer',
             'movement.create', 'movement.check', 'movement.approve', 'movement.reject',
             'disposal.create', 'disposal.check', 'disposal.approve', 'disposal.reject',
@@ -42,6 +43,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'Store Manager' => [
                 'tyre.view', 'tyre.create', 'tyre.update',
                 'vehicle.view', 'vehicle.update', 'vehicle.odometer.update', 'movement.create', 'movement.check',
+                'fleet.manage',
                 'trailer.assign', 'trailer.transfer',
                 'disposal.create', 'disposal.check', 'report.view', 'report.export',
             ],
@@ -58,11 +60,10 @@ class RolesAndPermissionsSeeder extends Seeder
                 'movement.create', 'report.view',
             ],
             'Technic and Maintenance Head' => [
-                'tyre.view', 'tyre.update', 'vehicle.view', 'vehicle.tyre-map', 'vehicle.update',
+                'tyre.view', 'tyre.update', 'vehicle.view', 'vehicle.tyre-map',
                 'vehicle.odometer.update',
                 'movement.create', 'movement.check', 'movement.reject',
                 'disposal.create', 'disposal.check', 'disposal.reject',
-                'trailer.assign', 'trailer.transfer',
                 'report.view', 'report.export', 'audit.view',
             ],
             'Auditor' => [
@@ -82,7 +83,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $this->seedUser('admin@menkem.com', 'TMS Super Admin', 'Super Admin');
         $this->seedUser('store@menkem.com', 'Store Manager', 'Store Manager');
         $this->seedUser('storekeeper@menkem.com', 'Store Keeper', 'Store Keeper');
-        $this->seedUser('technical.head@menkem.com', 'Technic and Maintenance Head', 'Technic and Maintenance Head');
+        $this->migrateTechnicalHeadAccount();
+        $this->seedUser('demmelash.fetene@menkemintl.com', 'Demmelash Fetene', 'Technic and Maintenance Head');
         $this->seedUser('manager@menkem.com', 'Company Manager', 'Company Manager');
     }
 
@@ -98,5 +100,18 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $user->forceFill(['name' => $name])->save();
         $user->syncRoles([$role]);
+    }
+
+    private function migrateTechnicalHeadAccount(): void
+    {
+        $targetEmail = 'demmelash.fetene@menkemintl.com';
+
+        if (User::query()->where('email', $targetEmail)->exists()) {
+            return;
+        }
+
+        User::query()
+            ->where('email', 'technical.head@menkem.com')
+            ->update(['email' => $targetEmail, 'name' => 'Demmelash Fetene']);
     }
 }

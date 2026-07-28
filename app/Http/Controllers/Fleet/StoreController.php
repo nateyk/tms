@@ -14,7 +14,7 @@ class StoreController extends Controller
 {
     public function index(): Response
     {
-        $this->authorize('vehicle.view');
+        $this->authorize('fleet.manage');
 
         $stores = Store::query()
             ->orderBy('name')

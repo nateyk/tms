@@ -126,7 +126,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('index');
     });
 
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('permission:settings.manage')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
 
         Route::get('/roles', [RoleController::class, 'index'])
