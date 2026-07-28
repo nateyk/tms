@@ -27,13 +27,16 @@ class RolesAndPermissionsSeederTest extends TestCase
         $this->assertFalse($storeKeeper->can('movement.approve'));
 
         $this->assertTrue($technicalHead->hasRole('Technic and Maintenance Head'));
-        $this->assertTrue($technicalHead->can('movement.create'));
+        $this->assertFalse($technicalHead->can('movement.create'));
         $this->assertTrue($technicalHead->can('movement.check'));
         $this->assertTrue($technicalHead->can('disposal.check'));
         $this->assertFalse($technicalHead->can('movement.approve'));
         $this->assertFalse($technicalHead->can('fleet.manage'));
+        $this->assertFalse($technicalHead->can('tyre.update'));
+        $this->assertFalse($technicalHead->can('disposal.create'));
         $this->assertFalse($technicalHead->can('vehicle.update'));
         $this->assertFalse($technicalHead->can('trailer.transfer'));
+        $this->assertFalse($technicalHead->can('audit.view'));
         $this->assertFalse($technicalHead->can('settings.manage'));
 
         $this->assertTrue($companyManager->hasRole('Company Manager'));

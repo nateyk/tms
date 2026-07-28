@@ -60,11 +60,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'movement.create', 'report.view',
             ],
             'Technic and Maintenance Head' => [
-                'tyre.view', 'tyre.update', 'vehicle.view', 'vehicle.tyre-map',
+                'tyre.view', 'vehicle.view', 'vehicle.tyre-map',
                 'vehicle.odometer.update',
-                'movement.create', 'movement.check', 'movement.reject',
-                'disposal.create', 'disposal.check', 'disposal.reject',
-                'report.view', 'report.export', 'audit.view',
+                'movement.check', 'movement.reject',
+                'disposal.check', 'disposal.reject',
+                'report.view', 'report.export',
             ],
             'Auditor' => [
                 'tyre.view', 'vehicle.view', 'movement.check', 'disposal.check',

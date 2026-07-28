@@ -83,7 +83,7 @@ export const tmsNavigation: NavGroup[] = [
                 title: "Tyre Baselines",
                 url: "/tyres/baselines",
                 icon: Gauge,
-                permission: "tyre.view",
+                permission: "tyre.create",
             },
             {
                 title: "Tyre Movements",

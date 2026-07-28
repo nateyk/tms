@@ -25,7 +25,7 @@ class TyreBaselineController extends Controller
 
     public function index(Request $request): Response
     {
-        $this->authorize('tyre.view');
+        $this->authorize('tyre.create');
 
         $baselines = TyreBaseline::query()
             ->with(['tyre.brand', 'tyre.size', 'createdBy'])
