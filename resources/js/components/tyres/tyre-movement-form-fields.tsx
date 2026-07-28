@@ -274,7 +274,12 @@ export function TyreMovementFormFields({
             ?? null,
         [data.to_position_code, positionOptions, selectedPositionValue],
     );
-    const positionGroups = useMemo(() => groupPositionOptions(positionOptions), [positionOptions]);
+    const positionGroups = useMemo(
+        () => groupPositionOptions(positionOptions)
+            .map((group) => ({ ...group, positions: group.positions.filter((position) => position.is_empty && !position.disabled) }))
+            .filter((group) => group.positions.length > 0),
+        [positionOptions],
+    );
 
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
@@ -604,9 +609,14 @@ export function TyreMovementFormFields({
                         )}
 
                         {selectedUnit && destinationTarget === "vehicle_unit" && (
-                            <div className="grid gap-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground sm:grid-cols-3">
-                                <SummaryItem label={selectedUnit.asset_type === "trailer" ? "Open positions" : "Power open"} value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
-                                <SummaryItem label="Attached trailer" value={selectedUnit.attached_trailer ? `${selectedUnit.trailer_available_count ?? 0} open` : "None"} />
+                            <div className={cn(
+                                "grid gap-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground",
+                                selectedUnit.attached_trailer && (selectedUnit.trailer_available_count ?? 0) > 0 ? "sm:grid-cols-3" : "sm:grid-cols-2",
+                            )}>
+                                <SummaryItem label={selectedUnit.asset_type === "trailer" ? "Open positions" : "Power unit open"} value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
+                                {selectedUnit.attached_trailer && (selectedUnit.trailer_available_count ?? 0) > 0 && (
+                                    <SummaryItem label="Trailer open" value={`${selectedUnit.trailer_available_count} positions`} />
+                                )}
                                 <SummaryItem label="Current KM" value={formatKm(selectedUnit.current_odometer)} />
                             </div>
                         )}
@@ -624,7 +634,7 @@ export function TyreMovementFormFields({
                                                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
                                                     {group.subtitle && <p className="text-[11px] text-muted-foreground">{group.subtitle}</p>}
                                                 </div>
-                                                <span className="text-[11px] text-muted-foreground">{group.positions.filter((position) => position.is_empty).length} open</span>
+                                                <span className="text-[11px] text-muted-foreground">{group.positions.length} open</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                 {group.positions.map((position) => {
@@ -632,7 +642,7 @@ export function TyreMovementFormFields({
                                                         || (data.to_position_code === position.code
                                                             && data.to_location_type === position.owner_type
                                                             && data.to_location_id === position.owner_vehicle_id);
-                                                    const disabled = position.is_occupied || position.disabled;
+                                                    const disabled = position.disabled;
 
                                                     return (
                                                         <button
@@ -667,7 +677,7 @@ export function TyreMovementFormFields({
                                 {loadingPositions && <HelperText>Loading destination positions...</HelperText>}
                                 {positionLoadError && <WarningText>Destination positions could not be loaded. Choose the unit again or refresh the page.</WarningText>}
                                 {!loadingPositions && selectedUnitId && positionOptions.length === 0 && (
-                                    <WarningText>No tyre positions are configured for this destination.</WarningText>
+                                    <WarningText>This unit has no open tyre positions. Choose another destination.</WarningText>
                                 )}
                                 {selectedPosition?.type === "spare" && (
                                     <InfoText>Spare positions do not gain running KM. Odometer in is optional for audit.</InfoText>

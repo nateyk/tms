@@ -144,24 +144,28 @@ class TyreMovementWorkflowTest extends TestCase
             );
     }
 
-    public function test_destination_positions_return_empty_occupied_and_spare_status(): void
+    public function test_destination_positions_only_return_open_positions(): void
     {
         $vehicle = $this->vehicle('MOVE-POSITIONS', 'power_vehicle', 'active', 130000, 24, 6);
         $this->mountedTyre($vehicle, 'A');
 
-        $this->actingAs($this->adminUser)
+        $response = $this->actingAs($this->adminUser)
             ->getJson(route('tyres.movements.position-options', $vehicle))
-            ->assertOk()
-            ->assertJsonFragment([
-                'code' => 'A',
-                'is_empty' => false,
-                'is_occupied' => true,
-            ])
+            ->assertOk();
+
+        $response
+            ->assertJsonMissing(['code' => 'A'])
             ->assertJsonFragment([
                 'code' => 'W',
                 'type' => 'spare',
                 'is_empty' => true,
             ]);
+
+        collect($response->json())->each(function (array $position): void {
+            $this->assertTrue($position['is_empty']);
+            $this->assertFalse($position['is_occupied']);
+            $this->assertFalse($position['disabled']);
+        });
     }
 
     public function test_combined_destination_returns_power_and_attached_trailer_positions(): void

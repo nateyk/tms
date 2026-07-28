@@ -499,6 +499,7 @@ class TyreMovementController extends Controller
     private function ownerPositionOptions(Vehicle $vehicle, string $ownerType): array
     {
         return collect($this->mapWorkflow->positionStatusForVehicle($vehicle))
+            ->filter(fn (array $position): bool => $position['is_empty'])
             ->map(fn (array $position) => [
                 'value' => sprintf('%s:%d:%s', $ownerType, $vehicle->id, $position['code']),
                 'owner_type' => $ownerType,
@@ -515,7 +516,7 @@ class TyreMovementController extends Controller
                 'is_occupied' => $position['is_occupied'],
                 'mounted_tyre_id' => $position['mounted_tyre_id'],
                 'mounted_tyre_code' => $position['mounted_tyre_code'],
-                'disabled' => $position['is_occupied'],
+                'disabled' => false,
                 'disabled_reason' => $position['disabled_reason'],
             ])
             ->values()
