@@ -3,11 +3,9 @@
 namespace App\Services;
 
 use App\Enums\AssetType;
-use App\Enums\TyreAssignmentStatus;
 use App\Enums\TyreLocationType;
 use App\Enums\TyreStatus;
 use App\Models\Tyre;
-use App\Models\TyreAssignment;
 use App\Models\TyreBrand;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
@@ -47,12 +45,12 @@ class VehicleMapDataService
             ? $this->layoutBuilder->resolvePositions($layoutJson, $tyreCount, $axleCount, $prefix)
             : [];
 
-        $assignmentsByPosition = TyreAssignment::query()
-            ->where('asset_id', $vehicle->id)
-            ->where('status', TyreAssignmentStatus::Active)
-            ->with(['tyre.brand', 'tyre.size', 'tyre.baseline'])
+        $positionStatuses = collect($this->workflow->positionStatusForVehicle($vehicle));
+        $mountedTyresById = Tyre::query()
+            ->with(['brand', 'size', 'baseline'])
+            ->whereIn('id', $positionStatuses->pluck('mounted_tyre_id')->filter())
             ->get()
-            ->keyBy('position_code');
+            ->keyBy('id');
 
         $spareOwner = $vehicle;
         if ($assetType === AssetType::Trailer->value) {
@@ -91,12 +89,13 @@ class VehicleMapDataService
                 ];
             });
 
-        $mapData = collect($positions)->map(function (array $position) use ($assignmentsByPosition, $vehicle) {
-            $assignment = collect($this->workflow->positionAliases($position))
-                ->map(fn (string $code) => $assignmentsByPosition->get($code))
-                ->first();
-
-            $tyre = $assignment?->tyre;
+        $mapData = collect($positions)->map(function (array $position) use ($positionStatuses, $mountedTyresById, $vehicle) {
+            $positionStatus = $positionStatuses->first(
+                fn (array $status): bool => in_array($status['code'], $this->workflow->positionAliases($position), true)
+            );
+            $tyre = $positionStatus && $positionStatus['mounted_tyre_id']
+                ? $mountedTyresById->get($positionStatus['mounted_tyre_id'])
+                : null;
             $brand = $tyre instanceof Tyre ? $tyre->brand : null;
             $tyreStatus = $this->resolveTyreStatus($tyre);
 

@@ -16,8 +16,24 @@ class TyreAssignmentService
     public function assertPositionEmpty(AssignmentAssetType $assetType, int $assetId, string $positionCode): void
     {
         $vehicle = Vehicle::query()->with('vehicleType')->find($assetId);
+        $mapWorkflow = app(TyreMapWorkflowService::class);
+
+        if ($vehicle instanceof Vehicle && $mapWorkflow->assignmentAssetTypeForVehicle($vehicle) === $assetType) {
+            $position = collect($mapWorkflow->positionStatusForVehicle($vehicle))
+                ->first(fn (array $candidate): bool => in_array($positionCode, [
+                    $candidate['code'],
+                    $candidate['display_code'],
+                ], true));
+
+            if ($position && ! $position['is_empty']) {
+                throw new TyreBusinessException("Position {$positionCode} already has an active tyre.");
+            }
+
+            return;
+        }
+
         $positionCodes = $vehicle instanceof Vehicle
-            ? app(TyreMapWorkflowService::class)->positionAliasesForVehicle($vehicle, $positionCode)
+            ? $mapWorkflow->positionAliasesForVehicle($vehicle, $positionCode)
             : [$positionCode];
 
         $exists = TyreAssignment::query()

@@ -33,33 +33,14 @@ class TyreMapWorkflowService
 
     public function emptyPositions(Vehicle $vehicle): Collection
     {
-        $vehicle->loadMissing('vehicleType');
-
-        $positions = $this->resolveLayoutPositions($vehicle);
-        if ($positions === []) {
-            return collect();
-        }
-
-        $occupied = TyreAssignment::query()
-            ->where('asset_id', $vehicle->id)
-            ->where('status', TyreAssignmentStatus::Active)
-            ->pluck('position_code')
-            ->flip();
-
-        return collect($positions)
-            ->filter(fn (array $position) => collect($this->positionAliases($position))->every(
-                fn (string $code): bool => ! $occupied->has($code)
-            ))
-            ->values()
-            ->map(fn (array $position) => [
-                'code' => (string) $position['code'],
-                'display_code' => (string) ($position['display_code'] ?? $position['code']),
-                'legacy_code' => isset($position['legacy_code']) ? (string) $position['legacy_code'] : null,
-                'label' => (string) ($position['label'] ?? $position['code']),
-                'axle' => isset($position['axle']) ? (int) $position['axle'] : null,
-                'side' => isset($position['side']) ? (string) $position['side'] : null,
-                'dual' => isset($position['dual']) ? (string) $position['dual'] : null,
-            ]);
+        return collect($this->positionStatusForVehicle($vehicle))
+            ->filter(fn (array $position): bool => $position['is_empty'])
+            ->map(fn (array $position): array => [
+                'code' => $position['code'],
+                'display_code' => $position['display_code'],
+                'label' => $position['label'],
+            ])
+            ->values();
     }
 
     /**
@@ -123,10 +104,22 @@ class TyreMapWorkflowService
             ->where('status', TyreAssignmentStatus::Active)
             ->get();
 
+        // Imported fleet data can have an active tyre location before its historical
+        // assignment row exists. Treat the current mounted tyre record as occupied too,
+        // so a movement can never offer that position as an empty destination.
+        $mountedTyres = Tyre::query()
+            ->where('current_location_type', $this->locationTypeForVehicle($vehicle)->value)
+            ->where('current_location_id', $vehicle->id)
+            ->whereNotNull('current_position_code')
+            ->whereNotIn('status', [TyreStatus::Disposed->value, TyreStatus::PendingApproval->value])
+            ->get(['id', 'tyre_code', 'current_position_code']);
+
         return collect($this->resolveLayoutPositions($vehicle))
-            ->map(function (array $position) use ($assignments): array {
+            ->map(function (array $position) use ($assignments, $mountedTyres): array {
                 $aliases = $this->positionAliases($position);
                 $assignment = $assignments->first(fn (TyreAssignment $assignment): bool => in_array($assignment->position_code, $aliases, true));
+                $mountedTyre = $assignment?->tyre
+                    ?? $mountedTyres->first(fn (Tyre $tyre): bool => in_array($tyre->current_position_code, $aliases, true));
                 $code = (string) $position['code'];
                 $displayCode = (string) ($position['display_code'] ?? $code);
                 $label = (string) ($position['label'] ?? $code);
@@ -137,11 +130,11 @@ class TyreMapWorkflowService
                     'display_code' => $displayCode,
                     'label' => $label,
                     'type' => $isSpare ? 'spare' : 'running',
-                    'is_empty' => $assignment === null,
-                    'is_occupied' => $assignment !== null,
-                    'mounted_tyre_id' => $assignment?->tyre_id,
-                    'mounted_tyre_code' => $assignment?->tyre?->tyre_code,
-                    'disabled_reason' => $assignment ? 'This position already has a tyre. Create a swap movement or choose an empty position.' : null,
+                    'is_empty' => $mountedTyre === null,
+                    'is_occupied' => $mountedTyre !== null,
+                    'mounted_tyre_id' => $mountedTyre?->id,
+                    'mounted_tyre_code' => $mountedTyre?->tyre_code,
+                    'disabled_reason' => $mountedTyre ? 'This position already has a tyre. Create a swap movement or choose an empty position.' : null,
                 ];
             })
             ->values()

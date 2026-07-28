@@ -47,7 +47,9 @@ type DestinationVehicleOption = LocationOption & {
         vehicle_type_name?: string | null;
         current_odometer?: number | null;
         available_position_count?: number;
+        mounted_count?: number;
     } | null;
+    trailer_mounted_count?: number;
 };
 type DestinationType = { value: string; label: string };
 type PositionOption = {
@@ -283,6 +285,10 @@ export function TyreMovementFormFields({
 
     const sourceNeedsOdometer = selectedTyre?.position_type === "running";
     const destinationNeedsOdometer = destinationTarget === "vehicle_unit" && selectedPosition?.type === "running";
+    const sourceMinimumOdometer = Math.max(
+        selectedTyre?.current_vehicle_odometer ?? 0,
+        selectedTyre?.installed_odometer ?? 0,
+    );
 
     // Map actions populate Inertia form data after this component has mounted.
     // Keep the local destination controls aligned with that prefilled voucher.
@@ -520,8 +526,10 @@ export function TyreMovementFormFields({
                             <SummaryItem label="Position" value={sourceInfo?.position_label ?? selectedTyre?.source_position_label ?? selectedTyre?.current_position_code ?? "-"} />
                             <SummaryItem label="Position type" value={positionTypeLabel(selectedTyre?.position_type)} />
                             <SummaryItem label="Vehicle KM" value={formatKm(selectedTyre?.current_vehicle_odometer)} />
-                            {selectedTyre?.installed_odometer !== null && selectedTyre?.installed_odometer !== undefined && (
-                                <SummaryItem label="Installed KM" value={formatKm(selectedTyre.installed_odometer)} />
+                            {selectedTyre?.installed_odometer !== null
+                                && selectedTyre?.installed_odometer !== undefined
+                                && selectedTyre.installed_odometer !== selectedTyre.current_vehicle_odometer && (
+                                <SummaryItem label="Mounted at KM" value={formatKm(selectedTyre.installed_odometer)} />
                             )}
                         </div>
 
@@ -529,13 +537,15 @@ export function TyreMovementFormFields({
                             <Field label="Odometer out from source vehicle" error={errors.from_odometer}>
                                 <Input
                                     type="number"
-                                    min={0}
+                                    min={sourceMinimumOdometer}
                                     value={data.from_odometer ?? ""}
                                     onChange={(e) =>
                                         setData("from_odometer", e.target.value === "" ? null : Number(e.target.value))
                                     }
                                 />
-                                <HelperText>Required because this tyre is coming from a running position.</HelperText>
+                                <HelperText>
+                                    Enter the current source vehicle KM. It cannot be lower than {formatKm(sourceMinimumOdometer)}.
+                                </HelperText>
                             </Field>
                         ) : (
                             <InfoText>Odometer out is not required for store or spare source positions.</InfoText>
@@ -611,18 +621,24 @@ export function TyreMovementFormFields({
                         {selectedUnit && destinationTarget === "vehicle_unit" && (
                             <div className={cn(
                                 "grid gap-2 rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground",
-                                selectedUnit.attached_trailer && (selectedUnit.trailer_available_count ?? 0) > 0 ? "sm:grid-cols-3" : "sm:grid-cols-2",
+                                selectedUnit.attached_trailer ? "sm:grid-cols-3" : "sm:grid-cols-2",
                             )}>
-                                <SummaryItem label={selectedUnit.asset_type === "trailer" ? "Open positions" : "Power unit open"} value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? "-"}`} />
-                                {selectedUnit.attached_trailer && (selectedUnit.trailer_available_count ?? 0) > 0 && (
-                                    <SummaryItem label="Trailer open" value={`${selectedUnit.trailer_available_count} positions`} />
+                                <SummaryItem
+                                    label={selectedUnit.asset_type === "trailer" ? "Unit positions" : "Power unit positions"}
+                                    value={`${selectedUnit.power_available_count ?? selectedUnit.available_position_count ?? 0} open / ${selectedUnit.mounted_count ?? 0} mounted`}
+                                />
+                                {selectedUnit.attached_trailer && (
+                                    <SummaryItem
+                                        label="Attached trailer positions"
+                                        value={`${selectedUnit.trailer_available_count ?? 0} open / ${selectedUnit.trailer_mounted_count ?? selectedUnit.attached_trailer.mounted_count ?? 0} mounted`}
+                                    />
                                 )}
                                 <SummaryItem label="Current KM" value={formatKm(selectedUnit.current_odometer)} />
                             </div>
                         )}
 
                         {destinationTarget === "vehicle_unit" && (
-                            <Field label="Destination position" error={errors.to_position_code}>
+                            <Field label="Open destination position" error={errors.to_position_code}>
                                 <div className="space-y-4">
                                     {!selectedUnitId && (
                                         <InfoText>Select a vehicle or attached trailer first.</InfoText>
@@ -634,7 +650,7 @@ export function TyreMovementFormFields({
                                                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
                                                     {group.subtitle && <p className="text-[11px] text-muted-foreground">{group.subtitle}</p>}
                                                 </div>
-                                                <span className="text-[11px] text-muted-foreground">{group.positions.length} open</span>
+                                                <span className="text-[11px] text-muted-foreground">{group.positions.length} selectable</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                 {group.positions.map((position) => {

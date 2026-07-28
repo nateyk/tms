@@ -117,6 +117,11 @@ class StoreTyreMovementRequest extends FormRequest
                 if ($installedOdometer !== null && $this->integer('from_odometer') < $installedOdometer) {
                     $validator->errors()->add('from_odometer', "Odometer out cannot be less than the installed odometer ({$installedOdometer}).");
                 }
+
+                $latest = app(VehicleOdometerService::class)->getLatestOdometer($sourceVehicle);
+                if ($latest !== null && $this->integer('from_odometer') < $latest) {
+                    $validator->errors()->add('from_odometer', "Odometer out cannot be less than the source vehicle latest odometer ({$latest}).");
+                }
             }
 
             if ($destinationVehicle && $this->positionRequiresOdometer($destinationVehicle, $toPosition)) {

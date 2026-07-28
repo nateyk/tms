@@ -84,6 +84,22 @@ class TyreMovementWorkflowTest extends TestCase
             );
     }
 
+    public function test_vehicle_map_uses_current_mounted_location_when_assignment_history_is_missing(): void
+    {
+        $vehicle = $this->vehicle('MAP-FALLBACK-VEHICLE', 'power_vehicle', 'active', 150000, 24, 6);
+        $tyre = $this->mountedTyre($vehicle, 'A');
+        TyreAssignment::query()->where('tyre_id', $tyre->id)->delete();
+
+        $this->actingAs($this->adminUser)
+            ->get(route('fleet.vehicles.show', $vehicle))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tyreMap.konvaConfig.slots', fn ($slots) => collect($slots)->contains(
+                    fn (array $slot) => $slot['display_code'] === 'A' && $slot['tyre_id'] === $tyre->id
+                ))
+            );
+    }
+
     public function test_map_fill_url_prefills_destination_and_creates_store_to_vehicle_draft(): void
     {
         $tyre = $this->storeTyre('MAP-FILL-001');
@@ -305,6 +321,30 @@ class TyreMovementWorkflowTest extends TestCase
             ->assertSessionHasErrors('to_position_code');
     }
 
+    public function test_mounted_tyre_current_location_blocks_position_when_assignment_history_is_missing(): void
+    {
+        $storeTyre = $this->storeTyre('MOVE-FALLBACK-STORE');
+        $vehicle = $this->vehicle('MOVE-FALLBACK', 'power_vehicle', 'active', 140000);
+        $mountedTyre = $this->mountedTyre($vehicle, 'A');
+        TyreAssignment::query()->where('tyre_id', $mountedTyre->id)->delete();
+
+        $this->actingAs($this->adminUser)
+            ->getJson(route('tyres.movements.position-options', $vehicle))
+            ->assertOk()
+            ->assertJsonMissing(['code' => 'A']);
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $storeTyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'power_vehicle',
+                'to_location_id' => $vehicle->id,
+                'to_position_code' => 'A',
+                'to_odometer' => 141000,
+            ])
+            ->assertSessionHasErrors('to_position_code');
+    }
+
     public function test_vehicle_to_vehicle_movement_requires_source_and_destination_odometer(): void
     {
         $source = $this->vehicle('MOVE-SOURCE', 'power_vehicle', 'active', 150000);
@@ -356,6 +396,23 @@ class TyreMovementWorkflowTest extends TestCase
             'odometer' => 170500,
             'source' => 'movement',
         ]);
+    }
+
+    public function test_vehicle_to_store_rejects_source_odometer_lower_than_current_vehicle_km(): void
+    {
+        $source = $this->vehicle('MOVE-SOURCE-LOW-KM', 'power_vehicle', 'active', 170000);
+        $store = Store::query()->firstOrFail();
+        $tyre = $this->mountedTyre($source, 'A', 160000);
+
+        $this->actingAs($this->adminUser)
+            ->post(route('tyres.movements.store'), [
+                'tyre_id' => $tyre->id,
+                'movement_date' => now()->toDateString(),
+                'to_location_type' => 'store',
+                'to_location_id' => $store->id,
+                'from_odometer' => 169999,
+            ])
+            ->assertSessionHasErrors('from_odometer');
     }
 
     public function test_store_to_vehicle_requires_destination_odometer_only_for_running_position(): void

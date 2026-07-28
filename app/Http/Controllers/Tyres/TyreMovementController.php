@@ -462,6 +462,7 @@ class TyreMovementController extends Controller
             ? collect($this->mapWorkflow->positionStatusForVehicle($attachedTrailer))
             : collect();
         $trailerAvailable = $trailerPositions->where('is_empty', true)->count();
+        $trailerMounted = $trailerPositions->where('is_occupied', true)->count();
 
         return [
             'id' => $vehicle->id,
@@ -482,6 +483,7 @@ class TyreMovementController extends Controller
             'status' => $vehicle->status->value,
             'power_available_count' => $available,
             'trailer_available_count' => $trailerAvailable,
+            'trailer_mounted_count' => $trailerMounted,
             'total_available_count' => $available + $trailerAvailable,
             'attached_trailer' => $attachedTrailer ? [
                 'id' => $attachedTrailer->id,
@@ -491,6 +493,7 @@ class TyreMovementController extends Controller
                 'vehicle_type_name' => $attachedTrailer->vehicleType?->name,
                 'current_odometer' => $attachedTrailer->odometer,
                 'available_position_count' => $trailerAvailable,
+                'mounted_count' => $trailerMounted,
             ] : null,
         ];
     }
