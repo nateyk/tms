@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Store;
 use App\Models\Tyre;
+use App\Models\TyreBaseline;
+use App\Models\TyreBrand;
 use App\Models\TyreAssignment;
 use App\Models\TyreMovement;
+use App\Models\TyreSize;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleCombination;
@@ -64,6 +67,54 @@ class TyreMovementWorkflowTest extends TestCase
             ])
             ->assertJsonPath('destinationTargets.0.value', 'store')
             ->assertJsonPath('destinationTargets.1.value', 'vehicle_unit');
+    }
+
+    public function test_movement_detail_includes_tyre_identity_and_usage_summary(): void
+    {
+        $tyre = $this->storeTyre('MOVEMENT-DETAIL-001');
+        $brand = TyreBrand::query()->firstOrCreate(
+            ['name' => 'Triangle'],
+            ['code' => 'TRIANGLE', 'status' => 'active'],
+        );
+        $size = TyreSize::query()->firstOrCreate(
+            ['size_label' => '315/80R22.5'],
+            ['code' => '31580', 'status' => 'active'],
+        );
+        $tyre->update(['brand_id' => $brand->id, 'size_id' => $size->id]);
+        TyreBaseline::query()->create([
+            'tyre_id' => $tyre->id,
+            'baseline_location_type' => 'store',
+            'baseline_location_id' => $tyre->current_location_id,
+            'baseline_percentage' => 95,
+            'expected_life_km' => 100000,
+            'baseline_date' => now()->toDateString(),
+            'created_by' => $this->adminUser->id,
+        ]);
+        $movement = TyreMovement::query()->create([
+            'movement_no' => 'MOV-DETAIL-001',
+            'movement_type' => 'store_to_vehicle',
+            'tyre_id' => $tyre->id,
+            'from_location_type' => 'store',
+            'from_location_id' => $tyre->current_location_id,
+            'to_location_type' => 'store',
+            'to_location_id' => $tyre->current_location_id,
+            'movement_date' => now()->toDateString(),
+            'reason' => 'Movement detail test',
+            'status' => 'draft',
+            'prepared_by' => $this->adminUser->id,
+        ]);
+
+        $this->actingAs($this->adminUser)
+            ->get(route('tyres.movements.show', $movement))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('movement.tyre_serial_number', $tyre->serial_number)
+                ->where('movement.tyre_brand', 'Triangle')
+                ->where('movement.tyre_size', '315/80R22.5')
+                ->where('movement.tyre_usage.has_baseline', true)
+                ->where('movement.tyre_usage.total_used_km', 0)
+                ->where('movement.tyre_usage.baseline_percentage', 95)
+            );
     }
 
     public function test_vehicle_map_payload_contains_inline_mount_and_move_actions(): void

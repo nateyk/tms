@@ -20,6 +20,7 @@ use App\Models\Vehicle;
 use App\Services\ApprovalService;
 use App\Services\TyreMapWorkflowService;
 use App\Services\TyreMovementService;
+use App\Services\TyreUsageTrackingService;
 use App\Services\VehicleOdometerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,7 @@ class TyreMovementController extends Controller
         private readonly TyreMovementService $movementService,
         private readonly ApprovalService $approvalService,
         private readonly TyreMapWorkflowService $mapWorkflow,
+        private readonly TyreUsageTrackingService $usageTrackingService,
         private readonly VehicleOdometerService $odometerService,
     ) {}
 
@@ -102,6 +104,8 @@ class TyreMovementController extends Controller
 
         $movement->load([
             'tyre.brand',
+            'tyre.size',
+            'tyre.baseline',
             'preparedByUser',
             'checkedByUser',
             'approvedByUser',
@@ -380,6 +384,7 @@ class TyreMovementController extends Controller
     {
         $sourceVehicle = $this->movementVehicle($movement->from_location_type, $movement->from_location_id);
         $destinationVehicle = $this->movementVehicle($movement->to_location_type, $movement->to_location_id);
+        $tyreUsage = $this->usageTrackingService->calculateTyreUsage($movement->tyre);
 
         return [
             ...$this->serializeForm($movement),
@@ -389,6 +394,19 @@ class TyreMovementController extends Controller
             'status_label' => $movement->status->label(),
             'tyre_code' => $movement->tyre?->tyre_code,
             'tyre_id' => $movement->tyre_id,
+            'tyre_serial_number' => $movement->tyre?->serial_number,
+            'tyre_brand' => $movement->tyre?->brand?->name,
+            'tyre_size' => $movement->tyre?->size?->size_label,
+            'tyre_status' => $movement->tyre?->status?->label(),
+            'tyre_usage' => [
+                'has_baseline' => $tyreUsage['has_baseline'],
+                'total_used_km' => $tyreUsage['total_used_km'],
+                'baseline_percentage' => $tyreUsage['baseline_percentage'],
+                'baseline_odometer' => $tyreUsage['baseline_odometer'],
+                'expected_life_km' => $tyreUsage['expected_life_km'],
+                'effective_remaining_percentage' => $tyreUsage['effective_remaining_percentage'],
+                'status' => $tyreUsage['effective_status'],
+            ],
             'from_location_display' => $movement->fromLocationDisplay(),
             'from_position_display' => $movement->fromPositionDisplay(),
             'to_location_display' => $movement->toLocationDisplay(),

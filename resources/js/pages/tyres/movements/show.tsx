@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AuthenticatedLayout from "@/layouts/authenticated-layout";
 import { Head, Link } from "@inertiajs/react";
-import { ArrowLeft, CalendarDays, MapPin, Pencil, Route, UserRound } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, CalendarDays, Gauge, MapPin, Pencil, Route, Tag, UserRound } from "lucide-react";
+import { ReactNode, useState } from "react";
 
 type MovementDetail = {
     id: number;
@@ -19,6 +19,19 @@ type MovementDetail = {
     movement_date: string;
     tyre_code: string | null;
     tyre_id: number;
+    tyre_serial_number: string | null;
+    tyre_brand: string | null;
+    tyre_size: string | null;
+    tyre_status: string | null;
+    tyre_usage: {
+        has_baseline: boolean;
+        total_used_km: number | null;
+        baseline_percentage: number | null;
+        baseline_odometer: number | null;
+        expected_life_km: number | null;
+        effective_remaining_percentage: number | null;
+        status: string | null;
+    };
     from_location_display: string;
     from_position_display: string;
     to_location_display: string;
@@ -127,19 +140,54 @@ export default function MovementsShow({
                                 </div>
                             </div>
 
-                            <div className="rounded-lg border bg-background px-4 py-3 text-sm md:min-w-52">
-                                <p className="text-muted-foreground">Tyre</p>
-                                <Link
-                                    href={route("tyres.show", movement.tyre_id)}
-                                    className="font-semibold text-primary hover:underline"
-                                >
-                                    {movement.tyre_code}
-                                </Link>
+                            <div className="rounded-lg border bg-background px-4 py-3 text-sm md:min-w-72">
+                                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    <Tag className="h-4 w-4" />
+                                    Tyre identity
+                                </div>
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                    <Link
+                                        href={route("tyres.show", movement.tyre_id)}
+                                        className="font-semibold text-primary hover:underline"
+                                    >
+                                        {movement.tyre_code ?? `Tyre #${movement.tyre_id}`}
+                                    </Link>
+                                    {movement.tyre_status && (
+                                        <span className="rounded-full border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                                            {movement.tyre_status}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                                    <DetailValue label="Serial" value={movement.tyre_serial_number} />
+                                    <DetailValue label="Brand" value={movement.tyre_brand} />
+                                    <DetailValue label="Size" value={movement.tyre_size} />
+                                    <DetailValue label="Used KM" value={formatKm(movement.tyre_usage.total_used_km)} />
+                                </div>
                             </div>
                         </div>
                     </CardHeader>
 
                     <CardContent className="space-y-6">
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <UsageMetric
+                                label="Tyre used KM"
+                                value={formatKm(movement.tyre_usage.total_used_km)}
+                                detail={movement.tyre_usage.has_baseline ? "From baseline and assignments" : "Baseline not set"}
+                                icon={<Gauge className="h-4 w-4" />}
+                            />
+                            <UsageMetric
+                                label="Baseline"
+                                value={movement.tyre_usage.baseline_percentage != null ? `${movement.tyre_usage.baseline_percentage}%` : "Not set"}
+                                detail={movement.tyre_usage.baseline_odometer != null ? `${formatKm(movement.tyre_usage.baseline_odometer)} baseline KM` : "No baseline KM"}
+                            />
+                            <UsageMetric
+                                label="Effective remaining"
+                                value={movement.tyre_usage.effective_remaining_percentage != null ? `${movement.tyre_usage.effective_remaining_percentage}%` : "Not calculated"}
+                                detail={movement.tyre_usage.status ?? "Awaiting baseline"}
+                            />
+                        </div>
+
                         <div className="grid gap-4 md:grid-cols-2">
                             <MovementLocationCard
                                 title="Source"
@@ -274,11 +322,47 @@ function MovementLocationCard({
             <p className="mt-1 text-sm text-muted-foreground">Position: {position}</p>
             {odometer != null && (
                 <p className="mt-2 text-sm text-muted-foreground">
-                    {odometerLabel}: {odometer.toLocaleString()} km
+                    {odometerLabel}: {odometer.toLocaleString()} KM
                 </p>
             )}
         </div>
     );
+}
+
+function DetailValue({ label, value }: { label: string; value: string | null }) {
+    return (
+        <div className="min-w-0">
+            <p className="text-muted-foreground">{label}</p>
+            <p className="truncate font-medium text-foreground">{value || "Not recorded"}</p>
+        </div>
+    );
+}
+
+function UsageMetric({
+    label,
+    value,
+    detail,
+    icon,
+}: {
+    label: string;
+    value: string;
+    detail: string;
+    icon?: ReactNode;
+}) {
+    return (
+        <div className="rounded-lg border bg-muted/20 p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {icon}
+                {label}
+            </div>
+            <p className="mt-2 text-xl font-semibold text-foreground">{value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+        </div>
+    );
+}
+
+function formatKm(value: number | null): string {
+    return value == null ? "Not calculated" : `${value.toLocaleString()} KM`;
 }
 
 function TimelineItem({ label, value }: { label: string; value: string }) {
