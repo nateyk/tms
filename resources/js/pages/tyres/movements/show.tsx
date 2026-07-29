@@ -85,8 +85,8 @@ export default function MovementsShow({
         <AuthenticatedLayout header={`Movement ${movement.display_number}`}>
             <Head title={`Movement ${movement.display_number}`} />
 
-            <div className="max-w-5xl space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="mx-auto w-full max-w-6xl space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2">
                     <Button variant="ghost" size="sm" asChild className="-ml-2">
                         <Link href={route("tyres.movements.index")}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -116,7 +116,7 @@ export default function MovementsShow({
                     </div>
                 </div>
 
-                <Card className="overflow-hidden">
+                <Card className="w-full overflow-hidden">
                     <CardHeader className="border-b bg-muted/30">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div className="min-w-0 space-y-3">
@@ -140,7 +140,7 @@ export default function MovementsShow({
                                 </div>
                             </div>
 
-                            <div className="rounded-lg border bg-background px-4 py-3 text-sm md:min-w-72">
+                            <div className="w-full rounded-lg border bg-background px-4 py-3 text-sm md:w-80 md:shrink-0">
                                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                     <Tag className="h-4 w-4" />
                                     Tyre identity
