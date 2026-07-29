@@ -22,6 +22,7 @@ type MovementRow = {
         tyre_code: string | null;
     } | null;
     movement_type: string;
+    movement_type_label: string;
     movement_date: string | null;
     status: string;
     status_label: string;
@@ -110,7 +111,7 @@ export default function PendingApprovals({ movements }: { movements: MovementRow
                                             <TableCell className="font-medium">
                                                 {movement.movement_no || `MOV-${movement.id}`}
                                             </TableCell>
-                                            <TableCell>{movement.movement_type}</TableCell>
+                                            <TableCell className="font-medium">{movement.movement_type_label}</TableCell>
                                             <TableCell>{movement.tyre?.tyre_code || movement.tyre_code}</TableCell>
                                             <TableCell>
                                                 {movement.movement_date

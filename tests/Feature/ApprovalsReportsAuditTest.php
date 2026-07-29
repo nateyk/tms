@@ -84,6 +84,7 @@ class ApprovalsReportsAuditTest extends TestCase
         $response->assertInertia(function ($page) {
             return $page->component('approvals/pending')
                 ->has('movements')
+                ->where('movements.0.movement_type_label', 'Store to Vehicle')
                 ->has('transfers')
                 ->has('disposals');
         });
