@@ -41,6 +41,7 @@ class TyreMovementWorkflowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('tyres/movements/create')
+                ->where('powerVehicles', fn ($vehicles) => collect($vehicles)->firstWhere('id', $active->id)['current_odometer'] === 120000)
                 ->where('powerVehicles', fn ($vehicles) => collect($vehicles)->contains(
                     fn (array $vehicle) => $vehicle['id'] === $active->id
                         && $vehicle['mounted_count'] === 1
@@ -168,6 +169,7 @@ class TyreMovementWorkflowTest extends TestCase
                 ->where('prefilled.to_location_id', $vehicle->id)
                 ->where('prefilled.to_position_code', 'B')
                 ->where('prefilled.to_location_type', 'power_vehicle')
+                ->where('prefilled.to_odometer', 172842)
             );
 
         $this->actingAs($this->adminUser)

@@ -298,7 +298,7 @@ class TyreMovementController extends Controller
             'source_label' => $this->tyreSourceLabel($tyre, $sourceStores, $sourceVehicles),
             'source_position_label' => $tyre->currentPositionDisplay(),
             'position_type' => $this->tyrePositionType($tyre, $sourceVehicles),
-            'current_vehicle_odometer' => $this->tyreVehicle($tyre, $sourceVehicles)?->odometer,
+            'current_vehicle_odometer' => $this->tyreCurrentOdometer($tyre, $sourceVehicles),
             'installed_odometer' => $tyre->activeAssignment?->installed_odometer,
             'has_pending_movement' => $pendingTyreIds->has($tyre->id),
         ]);
@@ -472,6 +472,7 @@ class TyreMovementController extends Controller
     /** @return array<string, mixed> */
     private function serializeDestinationVehicle(Vehicle $vehicle): array
     {
+        $currentOdometer = $this->odometerService->getLatestOdometer($vehicle);
         $positions = collect($this->mapWorkflow->movementOwnerPositionStatuses($vehicle, TyreLocationType::PowerVehicle->value));
         $available = $positions->where('is_empty', true)->count();
         $mounted = $positions->where('is_occupied', true)->count();
@@ -490,13 +491,13 @@ class TyreMovementController extends Controller
                 $vehicle->vehicleType?->name ?? 'Vehicle',
                 $available,
                 $mounted,
-                $vehicle->odometer !== null ? number_format((int) $vehicle->odometer) : 'not set'
+                $currentOdometer !== null ? number_format($currentOdometer) : 'not set'
             ),
             'vehicle_code' => $vehicle->vehicle_code,
             'plate_number' => $vehicle->plate_number,
             'vehicle_type_name' => $vehicle->vehicleType?->name,
             'asset_type' => $vehicle->asset_type->value,
-            'current_odometer' => $vehicle->odometer,
+            'current_odometer' => $currentOdometer,
             'mounted_count' => $mounted,
             'available_position_count' => $available,
             'status' => $vehicle->status->value,
@@ -510,7 +511,7 @@ class TyreMovementController extends Controller
                 'plate_number' => $attachedTrailer->plate_number,
                 'label' => $attachedTrailer->displayCodeWithPlate(),
                 'vehicle_type_name' => $attachedTrailer->vehicleType?->name,
-                'current_odometer' => $attachedTrailer->odometer,
+                'current_odometer' => $this->odometerService->getLatestOdometer($attachedTrailer),
                 'available_position_count' => $trailerAvailable,
                 'mounted_count' => $trailerMounted,
             ] : null,
@@ -527,7 +528,7 @@ class TyreMovementController extends Controller
                 'owner_vehicle_id' => $vehicle->id,
                 'owner_vehicle_code' => $vehicle->vehicle_code,
                 'owner_label' => $vehicle->displayCodeWithPlate(),
-                'owner_current_odometer' => $vehicle->odometer,
+                'owner_current_odometer' => $this->odometerService->getLatestOdometer($vehicle),
                 'code' => $position['code'],
                 'display_code' => $position['display_code'],
                 'label' => $position['label'],
@@ -552,6 +553,13 @@ class TyreMovementController extends Controller
 
         return $vehicles?->get($tyre->current_location_id)
             ?? Vehicle::query()->find($tyre->current_location_id);
+    }
+
+    private function tyreCurrentOdometer(Tyre $tyre, ?Collection $vehicles = null): ?int
+    {
+        $vehicle = $this->tyreVehicle($tyre, $vehicles);
+
+        return $vehicle ? $this->odometerService->getLatestOdometer($vehicle) : null;
     }
 
     private function tyrePositionType(Tyre $tyre, ?Collection $vehicles = null): ?string

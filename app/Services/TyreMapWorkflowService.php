@@ -18,6 +18,7 @@ class TyreMapWorkflowService
 {
     public function __construct(
         protected VehicleTyreLayoutBuilder $layoutBuilder,
+        protected VehicleOdometerService $odometerService,
     ) {}
 
     public function locationTypeForVehicle(Vehicle $vehicle): TyreLocationType
@@ -319,6 +320,7 @@ class TyreMapWorkflowService
             'to_location_type' => $this->locationTypeForVehicle($vehicle)->value,
             'to_location_id' => $vehicleId,
             'to_position_code' => $position,
+            'to_odometer' => $this->odometerService->getLatestOdometer($vehicle),
             'movement_date' => now()->toDateString(),
             'reason' => "Install tyre at {$position} on {$vehicle->vehicle_code}",
         ];
