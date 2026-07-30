@@ -76,9 +76,14 @@ export default function MovementsShow({
     can: Permissions;
 }) {
     const [completionOpen, setCompletionOpen] = useState(false);
-    const workflowCan = { ...can, complete: false };
+    const workflowCan = { ...can, complete: can.complete };
+    const hasActiveWorkflowAction =
+        (movement.status === "draft" && (can.submit || can.cancel)) ||
+        (movement.status === "submitted" && (can.check || can.reject || can.cancel)) ||
+        (movement.status === "checked" && (can.approve || can.reject || can.cancel)) ||
+        (movement.status === "approved" && (can.complete || can.cancel));
     const hasWorkflowActions =
-        Boolean(movement.pdf_url) || can.submit || can.check || can.approve || can.reject || can.cancel;
+        Boolean(movement.pdf_url) || hasActiveWorkflowAction;
     const isLocked = ["submitted", "checked", "approved", "completed", "rejected", "cancelled"].includes(movement.status);
 
     return (
@@ -100,10 +105,11 @@ export default function MovementsShow({
                                 recordId={movement.id}
                                 routePrefix="tyres.movements"
                                 can={workflowCan}
+                                status={movement.status}
                                 pdfUrl={movement.pdf_url}
                             />
                         )}
-                        {can.complete && (
+                        {movement.status === "approved" && can.complete && (
                             <>
                                 <Button onClick={() => setCompletionOpen(true)}>Complete Movement</Button>
                                 <MovementCompletionDialog
@@ -283,7 +289,7 @@ export default function MovementsShow({
                             <Button variant="ghost" asChild>
                                 <Link href={route("tyres.movements.index")}>Back to list</Link>
                             </Button>
-                            {can.update && (
+                            {movement.status === "draft" && can.update && (
                                 <Button variant="outline" asChild>
                                     <Link href={route("tyres.movements.edit", movement.id)}>
                                         <Pencil className="mr-2 h-4 w-4" />

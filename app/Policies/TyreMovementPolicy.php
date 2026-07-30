@@ -60,7 +60,7 @@ class TyreMovementPolicy
     public function reject(User $user, TyreMovement $tyreMovement): bool
     {
         return $user->can('movement.reject')
-            && ! $tyreMovement->status->isTerminal();
+            && in_array($tyreMovement->status, [VoucherStatus::Submitted, VoucherStatus::Checked], true);
     }
 
     public function complete(User $user, TyreMovement $tyreMovement): bool

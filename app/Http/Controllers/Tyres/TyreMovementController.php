@@ -442,16 +442,23 @@ class TyreMovementController extends Controller
     private function serializePermissions(TyreMovement $movement): array
     {
         $user = request()->user();
+        $status = $movement->status;
 
         return [
-            'update' => $user?->can('update', $movement) ?? false,
+            'update' => $status === VoucherStatus::Draft && ($user?->can('update', $movement) ?? false),
             'delete' => false,
-            'submit' => $user?->can('submit', $movement) ?? false,
-            'check' => $user?->can('check', $movement) ?? false,
-            'approve' => $user?->can('approve', $movement) ?? false,
-            'reject' => $user?->can('reject', $movement) ?? false,
-            'complete' => $user?->can('complete', $movement) ?? false,
-            'cancel' => $user?->can('cancel', $movement) ?? false,
+            'submit' => $status === VoucherStatus::Draft && ($user?->can('submit', $movement) ?? false),
+            'check' => $status === VoucherStatus::Submitted && ($user?->can('check', $movement) ?? false),
+            'approve' => $status === VoucherStatus::Checked && ($user?->can('approve', $movement) ?? false),
+            'reject' => in_array($status, [VoucherStatus::Submitted, VoucherStatus::Checked], true)
+                && ($user?->can('reject', $movement) ?? false),
+            'complete' => $status === VoucherStatus::Approved && ($user?->can('complete', $movement) ?? false),
+            'cancel' => in_array($status, [
+                VoucherStatus::Draft,
+                VoucherStatus::Submitted,
+                VoucherStatus::Checked,
+                VoucherStatus::Approved,
+            ], true) && ($user?->can('cancel', $movement) ?? false),
         ];
     }
 

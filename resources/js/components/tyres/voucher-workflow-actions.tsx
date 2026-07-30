@@ -29,13 +29,23 @@ type VoucherWorkflowActionsProps = {
     recordId: number;
     routePrefix: string;
     can: VoucherPermissions;
+    status: string;
     pdfUrl?: string;
 };
 
-export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: VoucherWorkflowActionsProps) {
+export function VoucherWorkflowActions({ recordId, routePrefix, can, status, pdfUrl }: VoucherWorkflowActionsProps) {
     const [rejectReason, setRejectReason] = useState("");
     const [voidReason, setVoidReason] = useState("");
     const [processing, setProcessing] = useState(false);
+
+    const actionPermissions: VoucherPermissions = {
+        submit: status === "draft" && can.submit,
+        check: status === "submitted" && can.check,
+        approve: status === "checked" && can.approve,
+        reject: ["submitted", "checked"].includes(status) && can.reject,
+        complete: status === "approved" && can.complete,
+        cancel: ["draft", "submitted", "checked", "approved"].includes(status) && can.cancel,
+    };
 
     const postAction = (action: string, payload: Record<string, string> = {}) => {
         setProcessing(true);
@@ -60,7 +70,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </Button>
             )}
 
-            {can.submit && (
+            {actionPermissions.submit && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="secondary" disabled={processing}>
@@ -85,7 +95,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </AlertDialog>
             )}
 
-            {can.check && (
+            {actionPermissions.check && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="secondary" disabled={processing}>
@@ -110,7 +120,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </AlertDialog>
             )}
 
-            {can.approve && (
+            {actionPermissions.approve && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button disabled={processing}>Approve</Button>
@@ -132,7 +142,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </AlertDialog>
             )}
 
-            {can.complete && (
+            {actionPermissions.complete && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button disabled={processing}>
@@ -157,7 +167,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </AlertDialog>
             )}
 
-            {can.reject && (
+            {actionPermissions.reject && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" disabled={processing}>
@@ -193,7 +203,7 @@ export function VoucherWorkflowActions({ recordId, routePrefix, can, pdfUrl }: V
                 </AlertDialog>
             )}
 
-            {can.cancel && (
+            {actionPermissions.cancel && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="outline" disabled={processing}>

@@ -377,6 +377,24 @@ class ApprovalsReportsAuditTest extends TestCase
         ]);
     }
 
+    public function test_voided_movement_is_read_only_in_its_detail_payload(): void
+    {
+        $movement = $this->createSubmittedMovement($this->preparer->id, $this->checker->id, 'cancelled');
+
+        $this->actingAs($this->adminUser)
+            ->get(route('tyres.movements.show', $movement))
+            ->assertInertia(fn ($page) => $page
+                ->component('tyres/movements/show')
+                ->where('movement.status', 'cancelled')
+                ->where('can.update', false)
+                ->where('can.submit', false)
+                ->where('can.check', false)
+                ->where('can.approve', false)
+                ->where('can.reject', false)
+                ->where('can.complete', false)
+                ->where('can.cancel', false));
+    }
+
     private function createSubmittedMovement(int $preparedBy, ?int $checkedBy = null, string $status = 'submitted'): TyreMovement
     {
         $tyre = $this->createAvailableTyre();
