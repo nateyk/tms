@@ -18,13 +18,17 @@ class RealFleetAuditSeederTest extends TestCase
     public function test_it_adds_all_supplied_audits_without_replacing_existing_combinations(): void
     {
         $this->seed(RealFleetAuditSeeder::class);
+        $this->seed(RealFleetAuditSeeder::class);
 
-        $this->assertSame(95, Tyre::query()->count());
-        $this->assertSame(8, Vehicle::query()->count());
+        $this->assertSame(118, Tyre::query()->count());
+        $this->assertSame(10, Vehicle::query()->count());
+        $this->assertSame(152044, Vehicle::query()->where('plate_number', 'ET-3-A17807')->value('odometer'));
         $this->assertSame(171742, Vehicle::query()->where('plate_number', 'ET-3-A14761')->value('odometer'));
         $this->assertSame(178505, Vehicle::query()->where('plate_number', 'ET-3-A14763')->value('odometer'));
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KE04157E204']);
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KB07235E901']);
+        $this->assertDatabaseHas('tyres', ['serial_number' => '26C0133323']);
+        $this->assertDatabaseHas('tyre_baselines', ['baseline_odometer' => 152044, 'baseline_percentage' => 95]);
     }
 
     public function test_reading_monitoring_merges_attached_trailer_positions_into_the_power_unit_map(): void
