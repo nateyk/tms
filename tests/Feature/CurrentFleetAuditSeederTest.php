@@ -20,11 +20,18 @@ class CurrentFleetAuditSeederTest extends TestCase
 
         $power = Vehicle::query()->where('plate_number', 'ET-3-A00765')->firstOrFail();
         $trailer = Vehicle::query()->where('plate_number', 'ET-3-34969')->firstOrFail();
+        $emptyPositionTrailer = Vehicle::query()->where('plate_number', 'ET-3-36814')->firstOrFail();
 
         $this->assertSame(254529, $power->odometer);
         $this->assertSame(254529, $trailer->odometer);
         $this->assertSame(1, $power->activeCombinationAsPower()->where('trailer_vehicle_id', $trailer->id)->count());
         $this->assertSame(23, $power->activeTyreAssignments()->count() + $trailer->activeTyreAssignments()->count());
+        $this->assertFalse($emptyPositionTrailer->activeTyreAssignments()->whereIn('position_code', ['Q', 'R'])->exists());
+        $this->assertFalse(Tyre::query()
+            ->where('current_location_type', 'trailer')
+            ->where('current_location_id', $emptyPositionTrailer->id)
+            ->whereIn('current_position_code', ['Q', 'R'])
+            ->exists());
 
         $wTyre = Tyre::query()->where('serial_number', 'J234C23099')->firstOrFail();
         $this->assertSame($trailer->id, $wTyre->current_location_id);

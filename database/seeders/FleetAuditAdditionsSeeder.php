@@ -28,9 +28,11 @@ class FleetAuditAdditionsSeeder extends Seeder
             $size = TyreSize::query()->where('size_label', '315/80R22.5')->firstOrFail();
             foreach ($this->audits() as $audit) {
                 $power = $this->vehicle($audit['power'], AssetType::PowerVehicle, $powerType, $audit['km'], $admin->id);
-                $trailer = $this->vehicle($audit['trailer'], AssetType::Trailer, $trailerType, null, $admin->id);
+                $trailer = $this->vehicle($audit['trailer'], AssetType::Trailer, $trailerType, $audit['km'], $admin->id);
                 VehicleCombination::query()->updateOrCreate(['power_vehicle_id' => $power->id, 'trailer_vehicle_id' => $trailer->id], ['attached_date' => '2026-07-07', 'odometer_at_attach' => $audit['km'], 'status' => CombinationStatus::Active, 'attached_by' => $admin->id, 'approved_by' => $admin->id, 'notes' => 'Imported audited combination.']);
                 VehicleOdometerReading::query()->updateOrCreate(['vehicle_id' => $power->id, 'odometer' => $audit['km'], 'source' => OdometerReadingSource::Import], ['reading_date' => '2026-07-07', 'recorded_by' => $admin->id, 'notes' => 'Imported from tyre audit.']);
+                VehicleOdometerReading::query()->updateOrCreate(['vehicle_id' => $trailer->id, 'odometer' => $audit['km'], 'source' => OdometerReadingSource::Import], ['reading_date' => '2026-07-07', 'recorded_by' => $admin->id, 'notes' => 'Imported from tyre audit.']);
+                $this->clearStaleFitments($power, $trailer, $this->rows($audit['rows']), $audit['km']);
                 foreach ($this->rows($audit['rows']) as [$pos, $rawBrand, $serial, $percentage, $remark]) {
                     $isPower = $pos <= 'J'; $owner = $isPower ? $power : $trailer;
                     $brandName = match (strtoupper($rawBrand)) { 'BLACKHAWK', 'BLACKHWAK', 'BLACKHAWAK', 'BLCKHAWK', 'BLACK HAWK' => 'Black Hawk', 'SAILUN' => 'Sailun', 'GOODRIDE' => 'Goodride', 'DUPRO' => 'DUPRO', default => 'Triangle' };
@@ -53,7 +55,47 @@ class FleetAuditAdditionsSeeder extends Seeder
         });
     }
 
-    private function vehicle(string $plate, AssetType $assetType, VehicleType $type, ?int $km, int $adminId): Vehicle { $vehicle = Vehicle::query()->firstOrCreate(['plate_number' => $plate], ['asset_type' => $assetType, 'vehicle_type_id' => $type->id, 'status' => VehicleStatus::Active, 'odometer' => $km, 'notes' => 'Imported from audited fleet sheet.']); $vehicle->forceFill(['asset_type' => $assetType, 'vehicle_type_id' => $type->id, 'status' => VehicleStatus::Active, 'odometer' => $km, 'odometer_last_updated_at' => $km ? '2026-07-07 00:00:00' : null, 'odometer_last_updated_by' => $km ? $adminId : null])->save(); return $vehicle; }
+    private function vehicle(string $plate, AssetType $assetType, VehicleType $type, int $km, int $adminId): Vehicle { $vehicle = Vehicle::query()->firstOrCreate(['plate_number' => $plate], ['asset_type' => $assetType, 'vehicle_type_id' => $type->id, 'status' => VehicleStatus::Active, 'odometer' => $km, 'notes' => 'Imported from audited fleet sheet.']); $vehicle->forceFill(['asset_type' => $assetType, 'vehicle_type_id' => $type->id, 'status' => VehicleStatus::Active, 'odometer' => $km, 'odometer_last_updated_at' => '2026-07-07 00:00:00', 'odometer_last_updated_by' => $adminId])->save(); return $vehicle; }
+    /** @param list<array{0:string,1:string,2:string,3:int,4:?string}> $rows */
+    private function clearStaleFitments(Vehicle $power, Vehicle $trailer, array $rows, int $odometer): void
+    {
+        $wanted = collect($rows)->pluck(2, 0)->all();
+
+        foreach (range('A', 'X') as $position) {
+            $owner = $position <= 'J' ? $power : $trailer;
+            $assignment = TyreAssignment::query()
+                ->where('asset_id', $owner->id)
+                ->where('asset_type', $owner->isTrailer() ? AssignmentAssetType::Trailer : AssignmentAssetType::PowerVehicle)
+                ->where('position_code', $position)
+                ->where('status', TyreAssignmentStatus::Active)
+                ->first();
+
+            if ($assignment && (($wanted[$position] ?? null) !== $assignment->tyre?->serial_number)) {
+                $this->removeAssignment($assignment, $odometer);
+            }
+        }
+    }
+
+    private function removeAssignment(TyreAssignment $assignment, int $odometer): void
+    {
+        $assignment->update([
+            'status' => TyreAssignmentStatus::Removed,
+            'removed_date' => '2026-07-07',
+            'removed_odometer' => max($odometer, (int) ($assignment->installed_odometer ?? $odometer)),
+            'km_used' => max(0, $odometer - (int) ($assignment->installed_odometer ?? $odometer)),
+            'notes' => 'Closed while reconciling the audited fleet fitment.',
+        ]);
+
+        $tyre = $assignment->tyre;
+        if ($tyre && ! $tyre->assignments()->where('status', TyreAssignmentStatus::Active)->exists()) {
+            $tyre->update([
+                'current_location_type' => TyreLocationType::Store,
+                'current_location_id' => null,
+                'current_position_code' => null,
+                'status' => TyreStatus::Available,
+            ]);
+        }
+    }
     private function trailerType(): VehicleType { $layout = app(VehicleTyreLayoutBuilder::class)->buildLayout(12, 3, 'T'); foreach ($layout['positions'] as $i => &$p) { $code = chr(75 + $i); $p['code'] = $code; $p['display_code'] = $code; $p['label'] = 'Trailer position '.$code; } unset($p); $layout['positions'][] = ['code'=>'W','display_code'=>'W','legacy_code'=>null,'label'=>'Trailer spare W','axle'=>4,'side'=>'right','dual'=>'single','x'=>680,'y'=>346]; $layout['positions'][] = ['code'=>'X','display_code'=>'X','legacy_code'=>null,'label'=>'Trailer spare X','axle'=>4,'side'=>'left','dual'=>'single','x'=>200,'y'=>346]; return VehicleType::query()->updateOrCreate(['name'=>'Attached trailer - 12 tyres + W/X spares'], ['asset_type'=>AssetType::Trailer,'axle_count'=>3,'tyre_count'=>14,'layout_json'=>$layout,'status'=>'active']); }
     private function nextCode(): string { $i = (int) Tyre::withTrashed()->max('id') + 1; do { $code = sprintf('TYR-%04d', $i++); } while (Tyre::withTrashed()->where('tyre_code', $code)->exists()); return $code; }
     /** @return list<array{0:string,1:string,2:string,3:int,4:?string}> */ private function rows(string $rows): array { return array_map(fn ($line) => array_pad(explode('|', $line), 5, null), array_filter(explode("\n", str_replace(';', "\n", trim($rows))))); }
