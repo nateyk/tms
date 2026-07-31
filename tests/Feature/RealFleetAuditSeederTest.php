@@ -21,7 +21,7 @@ class RealFleetAuditSeederTest extends TestCase
 
         $this->assertSame(95, Tyre::query()->count());
         $this->assertSame(8, Vehicle::query()->count());
-        $this->assertSame(184142, Vehicle::query()->where('plate_number', 'ET-3-A14761')->value('odometer'));
+        $this->assertSame(171742, Vehicle::query()->where('plate_number', 'ET-3-A14761')->value('odometer'));
         $this->assertSame(178505, Vehicle::query()->where('plate_number', 'ET-3-A14763')->value('odometer'));
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KE04157E204']);
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KB07235E901']);
@@ -55,13 +55,13 @@ class RealFleetAuditSeederTest extends TestCase
         $trailer = Vehicle::query()->where('plate_number', 'ET-3-34051')->firstOrFail();
         $tyre = Tyre::query()->where('serial_number', '25C0874961')->firstOrFail();
 
-        $this->assertSame(184142, $power->odometer);
-        $this->assertSame(184142, $trailer->odometer);
+        $this->assertSame(171742, $power->odometer);
+        $this->assertSame(171742, $trailer->odometer);
         $this->assertDatabaseHas('vehicle_odometer_readings', [
             'vehicle_id' => $power->id,
             'odometer' => 171742,
         ]);
-        $this->assertDatabaseHas('vehicle_odometer_readings', [
+        $this->assertDatabaseMissing('vehicle_odometer_readings', [
             'vehicle_id' => $power->id,
             'odometer' => 184142,
         ]);
@@ -69,7 +69,7 @@ class RealFleetAuditSeederTest extends TestCase
 
         $usage = app(TyreUsageTrackingService::class)->calculateTyreUsage($tyre->fresh());
 
-        $this->assertSame(12400, $usage['total_used_km']);
-        $this->assertSame(184142, $usage['current_vehicle_odometer']);
+        $this->assertSame(0, $usage['total_used_km']);
+        $this->assertSame(171742, $usage['current_vehicle_odometer']);
     }
 }
