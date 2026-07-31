@@ -383,7 +383,7 @@ class TyreMovementWorkflowTest extends TestCase
                 'to_location_id' => $trailer->id,
                 'to_position_code' => 'C',
                 'from_odometer' => 175000,
-                'to_odometer' => 90000,
+                'to_odometer' => 175000,
             ])
             ->assertRedirect();
 

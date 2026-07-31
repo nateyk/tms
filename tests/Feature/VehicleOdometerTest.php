@@ -6,6 +6,9 @@ use App\Exceptions\TyreBusinessException;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleOdometerReading;
+use App\Models\Tyre;
+use App\Models\TyreAssignment;
+use App\Models\TyreBaseline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,6 +47,66 @@ class VehicleOdometerTest extends TestCase
         $this->assertEquals($initialOdometer + 1000, $vehicle->odometer);
         $this->assertNotNull($vehicle->odometer_last_updated_at);
         $this->assertEquals($this->user->id, $vehicle->odometer_last_updated_by);
+    }
+
+    public function test_update_power_odometer_syncs_attached_trailer_and_trailer_tyre_usage(): void
+    {
+        $power = Vehicle::query()
+            ->where('asset_type', 'power_vehicle')
+            ->whereHas('activeCombinationAsPower')
+            ->firstOrFail();
+        $trailer = $power->attachedTrailer();
+        $this->assertNotNull($trailer);
+
+        $initialOdometer = app(\App\Services\VehicleOdometerService::class)->getLatestOdometer($power);
+        $trailerTyre = Tyre::query()->create([
+            'tyre_code' => 'ODO-TRAILER-001',
+            'serial_number' => 'ODO-TRAILER-SN-001',
+            'current_location_type' => 'trailer',
+            'current_location_id' => $trailer->id,
+            'current_position_code' => 'K',
+            'status' => 'active',
+            'source' => 'purchased_new_tyre',
+        ]);
+        TyreBaseline::query()->create([
+            'tyre_id' => $trailerTyre->id,
+            'baseline_location_type' => 'trailer',
+            'baseline_location_id' => $trailer->id,
+            'baseline_position_code' => 'K',
+            'baseline_odometer' => $initialOdometer,
+            'baseline_percentage' => 100,
+            'expected_life_km' => 100000,
+            'baseline_date' => now()->toDateString(),
+            'created_by' => $this->user->id,
+        ]);
+        TyreAssignment::query()->create([
+            'tyre_id' => $trailerTyre->id,
+            'asset_type' => 'trailer',
+            'asset_id' => $trailer->id,
+            'position_code' => 'K',
+            'status' => 'active',
+            'installed_odometer' => $initialOdometer,
+            'installed_date' => now()->toDateString(),
+        ]);
+
+        $newOdometer = $initialOdometer + 1250;
+        app(\App\Services\VehicleOdometerService::class)->updateOdometer(
+            $power,
+            $newOdometer,
+            'manual',
+            null,
+            $this->user->id,
+        );
+
+        $this->assertSame($newOdometer, $trailer->fresh()->odometer);
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $trailer->id,
+            'odometer' => $newOdometer,
+            'source' => 'manual',
+        ]);
+        $usage = app(\App\Services\TyreUsageTrackingService::class)
+            ->calculateTyreUsage($trailerTyre->fresh());
+        $this->assertSame($newOdometer - $initialOdometer, $usage['total_used_km']);
     }
 
     public function test_cannot_set_odometer_lower_than_current()
