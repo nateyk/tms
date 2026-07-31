@@ -33,8 +33,33 @@ class TyreController extends Controller
         $this->authorize('viewAny', Tyre::class);
 
         $tyres = Tyre::query()
-            ->with(['brand:id,name', 'size:id,size_label', 'activeAssignment.vehicle:id,vehicle_code,plate_number'])
+            ->with([
+                'brand:id,name',
+                'size:id,size_label',
+                'baseline',
+                'assignments:id,tyre_id,status,installed_date,installed_odometer,km_used',
+                'activeAssignment.vehicle:id,vehicle_code,plate_number,odometer',
+                'inspections' => fn ($q) => $q
+                    ->select(['id', 'tyre_id', 'vehicle_id', 'position_code', 'inspection_date', 'audit_odometer', 'audited_remaining_percentage', 'condition'])
+                    ->latest('inspection_date')
+                    ->latest('created_at'),
+            ])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->filled('q'), function ($q) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $q->where(function ($query) use ($search): void {
+                    $query
+                        ->where('tyre_code', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%")
+                        ->orWhereHas('brand', fn ($brand) => $brand->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('activeAssignment.vehicle', function ($vehicle) use ($search): void {
+                            $vehicle
+                                ->where('vehicle_code', 'like', "%{$search}%")
+                                ->orWhere('plate_number', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->orderBy('tyre_code')
             ->paginate(15)
             ->withQueryString()
@@ -44,6 +69,7 @@ class TyreController extends Controller
             'tyres' => $tyres,
             'filters' => [
                 'status' => $request->query('status'),
+                'q' => $request->query('q'),
             ],
             'statusOptions' => collect(TyreStatus::cases())->map(fn (TyreStatus $s) => [
                 'value' => $s->value,
@@ -172,19 +198,53 @@ class TyreController extends Controller
     /** @return array<string, mixed> */
     private function serializeListRow(Tyre $tyre): array
     {
+        $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+        $latestInspection = $tyre->inspections->first();
+        $placement = $tyre->current_location_type?->value === 'store'
+            ? 'Main Tyre Store'
+            : $tyre->currentVehiclePlateDisplay();
+
         return [
             'id' => $tyre->id,
             'tyre_code' => $tyre->tyre_code,
             'serial_number' => $tyre->serial_number,
             'brand_name' => $tyre->brand?->name,
+            'size_label' => $tyre->size?->size_label,
             'current_tread_depth' => $tyre->current_tread_depth,
-            'current_location_type' => $tyre->current_location_type->label(),
-            'vehicle_plate' => $tyre->currentVehiclePlateDisplay(),
+            'current_location_type' => $tyre->current_location_type?->label() ?? 'Not placed',
+            'placement_label' => $placement,
             'current_position_code' => $tyre->currentPositionDisplay(),
+            'position_type' => in_array(strtoupper((string) $tyre->current_position_code), ['W', 'X'], true) ? 'Spare' : 'Running',
             'status' => $tyre->status->value,
             'status_label' => $tyre->status->label(),
             'status_color' => $tyre->status->mapColor(),
+            'has_baseline' => $usage['has_baseline'],
+            'baseline_percentage' => $usage['baseline_percentage'],
+            'baseline_odometer' => $usage['baseline_odometer'],
+            'used_km' => $usage['used_km'],
+            'current_vehicle_odometer' => $usage['current_vehicle_odometer'],
+            'effective_remaining_percentage' => $usage['effective_remaining_percentage'],
+            'health_status' => $usage['effective_status'],
+            'health_color' => $this->healthColor($usage['effective_status']),
+            'latest_audit_percentage' => $latestInspection?->audited_remaining_percentage !== null
+                ? (float) $latestInspection->audited_remaining_percentage
+                : null,
+            'latest_audit_date' => $latestInspection?->inspection_date?->format('Y-m-d'),
+            'latest_audit_odometer' => $latestInspection?->audit_odometer,
+            'view_url' => route('tyres.show', $tyre),
         ];
+    }
+
+    private function healthColor(?string $status): string
+    {
+        return match ($status) {
+            'Good' => 'green',
+            'Watch' => 'yellow',
+            'Low' => 'orange',
+            'End of Life' => 'red',
+            'Baseline Required' => 'blue',
+            default => 'black',
+        };
     }
 
     /** @return array<string, mixed> */
