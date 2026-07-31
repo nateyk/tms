@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Tyre;
+use App\Models\TyreBaseline;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\TyreUsageTrackingService;
 use Database\Seeders\RealFleetAuditSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -43,5 +45,31 @@ class RealFleetAuditSeederTest extends TestCase
                         && $tyre['current_position_code'] === 'K'
                 )
             ));
+    }
+
+    public function test_a14761_import_keeps_baseline_and_latest_km_for_used_km_calculation(): void
+    {
+        $this->seed(RealFleetAuditSeeder::class);
+
+        $power = Vehicle::query()->where('plate_number', 'ET-3-A14761')->firstOrFail();
+        $trailer = Vehicle::query()->where('plate_number', 'ET-3-34051')->firstOrFail();
+        $tyre = Tyre::query()->where('serial_number', '25C0874961')->firstOrFail();
+
+        $this->assertSame(184142, $power->odometer);
+        $this->assertSame(184142, $trailer->odometer);
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $power->id,
+            'odometer' => 171742,
+        ]);
+        $this->assertDatabaseHas('vehicle_odometer_readings', [
+            'vehicle_id' => $power->id,
+            'odometer' => 184142,
+        ]);
+        $this->assertSame(171742, TyreBaseline::query()->where('tyre_id', $tyre->id)->value('baseline_odometer'));
+
+        $usage = app(TyreUsageTrackingService::class)->calculateTyreUsage($tyre->fresh());
+
+        $this->assertSame(12400, $usage['total_used_km']);
+        $this->assertSame(184142, $usage['current_vehicle_odometer']);
     }
 }
