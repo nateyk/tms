@@ -5,20 +5,19 @@ namespace App\Models;
 use App\Enums\TyreLocationType;
 use App\Enums\TyreSource;
 use App\Enums\TyreStatus;
+use App\Models\Concerns\LogsActivityCompatibility;
 use App\Support\TyrePositionFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Tyre extends Model implements HasMedia
 {
-    use InteractsWithMedia, LogsActivity, SoftDeletes;
+    use InteractsWithMedia, LogsActivityCompatibility, SoftDeletes;
 
     protected $fillable = [
         'tyre_code',
@@ -52,13 +51,6 @@ class Tyre extends Model implements HasMedia
             'initial_tread_depth' => 'decimal:2',
             'current_tread_depth' => 'decimal:2',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty();
     }
 
     public function brand(): BelongsTo

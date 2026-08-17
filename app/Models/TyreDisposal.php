@@ -5,15 +5,14 @@ namespace App\Models;
 use App\Enums\DisposalReason;
 use App\Enums\TyreLocationType;
 use App\Enums\VoucherStatus;
+use App\Models\Concerns\LogsActivityCompatibility;
 use App\Support\TyrePositionFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class TyreDisposal extends Model
 {
-    use LogsActivity;
+    use LogsActivityCompatibility;
 
     protected $fillable = [
         'disposal_no',
@@ -55,11 +54,6 @@ class TyreDisposal extends Model
             'sold_amount' => 'decimal:2',
             'final_km_used' => 'integer',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
     public function tyre(): BelongsTo

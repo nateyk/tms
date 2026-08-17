@@ -5,15 +5,14 @@ namespace App\Models;
 use App\Enums\MovementType;
 use App\Enums\TyreLocationType;
 use App\Enums\VoucherStatus;
+use App\Models\Concerns\LogsActivityCompatibility;
 use App\Support\TyrePositionFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class TyreMovement extends Model
 {
-    use LogsActivity;
+    use LogsActivityCompatibility;
 
     protected $fillable = [
         'movement_no',
@@ -59,11 +58,6 @@ class TyreMovement extends Model
             'from_odometer' => 'integer',
             'to_odometer' => 'integer',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
     public function tyre(): BelongsTo
