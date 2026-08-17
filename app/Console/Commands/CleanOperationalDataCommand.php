@@ -1,17 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Database\Seeders\FleetOperationalDefaultsSeeder;
+use Database\Seeders\RealFleetAuditSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CleanOperationalDataCommand extends Command
+final class CleanOperationalDataCommand extends Command
 {
     protected $signature = 'tms:clean-operational-data
         {--force : Run without confirmation}
-        {--seed-defaults : Seed production starter setup data after cleanup}';
+        {--seed-defaults : Seed production starter setup data after cleanup}
+        {--seed-real-audits : Seed the canonical 18-combination fleet audit dataset after cleanup}';
 
     protected $description = 'Delete fleet, tyre, voucher, and demo operating data while keeping users, roles, permissions, and settings';
 
@@ -41,6 +45,12 @@ class CleanOperationalDataCommand extends Command
 
     public function handle(): int
     {
+        if ($this->option('seed-defaults') && $this->option('seed-real-audits')) {
+            $this->error('Choose either --seed-defaults or --seed-real-audits, not both.');
+
+            return self::FAILURE;
+        }
+
         $tables = collect($this->tables)
             ->filter(fn (string $table) => Schema::hasTable($table))
             ->values();
@@ -75,7 +85,13 @@ class CleanOperationalDataCommand extends Command
 
         $this->info('Operational data cleaned. Users, roles, permissions, and settings were preserved.');
 
-        if ($this->option('seed-defaults')) {
+        if ($this->option('seed-real-audits')) {
+            $this->call('db:seed', [
+                '--class' => RealFleetAuditSeeder::class,
+                '--force' => true,
+            ]);
+            $this->info('Canonical 18-combination fleet audit dataset seeded.');
+        } elseif ($this->option('seed-defaults')) {
             $this->call('db:seed', [
                 '--class' => FleetOperationalDefaultsSeeder::class,
                 '--force' => true,

@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Tyre;
+use App\Models\TyreAssignment;
 use App\Models\TyreBaseline;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleCombination;
 use App\Services\TyreUsageTrackingService;
 use Database\Seeders\RealFleetAuditSeeder;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,20 +18,35 @@ class RealFleetAuditSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_adds_all_supplied_audits_without_replacing_existing_combinations(): void
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RolesAndPermissionsSeeder::class);
+    }
+
+    public function test_it_imports_the_complete_workbook_manifest_idempotently(): void
     {
         $this->seed(RealFleetAuditSeeder::class);
         $this->seed(RealFleetAuditSeeder::class);
 
-        $this->assertSame(118, Tyre::query()->count());
-        $this->assertSame(10, Vehicle::query()->count());
+        $this->assertSame(419, Tyre::query()->count());
+        $this->assertSame(36, Vehicle::query()->count());
+        $this->assertSame(18, VehicleCombination::query()->where('status', 'active')->count());
+        $this->assertSame(419, TyreAssignment::query()->where('status', 'active')->count());
         $this->assertSame(152044, Vehicle::query()->where('plate_number', 'ET-3-A17807')->value('odometer'));
         $this->assertSame(171742, Vehicle::query()->where('plate_number', 'ET-3-A14761')->value('odometer'));
         $this->assertSame(178505, Vehicle::query()->where('plate_number', 'ET-3-A14763')->value('odometer'));
+        $this->assertSame(164391, Vehicle::query()->where('plate_number', 'ET-3-A17806')->value('odometer'));
+        $this->assertSame(155789, Vehicle::query()->where('plate_number', 'ET-3-A17749')->value('odometer'));
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KE04157E204']);
         $this->assertDatabaseHas('tyres', ['serial_number' => 'KB07235E901']);
         $this->assertDatabaseHas('tyres', ['serial_number' => '26C0133323']);
+        $this->assertDatabaseHas('tyres', ['serial_number' => 'J234C23099']);
         $this->assertDatabaseHas('tyre_baselines', ['baseline_odometer' => 152044, 'baseline_percentage' => 95]);
+
+        $a27049 = Vehicle::query()->where('plate_number', 'ET-3-A27049')->firstOrFail();
+        $this->assertFalse($a27049->activeTyreAssignments()->whereIn('position_code', ['A', 'B'])->exists());
     }
 
     public function test_reading_monitoring_merges_attached_trailer_positions_into_the_power_unit_map(): void

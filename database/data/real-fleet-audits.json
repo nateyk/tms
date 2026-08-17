@@ -1,0 +1,3159 @@
+{
+    "source":  "Tyre Audit (8).xlsx",
+    "fleet_count":  18,
+    "tyre_count":  419,
+    "fleets":  [
+                   {
+                       "sheet":  "ET-3-A17807",
+                       "power_plate":  "ET-3-A17807",
+                       "trailer_plate":  "ET-3-34424",
+                       "odometer":  152044,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0133323",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0133232",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11155G211",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10115M914",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF05215J709",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10116N703",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10116H707",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF05205I711",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10116O602",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10116F910",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06076K703",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "CP03283G909",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02272O311",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02283B804",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "DUPRO",
+                                         "serial":  "G232A01075",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "CC05276L213",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07165K308",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157B604",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "CP03083I212",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06101O414",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06062D316",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP06302O413",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "A17032",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A14766",
+                       "power_plate":  "ET-3-A14766",
+                       "trailer_plate":  "ET-3-34055",
+                       "odometer":  170416,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF05022U109",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF05122I715",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03256K501",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03225F503",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03257F508",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03225N704",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09195J501",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03236J705",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03227M511",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03226L203",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10296E210",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157P909",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "NO NUMBER",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156R707",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06157M406",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB04065P704",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP07013I115",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "RD12162O609",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "E651838",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157E605",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "E563248",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06195J302",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06027D305",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A17808",
+                       "power_plate":  "ET-3-A17808",
+                       "trailer_plate":  "ET-3-34425",
+                       "odometer":  146883,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF09013C403",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF08252T116",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH02245C807",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH02255L302",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH02257F611",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08285F609",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08286S602",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH02247N712",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10237F607",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09227I301",
+                                         "percentage":  75,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02293Q613",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02283Q603",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "DP07123D301",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE06297R903",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045J307",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045H503",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045C304",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045C301",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045A403",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06157J309",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045R912",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045H812",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "A170326",
+                                         "percentage":  0,
+                                         "remark":  "PASSANGER SIDE"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "180248",
+                                         "percentage":  20,
+                                         "remark":  "DRIVER SIDE"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A17806",
+                       "power_plate":  "ET-3-A17806",
+                       "trailer_plate":  "ET-3-34423",
+                       "odometer":  164391,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25A0691074",
+                                         "percentage":  83,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25A0645048",
+                                         "percentage":  83,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0796734",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782494",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782501",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782156",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0880144",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0726615",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782324",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782639",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "DUPRO",
+                                         "serial":  "G236A01011",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "E170236",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "RD12272I611",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06102G111",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08087H508",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08086O704",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08085R701",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08075H501",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08087C312",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08087R910",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08086R906",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08087C311",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06101J513",
+                                         "percentage":  40,
+                                         "remark":  "DRIVERSIDE"
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A14762",
+                       "power_plate":  "ET-3-A14762",
+                       "trailer_plate":  "ET-3-36814",
+                       "odometer":  170248,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8404654",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8446019",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0626893",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0143303",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0603312",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0630084",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0143311",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8092987",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8099867",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0626932",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156H507",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156R607",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156L110",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04157R402",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07117J305",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07126E207",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07106N710",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07107R607",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07116J706",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07107R606",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07107R603",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07107H508",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "RD12182G409",
+                                         "percentage":  35,
+                                         "remark":  "DRIVERSIDE"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "E651834",
+                                         "percentage":  25,
+                                         "remark":  "PASSANGER"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A17749",
+                       "power_plate":  "ET-3-A17749",
+                       "trailer_plate":  "ET-3-34422",
+                       "odometer":  155789,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25A0466626",
+                                         "percentage":  86,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8226269",
+                                         "percentage":  86,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092319",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092880",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0030009",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8299881",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092151",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092926",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0030334",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0009712",
+                                         "percentage":  92,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "J103214",
+                                         "percentage":  15,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "E14538E",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "D810422",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC05255I111",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08085H807",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10246R506",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07265R704",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08094K113",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10267N709",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10267R702",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10246C306",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08085N707",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06075N612",
+                                         "percentage":  15,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A14761",
+                       "power_plate":  "ET-3-A14761",
+                       "trailer_plate":  "ET-3-34051",
+                       "odometer":  171742,
+                       "audit_date":  "2026-07-08",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0874961",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0768685",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10127M507",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10196A407",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10117J306",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE09295C311",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10177E207",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08185L501",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10235H510",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10196E208",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156L109",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04156A414",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "E170328",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10277L210",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "RD12182M309",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "RD11222O810",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06206J304",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04157R602",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "E651836",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06056C508",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07235K509",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "E563249",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "A17032E",
+                                         "percentage":  30,
+                                         "remark":  "POWER"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE04157E204",
+                                         "percentage":  40,
+                                         "remark":  "TRAILER"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A00765",
+                       "power_plate":  "ET-3-A00765",
+                       "trailer_plate":  "ET-3-34969",
+                       "odometer":  254529,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF05131Q209",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Triangle",
+                                         "serial":  "RF05042M201",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03095L910",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03095C313",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03086L912",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03017N711",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03097K701",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03086E207",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03096E212",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF02236C310",
+                                         "percentage":  70,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07275I504",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07306A405",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "E180241",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10276N810",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07206R610",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07267R709",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07267J312",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07275N709",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07275R904",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07267R509",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "E180240",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "E180249",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "DUPRO",
+                                         "serial":  "J234C23099",
+                                         "percentage":  0,
+                                         "remark":  "DRIVER SIDE"
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A14763",
+                       "power_plate":  "ET-3-A14763",
+                       "trailer_plate":  "ET-3-34052",
+                       "odometer":  178505,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8429175",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8446014",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8295335",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0076642",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8299734",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092788",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8299742",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029321",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0191538",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0033335",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02283G13",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "CC05266F410",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02272M313",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP06303R901",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01115R508",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01135J706",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01135L205",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01086J308",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07207S514",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08057H808",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01116R503",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF01145W311",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "J17023E",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07235E901",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A21634",
+                       "power_plate":  "ET-3-A21634",
+                       "trailer_plate":  "ET-3-36812",
+                       "odometer":  105566,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06102V508",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06102K504",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Sailun",
+                                         "serial":  "26C0033473",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Sailun",
+                                         "serial":  "26C0030353",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Sailun",
+                                         "serial":  "25C8210100",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Sailun",
+                                         "serial":  "25C0603857",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0768366",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782299",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0782240",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0726714",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "DUPRO",
+                                         "serial":  "G236A23038",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07247E214",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07247E906",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07235J406",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE02283O301",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC07017F103",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07236P709",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP07021R605",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10266R703",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10296N712",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10267A406",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10246N703",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "W",
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A27049",
+                       "power_plate":  "ET-3-A27049",
+                       "trailer_plate":  "ET-3-35766",
+                       "odometer":  95184,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0053201",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8299445",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092791",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0124281",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0124313",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0197434",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0124411",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092202",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12185C313",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12206R501",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12235E106",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12186J702",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07165D707",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07156P911",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07155E611",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "J103273",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12206R701",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12217C607",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12197R509",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE12207C303",
+                                         "percentage":  55,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157P902",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "A",
+                                               "B",
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A27037",
+                       "power_plate":  "ET-3-A27037",
+                       "trailer_plate":  "ET-3-34951",
+                       "odometer":  95887,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06102J509",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06103V315",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0030860",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8030085",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8030381",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029107",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8303546",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8044762",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029667",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8024576",
+                                         "percentage":  100,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07155D710",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07227K101",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07236P711",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06026K713",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11215C601",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11226M507",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11297K807",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11245C606",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11215E201",
+                                         "percentage":  60,
+                                         "remark":  "KE HAS BEEN DAMAGED"
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11227K812",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11226J303",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE11225J707",
+                                         "percentage":  60,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07155A112",
+                                         "percentage":  30,
+                                         "remark":  "POWER"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06195D302",
+                                         "percentage":  30,
+                                         "remark":  "TRAILER CURRENTLY ON V"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A27036",
+                       "power_plate":  "ET-3-A27036",
+                       "trailer_plate":  "ET-3-34952",
+                       "odometer":  95287,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0123023",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0123805",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8044992",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8024636",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8044960",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029015",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029475",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0033946",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8294989",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029141",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "E18024",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC05056J512",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157B608",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07157P901",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10147C301",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE09257A406",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10225C103",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10236M501",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10176R705",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10195E205",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10177E205",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10216J703",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "CP03271I810",
+                                         "percentage":  20,
+                                         "remark":  "PASSANGER SIDE"
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A23019",
+                       "power_plate":  "ET-3-A23019",
+                       "trailer_plate":  "ET-3-36813",
+                       "odometer":  96805,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0575228",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8429815",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029749",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029371",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8029240",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8044962",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8044642",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0030107",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C8303049",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "26C0092352",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE05013K905",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP07131B802",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "DUPRO",
+                                         "serial":  "S104A36101",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP06301D316",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07255S709",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08085J307",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08016A406",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08015N707",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07296J302",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10255A403",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07255R505",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE10267C310",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "DC07127S811",
+                                         "percentage":  20,
+                                         "remark":  "DRIVER SIDE"
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A21635",
+                       "power_plate":  "ET-3-A21635",
+                       "trailer_plate":  "ET-3-34054",
+                       "odometer":  86780,
+                       "audit_date":  "2026-07-08",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25A0691139",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0589787",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH01155O103",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09177G204",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09175E104",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08235J711",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09206N714",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09177E111",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08236E204",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08237E110",
+                                         "percentage":  90,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "E74538",
+                                         "percentage":  50,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "A170323",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC05127M402",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC03275K701",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07247K106",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07245K501",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07146P910",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "E5632EE",
+                                         "percentage":  30,
+                                         "remark":  "NOT VISIBLE LETTER"
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "E563241",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "J103272",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC05246K708",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "E180242",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC05076K713",
+                                         "percentage":  30,
+                                         "remark":  "SCORT POWER"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "KD07165G103",
+                                         "percentage":  30,
+                                         "remark":  "SCORT TRAILER"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A21636",
+                       "power_plate":  "ET-3-A21636",
+                       "trailer_plate":  "ET-3-36815",
+                       "odometer":  120541,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Goodride",
+                                         "serial":  "I321561539",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Goodride",
+                                         "serial":  "I321954104",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03257N705",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03226M209",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03246S712",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF03257N206",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF05215O307",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10207E212",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10216E205",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10116G201",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "E18024E",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "E1802499",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE07083D303",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "E170230",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07036H501",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07047I507",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045R705",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045L203",
+                                         "percentage":  35,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045O708",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07045J710",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07127L209",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07046I505",
+                                         "percentage":  45,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB04067K508",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06165N608",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A21633",
+                       "power_plate":  "ET-3-A21633",
+                       "trailer_plate":  "ET-3-36816",
+                       "odometer":  107490,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C8404250",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0575547",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10026Q604",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF09236I309",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08246J510",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11215K301",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10126O112",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08246K304",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF10107J502",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11205R513",
+                                         "percentage":  80,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE06092V508",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "DP07121B803",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07245S502",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "BP06301D313",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08016R701",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08016J705",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07235K505",
+                                         "percentage":  20,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07305H503",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08016H806",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE08085L508",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07317R504",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07316H511",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "DUPRO",
+                                         "serial":  "C232A23079",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     }
+                                 ],
+                       "empty_positions":  [
+                                               "X"
+                                           ]
+                   },
+                   {
+                       "sheet":  "ET-3-A21632",
+                       "power_plate":  "ET-3-A21632",
+                       "trailer_plate":  "ET-3-36811",
+                       "odometer":  107922,
+                       "audit_date":  "2026-07-07",
+                       "tyres":  [
+                                     {
+                                         "position":  "A",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0768163",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "B",
+                                         "brand":  "Black Hawk",
+                                         "serial":  "25C0768122",
+                                         "percentage":  95,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "C",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11276E204",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "D",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11276E102",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "E",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH01155D106",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "F",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF11205F901",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "G",
+                                         "brand":  "Triangle",
+                                         "serial":  "KH01155T105",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "H",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF12266N608",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "I",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF08265H710",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "J",
+                                         "brand":  "Triangle",
+                                         "serial":  "KF12285I302",
+                                         "percentage":  85,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "K",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE04301M610",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "L",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE05013J903",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "M",
+                                         "brand":  "Triangle",
+                                         "serial":  "CP03292K508",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "N",
+                                         "brand":  "Triangle",
+                                         "serial":  "RE07083D316",
+                                         "percentage":  30,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "O",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07227C306",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "P",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07215L209",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "Q",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07227J704",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "R",
+                                         "brand":  "Triangle",
+                                         "serial":  "KC06165N605",
+                                         "percentage":  25,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "S",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07245R501",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "T",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07235J711",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "U",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07215J311",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "V",
+                                         "brand":  "Triangle",
+                                         "serial":  "KE07237H802",
+                                         "percentage":  40,
+                                         "remark":  null
+                                     },
+                                     {
+                                         "position":  "W",
+                                         "brand":  "Triangle",
+                                         "serial":  "KB07237E211",
+                                         "percentage":  20,
+                                         "remark":  "DRIVER"
+                                     },
+                                     {
+                                         "position":  "X",
+                                         "brand":  "DUPRO",
+                                         "serial":  "G232A23076",
+                                         "percentage":  20,
+                                         "remark":  "PASSENGER"
+                                     }
+                                 ],
+                       "empty_positions":  [
+
+                                           ]
+                   }
+               ]
+}

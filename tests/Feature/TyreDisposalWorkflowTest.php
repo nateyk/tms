@@ -19,7 +19,9 @@ class TyreDisposalWorkflowTest extends TestCase
     public function test_map_disposal_can_be_created_approved_and_completed(): void
     {
         $this->seed();
-        $user = User::query()->where('email', 'admin@menkem.com')->firstOrFail();
+        $preparer = User::query()->where('email', 'storekeeper@menkem.com')->firstOrFail();
+        $checker = User::query()->where('email', 'demmelash.fetene@menkemintl.com')->firstOrFail();
+        $approver = User::query()->where('email', 'manager@menkem.com')->firstOrFail();
         $store = Store::query()->firstOrFail();
         $tyre = Tyre::query()->create([
             'tyre_code' => 'DSP-TYR-0001',
@@ -30,7 +32,7 @@ class TyreDisposalWorkflowTest extends TestCase
             'source' => 'purchased_new_tyre',
         ]);
 
-        $this->actingAs($user)
+        $this->actingAs($preparer)
             ->post(route('tyres.disposals.store'), [
                 'tyre_id' => $tyre->id,
                 'disposal_reason' => 'worn_out',
@@ -44,9 +46,10 @@ class TyreDisposalWorkflowTest extends TestCase
         $this->assertSame(TyreLocationType::Store, $disposal->last_location_type);
         $this->assertSame($store->id, $disposal->last_location_id);
 
-        $this->actingAs($user)->post(route('tyres.disposals.submit', $disposal))->assertSessionHas('success');
-        $this->actingAs($user)->post(route('tyres.disposals.approve', $disposal))->assertSessionHas('success');
-        $this->actingAs($user)->post(route('tyres.disposals.complete', $disposal))->assertSessionHas('success');
+        $this->actingAs($preparer)->post(route('tyres.disposals.submit', $disposal))->assertSessionHas('success');
+        $this->actingAs($checker)->post(route('tyres.disposals.check', $disposal))->assertSessionHas('success');
+        $this->actingAs($approver)->post(route('tyres.disposals.approve', $disposal))->assertSessionHas('success');
+        $this->actingAs($approver)->post(route('tyres.disposals.complete', $disposal))->assertSessionHas('success');
 
         $this->assertSame(VoucherStatus::Completed, $disposal->fresh()->status);
         $this->assertSame(TyreStatus::Disposed, $tyre->fresh()->status);
