@@ -11,14 +11,18 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InputError } from "@/components/ui/input-error";
+import { Loader2, LockKeyhole } from "lucide-react";
 
 export default function Login({
     status,
     canResetPassword,
+    canRegister,
 }: {
     status?: string;
     canResetPassword: boolean;
+    canRegister: boolean;
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
@@ -43,16 +47,25 @@ export default function Login({
             <Head title="Log in" />
 
             <form onSubmit={submit}>
-                <Card className="mx-auto w-[min(92vw,420px)] border-slate-200 bg-white text-slate-950 shadow-sm">
-                    <CardHeader className="pb-5">
-                        <CardTitle className="text-2xl font-semibold text-slate-950">Menkem TMS</CardTitle>
+                <Card className="border-slate-200 bg-white text-slate-950 shadow-sm">
+                    <CardHeader className="space-y-2 border-b border-slate-100 pb-5">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase text-indigo-800">
+                            <LockKeyhole className="h-4 w-4" />
+                            Controlled access
+                        </div>
+                        <CardTitle className="text-2xl font-semibold text-slate-950">
+                            Sign in
+                        </CardTitle>
                         <CardDescription className="text-slate-500">
-                            Sign in to the tyre management dashboard
+                            Use your assigned company account to continue.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-5">
                         {status && (
-                            <div className="mb-4 font-medium text-sm text-green-600">
+                            <div
+                                role="status"
+                                className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-800"
+                            >
                                 {status}
                             </div>
                         )}
@@ -63,7 +76,7 @@ export default function Login({
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="m@example.com"
+                                    placeholder="name@menkemintl.com"
                                     className="border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
                                     value={data.email}
                                     onChange={(e) =>
@@ -76,12 +89,14 @@ export default function Login({
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password" className="text-slate-800">Password</Label>
-                                    <Link
-                                        href={route("password.request")}
-                                        className="ml-auto inline-block text-sm font-medium text-slate-600 underline hover:text-slate-950"
-                                    >
-                                        Forgot your password?
-                                    </Link>
+                                    {canResetPassword && (
+                                        <Link
+                                            href={route("password.request")}
+                                            className="ml-auto inline-block text-sm font-medium text-slate-600 underline hover:text-slate-950"
+                                        >
+                                            Forgot your password?
+                                        </Link>
+                                    )}
                                 </div>
                                 <Input
                                     id="password"
@@ -95,16 +110,38 @@ export default function Login({
                                 />
                                 <InputError message={errors.password} />
                             </div>
-                            <Button type="submit" className="w-full bg-slate-950 text-white hover:bg-slate-800">
-                                Login
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="remember"
+                                    checked={data.remember}
+                                    onCheckedChange={(checked) =>
+                                        setData("remember", checked === true)
+                                    }
+                                />
+                                <Label
+                                    htmlFor="remember"
+                                    className="cursor-pointer text-sm font-normal text-slate-600"
+                                >
+                                    Keep me signed in on this device
+                                </Label>
+                            </div>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full bg-slate-950 text-white hover:bg-slate-800"
+                            >
+                                {processing && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {processing ? "Signing in..." : "Sign in"}
                             </Button>
                         </div>
-                        <div className="mt-5 text-center text-sm text-slate-500">
-                            Don&apos;t have an account?{" "}
-                            <Link href="/register" className="font-medium text-slate-700 underline hover:text-slate-950">
-                                Sign up
-                            </Link>
-                        </div>
+                        {canRegister && (
+                            <div className="mt-5 text-center text-sm text-slate-500">
+                                Don&apos;t have an account?{" "}
+                                <Link href={route("register")} className="font-medium text-slate-700 underline hover:text-slate-950">
+                                    Sign up
+                                </Link>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </form>

@@ -29,11 +29,13 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-Route::get('/tyres/scan/{tyre_code}', [TyreScanController::class, 'show'])
-    ->name('tyres.scan');
-
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)
+        ->middleware('permission:tyre.view|vehicle.view|report.view')
+        ->name('dashboard');
+
+    Route::get('/tyres/scan/{tyre_code}', [TyreScanController::class, 'show'])
+        ->name('tyres.scan');
 
     Route::prefix('fleet')->name('fleet.')->group(function () {
         Route::resource('vehicle-types', VehicleTypeController::class)->except(['show']);
@@ -155,7 +157,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';

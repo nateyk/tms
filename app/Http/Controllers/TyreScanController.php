@@ -19,6 +19,8 @@ class TyreScanController extends Controller
             ])
             ->firstOrFail();
 
+        $this->authorize('view', $tyre);
+
         return view('tyres.scan', compact('tyre'));
     }
 }

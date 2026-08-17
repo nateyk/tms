@@ -9,98 +9,109 @@ use App\Models\TyreDisposal;
 use App\Models\TyreMovement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalService
 {
     public function submit(Model $voucher): Model
     {
-        $this->assertStatus($voucher, VoucherStatus::Draft);
-        $this->assertPreparedByCurrentUser($voucher);
+        return DB::transaction(function () use ($voucher): Model {
+            $voucher = $this->lockedVoucher($voucher);
+            $this->assertStatus($voucher, VoucherStatus::Draft);
+            $this->assertPreparedByCurrentUser($voucher);
 
-        $voucher->update([
-            'status' => VoucherStatus::Submitted,
-            'submitted_at' => now(),
-        ]);
+            $voucher->update([
+                'status' => VoucherStatus::Submitted,
+                'submitted_at' => now(),
+            ]);
 
-        return $voucher->fresh();
+            return $voucher->fresh();
+        });
     }
 
     public function check(Model $voucher): Model
     {
-        $this->assertStatus($voucher, VoucherStatus::Submitted);
-        $actorId = $this->actorId();
+        return DB::transaction(function () use ($voucher): Model {
+            $voucher = $this->lockedVoucher($voucher);
+            $this->assertStatus($voucher, VoucherStatus::Submitted);
+            $actorId = $this->actorId();
 
-        if ((int) $voucher->prepared_by === $actorId) {
-            throw new TyreBusinessException('The voucher preparer cannot check their own voucher.');
-        }
+            if ((int) $voucher->prepared_by === $actorId) {
+                throw new TyreBusinessException('The voucher preparer cannot check their own voucher.');
+            }
 
-        $voucher->update([
-            'status' => VoucherStatus::Checked,
-            'checked_by' => $actorId,
-            'checked_at' => now(),
-        ]);
+            $voucher->update([
+                'status' => VoucherStatus::Checked,
+                'checked_by' => $actorId,
+                'checked_at' => now(),
+            ]);
 
-        return $voucher->fresh();
+            return $voucher->fresh();
+        });
     }
 
     public function approve(Model $voucher): Model
     {
-        $this->assertStatus($voucher, VoucherStatus::Checked);
-        $actorId = $this->actorId();
+        return DB::transaction(function () use ($voucher): Model {
+            $voucher = $this->lockedVoucher($voucher);
+            $this->assertStatus($voucher, VoucherStatus::Checked);
+            $actorId = $this->actorId();
 
-        if (in_array($actorId, [(int) $voucher->prepared_by, (int) $voucher->checked_by], true)) {
-            throw new TyreBusinessException('The approver must be different from both the preparer and checker.');
-        }
+            if (in_array($actorId, [(int) $voucher->prepared_by, (int) $voucher->checked_by], true)) {
+                throw new TyreBusinessException('The approver must be different from both the preparer and checker.');
+            }
 
-        $update = [
-            'status' => VoucherStatus::Approved,
-            'approved_by' => $actorId,
-            'approved_at' => now(),
-        ];
+            $voucher->update([
+                'status' => VoucherStatus::Approved,
+                'approved_by' => $actorId,
+                'approved_at' => now(),
+            ]);
 
-        $voucher->update($update);
-
-        return $voucher->fresh();
+            return $voucher->fresh();
+        });
     }
 
     public function reject(Model $voucher, ?string $reason = null): Model
     {
-        if ($voucher->status->isTerminal()) {
-            throw new TyreBusinessException('Cannot reject a terminal voucher.');
-        }
+        return DB::transaction(function () use ($voucher, $reason): Model {
+            $voucher = $this->lockedVoucher($voucher);
 
-        $notes = $voucher->notes;
-        if ($reason) {
-            $notes = trim(($notes ?? '')."\n[Rejected] ".$reason);
-        }
+            if ($voucher->status->isTerminal()) {
+                throw new TyreBusinessException('Cannot reject a terminal voucher.');
+            }
 
-        $voucher->update([
-            'status' => VoucherStatus::Rejected,
-            'notes' => $notes,
-        ]);
+            $notes = $voucher->notes;
+            if ($reason) {
+                $notes = trim(($notes ?? '')."\n[Rejected] ".$reason);
+            }
 
-        return $voucher->fresh();
+            $voucher->update([
+                'status' => VoucherStatus::Rejected,
+                'notes' => $notes,
+            ]);
+
+            return $voucher->fresh();
+        });
     }
 
     public function cancel(Model $voucher, ?string $reason = null): Model
     {
-        if ($voucher->status->isTerminal()) {
-            throw new TyreBusinessException('Cannot void a terminal voucher.');
-        }
+        return DB::transaction(function () use ($voucher, $reason): Model {
+            $voucher = $this->lockedVoucher($voucher);
 
-        $update = [
-            'status' => VoucherStatus::Cancelled,
-        ];
+            if ($voucher->status->isTerminal()) {
+                throw new TyreBusinessException('Cannot void a terminal voucher.');
+            }
 
-        $update += [
-            'voided_by' => $this->actorId(),
-            'voided_at' => now(),
-            'void_reason' => $reason,
-        ];
+            $voucher->update([
+                'status' => VoucherStatus::Cancelled,
+                'voided_by' => $this->actorId(),
+                'voided_at' => now(),
+                'void_reason' => $reason,
+            ]);
 
-        $voucher->update($update);
-
-        return $voucher->fresh();
+            return $voucher->fresh();
+        });
     }
 
     public function completeMovement(TyreMovement $movement): TyreMovement
@@ -151,5 +162,13 @@ class ApprovalService
         if ((int) $voucher->prepared_by !== $this->actorId()) {
             throw new TyreBusinessException('Only the voucher preparer can submit this draft.');
         }
+    }
+
+    private function lockedVoucher(Model $voucher): Model
+    {
+        return $voucher->newQuery()
+            ->whereKey($voucher->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
     }
 }

@@ -18,32 +18,25 @@ class TyreAssignmentService
         $vehicle = Vehicle::query()->with('vehicleType')->find($assetId);
         $mapWorkflow = app(TyreMapWorkflowService::class);
 
-        if ($vehicle instanceof Vehicle && $mapWorkflow->assignmentAssetTypeForVehicle($vehicle) === $assetType) {
-            $position = collect($mapWorkflow->positionStatusForVehicle($vehicle))
-                ->first(fn (array $candidate): bool => in_array($positionCode, [
-                    $candidate['code'],
-                    $candidate['display_code'],
-                ], true));
-
-            if ($position && ! $position['is_empty']) {
-                throw new TyreBusinessException("Position {$positionCode} already has an active tyre.");
-            }
-
-            return;
+        if (! $vehicle instanceof Vehicle) {
+            throw new TyreBusinessException('The destination vehicle no longer exists.');
         }
 
-        $positionCodes = $vehicle instanceof Vehicle
-            ? $mapWorkflow->positionAliasesForVehicle($vehicle, $positionCode)
-            : [$positionCode];
+        if ($mapWorkflow->assignmentAssetTypeForVehicle($vehicle) !== $assetType) {
+            throw new TyreBusinessException('The destination asset type does not match the selected vehicle.');
+        }
 
-        $exists = TyreAssignment::query()
-            ->where('asset_type', $assetType)
-            ->where('asset_id', $assetId)
-            ->whereIn('position_code', $positionCodes)
-            ->where('status', TyreAssignmentStatus::Active)
-            ->exists();
+        $position = collect($mapWorkflow->positionStatusForVehicle($vehicle))
+            ->first(fn (array $candidate): bool => in_array($positionCode, [
+                $candidate['code'],
+                $candidate['display_code'],
+            ], true));
 
-        if ($exists) {
+        if (! $position) {
+            throw new TyreBusinessException("Position {$positionCode} is not valid for {$vehicle->vehicle_code}.");
+        }
+
+        if (! $position['is_empty']) {
             throw new TyreBusinessException("Position {$positionCode} already has an active tyre.");
         }
     }

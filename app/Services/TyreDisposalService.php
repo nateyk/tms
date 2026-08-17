@@ -23,6 +23,15 @@ class TyreDisposalService
     public function complete(TyreDisposal $disposal, int $approvedBy): TyreDisposal
     {
         return DB::transaction(function () use ($disposal, $approvedBy) {
+            $disposal = TyreDisposal::query()
+                ->whereKey($disposal->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($disposal->status !== VoucherStatus::Approved) {
+                throw new TyreBusinessException('Only an approved disposal can be completed.');
+            }
+
             $tyre = Tyre::query()->whereKey($disposal->tyre_id)->lockForUpdate()->firstOrFail();
 
             if ($tyre->isDisposed()) {
@@ -57,29 +66,31 @@ class TyreDisposalService
 
     public function createDraft(array $data, int $preparedBy): TyreDisposal
     {
-        $tyre = Tyre::query()->findOrFail($data['tyre_id']);
+        return DB::transaction(function () use ($data, $preparedBy): TyreDisposal {
+            $tyre = Tyre::query()->whereKey($data['tyre_id'])->lockForUpdate()->firstOrFail();
 
-        if ($tyre->isDisposed()) {
-            throw new TyreBusinessException('Tyre is already disposed.');
-        }
+            if ($tyre->isDisposed()) {
+                throw new TyreBusinessException('Tyre is already disposed.');
+            }
 
-        if (TyreDisposal::query()
-            ->where('tyre_id', $tyre->id)
-            ->whereIn('status', [VoucherStatus::Draft, VoucherStatus::Submitted, VoucherStatus::Checked, VoucherStatus::Approved])
-            ->exists()) {
-            throw new TyreBusinessException('This tyre already has an active disposal voucher.');
-        }
+            if (TyreDisposal::query()
+                ->where('tyre_id', $tyre->id)
+                ->whereIn('status', [VoucherStatus::Draft, VoucherStatus::Submitted, VoucherStatus::Checked, VoucherStatus::Approved])
+                ->exists()) {
+                throw new TyreBusinessException('This tyre already has an active disposal voucher.');
+            }
 
-        $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
+            $usage = $this->usageTrackingService->calculateTyreUsage($tyre);
 
-        return TyreDisposal::query()->create(array_merge($data, [
-            'disposal_no' => $this->numberGenerator->generate('DSP', new TyreDisposal, 'disposal_no'),
-            'status' => VoucherStatus::Draft,
-            'prepared_by' => $preparedBy,
-            'last_location_type' => $tyre->current_location_type,
-            'last_location_id' => $tyre->current_location_id,
-            'last_position_code' => $tyre->current_position_code,
-            'final_km_used' => $usage['total_used_km'],
-        ]));
+            return TyreDisposal::query()->create(array_merge($data, [
+                'disposal_no' => $this->numberGenerator->generate('DSP', new TyreDisposal, 'disposal_no'),
+                'status' => VoucherStatus::Draft,
+                'prepared_by' => $preparedBy,
+                'last_location_type' => $tyre->current_location_type,
+                'last_location_id' => $tyre->current_location_id,
+                'last_position_code' => $tyre->current_position_code,
+                'final_km_used' => $usage['total_used_km'],
+            ]));
+        });
     }
 }

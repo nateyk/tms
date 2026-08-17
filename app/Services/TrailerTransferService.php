@@ -21,6 +21,15 @@ class TrailerTransferService
     public function complete(TrailerTransfer $transfer, int $approvedBy): TrailerTransfer
     {
         return DB::transaction(function () use ($transfer, $approvedBy) {
+            $transfer = TrailerTransfer::query()
+                ->whereKey($transfer->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($transfer->status !== VoucherStatus::Approved) {
+                throw new TyreBusinessException('Only an approved trailer transfer can be completed.');
+            }
+
             $trailer = Vehicle::query()
                 ->whereKey($transfer->trailer_vehicle_id)
                 ->lockForUpdate()

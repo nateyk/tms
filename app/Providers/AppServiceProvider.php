@@ -13,6 +13,7 @@ use App\Policies\VehiclePolicy;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         JsonResource::withoutWrapping();
+
+        Password::defaults(fn () => Password::min(12)
+            ->mixedCase()
+            ->letters()
+            ->numbers()
+            ->symbols());
 
         Gate::before(function ($user) {
             return $user->hasAnyRole(['Super Admin', 'Admin']) ? true : null;

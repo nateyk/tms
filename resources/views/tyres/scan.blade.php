@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $tyre->tyre_code }} — Menkem TMS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ $tyre->tyre_code }} - Menkem TMS</title>
+    @vite(['resources/css/app.css'])
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-2xl mx-auto p-6">
@@ -30,11 +30,11 @@
             </div>
 
             <dl class="grid grid-cols-2 gap-3 text-sm">
-                <div><dt class="text-gray-500">Brand</dt><dd>{{ $tyre->brand?->name ?? '—' }}</dd></div>
-                <div><dt class="text-gray-500">Size</dt><dd>{{ $tyre->size?->size_label ?? '—' }}</dd></div>
+                <div><dt class="text-gray-500">Brand</dt><dd>{{ $tyre->brand?->name ?? '-' }}</dd></div>
+                <div><dt class="text-gray-500">Size</dt><dd>{{ $tyre->size?->size_label ?? '-' }}</dd></div>
                 <div><dt class="text-gray-500">Location</dt><dd>{{ $tyre->current_location_type->label() }}</dd></div>
                 <div><dt class="text-gray-500">Position</dt><dd>{{ $tyre->currentPositionDisplay() }}</dd></div>
-                <div><dt class="text-gray-500">Tread Depth</dt><dd>{{ $tyre->current_tread_depth ?? '—' }} mm</dd></div>
+                <div><dt class="text-gray-500">Tread Depth</dt><dd>{{ $tyre->current_tread_depth ?? '-' }} mm</dd></div>
                 <div><dt class="text-gray-500">Total KM</dt><dd>{{ $tyre->totalKmUsed() }}</dd></div>
             </dl>
 
@@ -42,7 +42,7 @@
                 <h3 class="font-semibold mb-2">Recent Movements</h3>
                 <ul class="text-sm space-y-1">
                     @forelse ($tyre->movements as $movement)
-                        <li>{{ $movement->movement_no }} — {{ $movement->movement_type->label() }} ({{ $movement->status->label() }})</li>
+                        <li>{{ $movement->movement_no }} - {{ $movement->movement_type->label() }} ({{ $movement->status->label() }})</li>
                     @empty
                         <li class="text-gray-500">No movements recorded.</li>
                     @endforelse

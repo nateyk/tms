@@ -80,6 +80,12 @@ class RolesAndPermissionsSeeder extends Seeder
             $role->syncPermissions($perms);
         }
 
+        if (! $this->shouldSeedDemoUsers()) {
+            $this->command?->warn('Default TMS users were not seeded. Set TMS_SEED_DEMO_USERS=true and TMS_DEMO_USER_PASSWORD to opt in.');
+
+            return;
+        }
+
         $this->seedUser('admin@menkem.com', 'TMS Super Admin', 'Super Admin');
         $this->seedUser('store@menkem.com', 'Store Manager', 'Store Manager');
         $this->seedUser('storekeeper@menkem.com', 'Store Keeper', 'Store Keeper');
@@ -90,16 +96,32 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private function seedUser(string $email, string $name, string $role): void
     {
+        $password = config('tms.demo_user_password');
+
+        if (! is_string($password) || $password === '') {
+            if (! app()->environment(['local', 'testing'])) {
+                throw new \RuntimeException('TMS_DEMO_USER_PASSWORD is required when demo user seeding is enabled in production.');
+            }
+
+            $password = 'password';
+        }
+
         $user = User::query()->firstOrCreate(
             ['email' => $email],
             [
                 'name' => $name,
-                'password' => Hash::make('password'),
+                'password' => Hash::make($password),
+                'is_active' => true,
             ],
         );
 
         $user->forceFill(['name' => $name])->save();
         $user->syncRoles([$role]);
+    }
+
+    private function shouldSeedDemoUsers(): bool
+    {
+        return app()->environment(['local', 'testing']) || config('tms.seed_demo_users');
     }
 
     private function migrateTechnicalHeadAccount(): void

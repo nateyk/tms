@@ -81,6 +81,15 @@ class TyreMovementService
     public function complete(TyreMovement $movement, int $approvedBy): TyreMovement
     {
         return DB::transaction(function () use ($movement, $approvedBy) {
+            $movement = TyreMovement::query()
+                ->whereKey($movement->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($movement->status !== VoucherStatus::Approved) {
+                throw new TyreBusinessException('Only an approved movement can be completed.');
+            }
+
             $tyre = Tyre::query()->whereKey($movement->tyre_id)->lockForUpdate()->firstOrFail();
 
             if ($tyre->isDisposed()) {
@@ -183,7 +192,7 @@ class TyreMovementService
     public function createDraft(array $data, int $preparedBy): TyreMovement
     {
         return DB::transaction(function () use ($data, $preparedBy) {
-            $tyre = Tyre::query()->findOrFail($data['tyre_id']);
+            $tyre = Tyre::query()->whereKey($data['tyre_id'])->lockForUpdate()->firstOrFail();
             $this->assertCanCreateMovement($tyre);
 
             $toLocationType = $this->normalizeLocationType($data['to_location_type'] ?? null);
@@ -212,6 +221,11 @@ class TyreMovementService
     public function updateDraft(TyreMovement $movement, array $data, int $updatedBy): TyreMovement
     {
         return DB::transaction(function () use ($movement, $data, $updatedBy) {
+            $movement = TyreMovement::query()
+                ->whereKey($movement->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
             if ($movement->status !== VoucherStatus::Draft) {
                 throw new TyreBusinessException('Only draft movement vouchers can be edited.');
             }
@@ -219,6 +233,14 @@ class TyreMovementService
             if ((int) $movement->prepared_by !== $updatedBy) {
                 throw new TyreBusinessException('Only the voucher preparer can edit this draft.');
             }
+
+            $toLocationType = $this->normalizeLocationType($data['to_location_type'] ?? $movement->to_location_type);
+            $data['movement_type'] = $this->deriveMovementType(
+                $movement->from_location_type,
+                $movement->from_location_id,
+                $toLocationType,
+                isset($data['to_location_id']) ? (int) $data['to_location_id'] : $movement->to_location_id,
+            );
 
             $movement->update($data);
             $this->syncVoucherOdometers($movement, $updatedBy);
