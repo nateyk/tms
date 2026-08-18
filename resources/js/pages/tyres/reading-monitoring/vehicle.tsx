@@ -18,6 +18,7 @@ import {
     CheckCircle,
     ClipboardCheck,
     Eye,
+    FileDown,
     Gauge,
     MoveRight,
     Plus,
@@ -174,7 +175,13 @@ export default function ReadingMonitoringVehicle({
                             <h1 className="text-2xl font-semibold">{vehicle.display_code}</h1>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <a href={route("vouchers.vehicle.tyre-status.pdf", vehicle.id)}>
+                                <FileDown className="mr-2 h-4 w-4" />
+                                Export PDF
+                            </a>
+                        </Button>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={route("fleet.vehicles.odometer", vehicle.id)}>
                                 <Gauge className="h-4 w-4 mr-2" />

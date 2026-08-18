@@ -1,0 +1,1 @@
+import{f as e,l as t,t as n}from"./app-X0k1PIvN.js";import{l as r}from"./card-DVGik7Lw.js";var i=e(t(),1),a=n(),o=i.forwardRef(({className:e,message:t,...n},i)=>t&&(0,a.jsx)(`p`,{className:r(`text-sm font-medium text-destructive`,e),ref:i,...n,children:t}));o.displayName=`InputError`;export{o as t};
